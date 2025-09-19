@@ -1,4 +1,5 @@
 MAI
+
 Mercado Agrícola Inteligente es una plataforma modular que conecta agricultores y compradores, optimizando procesos de venta, compra y gestión de productos mediante microservicios, IA y automatización.
 Backend (Laravel): Provee API RESTful, gestiona usuarios, productos, lotes, órdenes y pagos en garantía. Implementa autenticación JWT y lógica de negocio principal.
 Frontend (React.js): Interfaz intuitiva para agricultores y compradores. Visualiza precios en tiempo real, órdenes y alertas. Estilizado con TailwindCSS e integrado con WebSockets.
