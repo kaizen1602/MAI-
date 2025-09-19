@@ -1,0 +1,17 @@
+# Root ignores
+.env
+.DS_Store
+
+# Node / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.env
+
+# PHP / Backend (redundant with backend/.gitignore, pero seguro)
+backend/vendor/
+backend/storage/*.key
+backend/.env
+
+# Docker data volumes
+/docker/mysql/data/
+/docker/n8n/
