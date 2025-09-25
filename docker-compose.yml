@@ -13,9 +13,11 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - ./docker/mysql/data:/var/lib/mysql
+      - agro_mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
+    networks:
+      - my_network
 
   # ------------------------
   # PHP-FPM
@@ -29,6 +31,8 @@ services:
        - ./backend:/var/www/html
     depends_on:
       - mysql
+    networks:
+      - my_network
 
   # ------------------------
   # Nginx
@@ -43,6 +47,8 @@ services:
       - ./docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - php
+    networks:
+      - my_network
 
   # ------------------------
   # PhpMyAdmin
@@ -60,6 +66,8 @@ services:
       PMA_PASSWORD: ${PMA_PASSWORD}
     depends_on:
       - mysql
+    networks:
+      - my_network
 
   # ------------------------
   # n8n
@@ -74,4 +82,16 @@ services:
     environment:
       - GENERIC_TIMEZONE=America/Bogota
     volumes:
-      - ./docker/n8n:/home/node/.n8n
+      - agro_n8n_data:/home/node/.n8n  # Si quieres persistencia en n8n, descomenta esta línea y el volumen en la sección volumes
+    networks:
+      - my_network
+volumes:
+  agro_mysql_data:
+  agro_n8n_data:  # Si quieres persistencia en n8n, descomenta esta línea y el volumen en la sección n8n
+
+# ------------------------
+# Networks
+# ------------------------
+networks:
+  my_network:
+    driver: bridge
