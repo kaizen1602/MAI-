@@ -31,6 +31,10 @@ services:
        - ./backend:/var/www/html
     depends_on:
       - mysql
+    command: >
+      sh -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+      && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+      && php-fpm"
     networks:
       - my_network
 
