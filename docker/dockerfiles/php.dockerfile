@@ -4,6 +4,10 @@ FROM php:8.2-fpm
 ARG USER_ID
 ARG GROUP_ID
 
+
+# Directorio de trabajo
+WORKDIR /var/www/html
+
 # Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     git \
@@ -23,8 +27,7 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 RUN groupadd -g ${GROUP_ID} devgroup || true \
     && useradd -u ${USER_ID} -g ${GROUP_ID} -m devuser || true
 
-# Directorio de trabajo
-WORKDIR /var/www/html
+
 
 # Exponer puerto PHP-FPM
 EXPOSE 9000
