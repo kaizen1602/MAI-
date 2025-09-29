@@ -6,65 +6,91 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
+use Illuminate\Http\JsonResponse;
+use App\Http\Requests\LoginRequest;
+use App\Traits\ApiResponse;
 
 class AuthController extends Controller
 {
-     /**
-     * Maneja el intento de inicio de sesión.
+    use ApiResponse;
+
+    /**
+     * Maneja el inicio de sesión
      */
-    public function login(Request $request)
+    public function login(LoginRequest $request): JsonResponse
     {
-        // 1. Validar los datos
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string',
+        // Validación usando Request Validation (más simple)
+        $credentials = $request->validated();
+
+        if (!Auth::attempt($credentials)) {
+            return $this->errorResponse('Credenciales inválidas', 401);
+        }
+
+        //$user = User::where('email', $request->email)->firstOrFail();
+        $user = Auth::user();
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return $this->successResponse([
+            'user' => $user,
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ], 'Inicio de sesión exitoso');
+    }
+
+    /**
+     * Registra un nuevo usuario
+     */
+    public function register(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed', // Requiere password_confirmation
         ]);
 
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
-
-        // 2. Intentar autenticar
-        if (!Auth::attempt($request->only('email', 'password'))) {
-            return response()->json([
-                'message' => 'Credenciales inválidas'
-            ], 401); // Unauthorized
-        }
-
-        // 3. Si es exitoso, obtener el usuario y crear un token
-        $user = User::where('email', $request->email)->firstOrFail();
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => bcrypt($validated['password']),
+        ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // 4. Devolver la respuesta con el token
         return response()->json([
-            'message' => '¡Hola ' . $user->name . '!',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
-        ]);
+            'message' => 'Usuario registrado exitosamente',
+            'data' => [
+                'user' => $user,
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+            ]
+        ], 201);
     }
 
     /**
-     * Obtiene el perfil del usuario autenticado.
+     * Obtiene el perfil del usuario autenticado
      */
-    public function profile(Request $request)
+    public function profile(Request $request): JsonResponse
     {
-        // Gracias a 'auth:sanctum', aquí ya tenemos acceso al usuario autenticado
-        return response()->json($request->user());
+        return $this->successResponse([
+            'user' => $request->user(),
+        ], 'Datos del perfil obtenidos correctamente');
     }
 
     /**
-     * Cierra la sesión del usuario (revoca el token).
+     * Cierra la sesión (revoca el token actual)
      */
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse
     {
-        // Revoca el token que se usó para la autenticación
         $request->user()->currentAccessToken()->delete();
+        return $this->successResponse(null, 'Sesión cerrada exitosamente');
+    }
 
-        return response()->json([
-            'message' => 'Sesión cerrada correctamente'
-        ]);
+    /**
+     * Revoca todos los tokens del usuario
+     */
+    public function logoutAll(Request $request): JsonResponse
+    {
+        $request->user()->tokens()->delete();
+        return $this->successResponse(null, 'Todas las sesiones cerradas exitosamente');
     }
 }

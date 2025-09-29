@@ -22,6 +22,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'phone_number',
+        'address_details',
+        'is_verified',
+        'role_id',
     ];
 
     /**
@@ -44,6 +48,39 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_verified' => 'boolean',
         ];
+    }
+
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    public function priceAlerts()
+    {
+        return $this->hasMany(PriceAlert::class);
+    }
+
+    public function reviewsWritten()
+    {
+        return $this->hasMany(Review::class, 'reviewer_id');
+    }
+
+    public function reviewsReceived()
+    {
+        return $this->hasMany(Review::class, 'reviewed_id');
+    }
+
+    public function favorites()
+    {
+        return $this->belongsToMany(Post::class, 'user_publication_favorites', 'user_id', 'post_id')
+            ->withPivot('date')
+            ->withTimestamps();
     }
 }
