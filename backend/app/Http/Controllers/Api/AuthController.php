@@ -7,7 +7,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use App\Http\Requests\LoginRequest;
+use App\Http\Requests\User\LoginRequest;
+use App\Http\Requests\User\RegisterRequest;
+use App\Http\Requests\User\UpdateRequest;
+use App\Http\Resources\User\UserResource;
 use App\Traits\ApiResponse;
 
 class AuthController extends Controller
@@ -26,12 +29,11 @@ class AuthController extends Controller
             return $this->errorResponse('Credenciales inválidas', 401);
         }
 
-        //$user = User::where('email', $request->email)->firstOrFail();
-        $user = Auth::user();
+        $user = Auth::user()->load('role'); // Cargar relación role
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->successResponse([
-            'user' => $user,
+            'user' => new UserResource($user),
             'access_token' => $token,
             'token_type' => 'Bearer',
         ], 'Inicio de sesión exitoso');
@@ -40,30 +42,17 @@ class AuthController extends Controller
     /**
      * Registra un nuevo usuario
      */
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8|confirmed', // Requiere password_confirmation
-        ]);
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => bcrypt($validated['password']),
-        ]);
-
+        $user = User::create($request->getUserData());
+        $user->load('role'); // Cargar relación role
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
-            'message' => 'Usuario registrado exitosamente',
-            'data' => [
-                'user' => $user,
-                'access_token' => $token,
-                'token_type' => 'Bearer',
-            ]
-        ], 201);
+        return $this->successResponse([
+            'user' => new UserResource($user),
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+        ], 'Usuario registrado exitosamente', 201);
     }
 
     /**
@@ -71,9 +60,26 @@ class AuthController extends Controller
      */
     public function profile(Request $request): JsonResponse
     {
+        $user = $request->user()->load('role'); // Cargar relación role
+
         return $this->successResponse([
-            'user' => $request->user(),
+            'user' => new UserResource($user),
         ], 'Datos del perfil obtenidos correctamente');
+    }
+
+    public function updateProfile(UpdateRequest $request): JsonResponse
+    {
+        $user = Auth::user();
+
+        // 2. Validar y traer data lista (con bcrypt si el request lo hace en getUserData)
+        $data = $request->getUserData();
+
+        // 3. Actualizar
+        $user->update($data);
+
+        return $this->successResponse([
+            'user' => $user,
+        ], 'Perfil actualizado correctamente');
     }
 
     /**
