@@ -13,6 +13,7 @@ class Product extends Model
         'name',
         'description',
         'image_url',
+        'product_type_id',
     ];
 
     public function posts()
@@ -28,5 +29,9 @@ class Product extends Model
     public function priceAlerts()
     {
         return $this->hasMany(PriceAlert::class);
+    }
+    public function productType()
+    {
+        return $this->belongsTo(ProductType::class, 'product_type_id');
     }
 }

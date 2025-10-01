@@ -49,8 +49,14 @@ trait ApiResponse
                 'per_page' => $data->perPage(),
                 'current_page' => $data->currentPage(),
                 'last_page' => $data->lastPage(),
+                'prev_page' => $data->currentPage() > 1 ? $data->currentPage() - 1 : null,
+                'next_page' => $data->hasMorePages() ? $data->currentPage() + 1 : null,
                 'from' => $data->firstItem(),
                 'to' => $data->lastItem(),
+                'prev_page_url' => $data->previousPageUrl(),
+                'next_page_url' => $data->nextPageUrl(),
+                'first_page_url' => $data->url(1),
+                'last_page_url' => $data->url($data->lastPage()),
             ],
         ], 200);
     }

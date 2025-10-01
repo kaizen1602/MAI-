@@ -76,9 +76,11 @@ class AuthController extends Controller
 
         // 3. Actualizar
         $user->update($data);
+        $user->load('role'); // Cargar relación role
+
 
         return $this->successResponse([
-            'user' => $user,
+            'user' => new UserResource($user),
         ], 'Perfil actualizado correctamente');
     }
 

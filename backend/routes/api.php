@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\ProductController;
 
 // ==========================================
 // RUTAS PÚBLICAS
@@ -14,7 +15,7 @@ Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 });
 
-Route::get('/ping', function() {
+Route::get('/ping', function () {
     return response()->json(['message' => 'API ON'], 200);
 });
 
@@ -22,7 +23,7 @@ Route::get('/ping', function() {
 // RUTAS PROTEGIDAS (requieren autenticación)
 // ==========================================
 Route::middleware('auth:sanctum')->group(function () {
-    
+
     // Auth
     Route::prefix('auth')->group(function () {
         Route::get('/profile', [AuthController::class, 'profile']);
@@ -35,16 +36,8 @@ Route::middleware('auth:sanctum')->group(function () {
     // Perfil público de usuarios
     Route::get('/users/{user}', [UserController::class, 'show']);
 
-    // Productos (API Resource)
-    //Route::apiResource('products', ProductController::class);
-    
-    // Categorías
-    //Route::apiResource('categories', CategoryController::class);
-    
-    // Órdenes
-    //Route::apiResource('orders', OrderController::class);
-    
-    // Rutas personalizadas si las necesitas
-    //Route::get('products/{product}/related', [ProductController::class, 'related']);
-    //Route::post('orders/{order}/confirm', [OrderController::class, 'confirm']);
+    Route::prefix('products')->group(function () {
+        Route::get('/', [ProductController::class, 'index']);
+        Route::get('/{product}', [ProductController::class, 'show']);
+    });
 });
