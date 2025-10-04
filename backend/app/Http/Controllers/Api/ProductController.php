@@ -8,6 +8,9 @@ use App\Models\Product;
 use App\Traits\ApiResponse;
 use App\Http\Resources\Product\ProductResource;
 use App\Http\Resources\Product\ProductDetailResource;
+use App\Http\Requests\Product\StoreProductRequest;
+use App\Http\Requests\Product\UpdateProductRequest;
+
 
 class ProductController extends Controller
 {
@@ -58,9 +61,16 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreProductRequest $request)
     {
-        //
+        $product = Product::create($request->getProductData());
+        $product->load('productType');
+
+        return $this->successResponse(
+            new ProductResource($product),
+            'Producto creado exitosamente',
+            201
+        );
     }
 
     /**
@@ -81,16 +91,35 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateProductRequest $request, Product $product)
     {
-        //
+        $product->update($request->getProductData());
+        $product->load('productType');
+
+        return $this->successResponse(
+            new ProductResource($product),
+            'Producto actualizado exitosamente'
+        );
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Product $product)
     {
-        //
+        // Verificar si tiene posts asociados
+        if ($product->posts()->exists()) {
+            return $this->errorResponse(
+                'No se puede eliminar el producto porque tiene publicaciones asociadas',
+                409
+            );
+        }
+
+        $product->delete();
+
+        return $this->successResponse(
+            null,
+            'Producto eliminado exitosamente'
+        );
     }
 }

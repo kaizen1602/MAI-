@@ -24,8 +24,16 @@ class User extends Authenticatable
         'password',
         'phone_number',
         'address_details',
-        'is_verified',
         'role_id',
+        // ❌ NO incluir 'is_admin' aquí
+    ];
+
+    protected $guarded = [
+        'id',
+        'is_admin',
+        'email_verified_at',
+        'remember_token',
+        'is_verified',
     ];
 
     /**
@@ -49,6 +57,7 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_verified' => 'boolean',
+            'is_admin' => 'boolean',
         ];
     }
 
@@ -70,6 +79,11 @@ class User extends Authenticatable
     public function reviewsWritten()
     {
         return $this->hasMany(Review::class, 'reviewer_id');
+    }
+    
+    public function isAdmin(): bool
+    {
+        return $this->is_admin === true;
     }
 
     public function reviewsReceived()

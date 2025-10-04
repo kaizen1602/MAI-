@@ -321,3 +321,167 @@ These endpoints require authentication. You must include an `Authorization` head
       }
     }
     ```
+
+---
+
+#### Get Product Details
+
+- **GET** `/products/{product}`
+  - **Description:** Get details for a single product, including statistics built from related posts (supply/demand).
+  - **Access:** Public
+  - **URL Parameters:**
+    - `product` (integer, required): Product ID.
+  - **Success Response (200):** Returns a single product object with `stats` derived from `posts`.
+    ```json
+    {
+      "success": true,
+      "message": "Detalles del producto obtenidos exitosamente",
+      "data": {
+        "id": 1,
+        "name": "Organic Apples",
+        "description": "Fresh and juicy organic apples.",
+        "image_url": "http://example.com/images/apples.jpg",
+        "product_type": {
+          "id": 1,
+          "type_name": "Fruit",
+          "description": "Edible sweet plant products."
+        },
+        "created_at": "2025-10-01T12:00:00.000000Z",
+        "updated_at": "2025-10-01T12:00:00.000000Z",
+        "stats": {
+          "supply": {
+            "total_posts": 10,
+            "total_quantity_kg": 2500,
+            "average_price_per_kg": 1.5,
+            "last_3_posts": [
+              /* ... */
+            ]
+          },
+          "demand": {
+            "total_posts": 7,
+            "total_quantity_kg": 900,
+            "average_price_per_kg": 1.7,
+            "last_3_posts": [
+              /* ... */
+            ]
+          }
+        }
+      }
+    }
+    ```
+
+---
+
+#### Admin-only: Create Product
+
+- **POST** `/products`
+  - **Description:** Create a new product. Restricted to admin users via the `admin` middleware.
+  - **Access:** Protected — requires `auth:sanctum` and `admin` middleware (user must have `is_admin = true`).
+  - **Request Body (StoreProductRequest):**
+    - `name` (string, required, max:255, unique:products,name)
+    - `description` (string, required, max:1000)
+    - `image_url` (string, optional, url, max:500)
+    - `product_type_id` (integer, required, exists:products_type,id)
+  - **Success Response (201):** Returns created product resource.
+    ```json
+    {
+      "success": true,
+      "message": "Producto creado exitosamente",
+      "data": {
+        /* ProductResource */
+      }
+    }
+    ```
+  - **Error Responses:**
+    - `401 Unauthorized` (not authenticated)
+      ```json
+      { "success": false, "message": "No estás autenticado." }
+      ```
+    - `403 Forbidden` (authenticated but not admin)
+      ```json
+      {
+        "success": false,
+        "message": "No tienes permisos para realizar esta acción. Solo administradores."
+      }
+      ```
+    - `422 Unprocessable Entity` (validation failure)
+      ```json
+      {
+        "success": false,
+        "message": "The given data was invalid.",
+        "errors": {
+          "name": ["The name field is required."],
+          "product_type_id": ["The selected product type is invalid."]
+        }
+      }
+      ```
+
+---
+
+#### Admin-only: Update Product
+
+- **PUT** `/products/{product}`
+  - **Description:** Update an existing product. Restricted to admin users via the `admin` middleware.
+  - **Access:** Protected — requires `auth:sanctum` and `admin` middleware.
+  - **URL Parameters:** `product` (integer, required)
+  - **Request Body (UpdateProductRequest):** Any of the following (all optional but validated when present):
+    - `name` (string, sometimes|required, max:255, unique except current)
+    - `description` (string, nullable, max:1000)
+    - `image_url` (string, nullable, url, max:500)
+    - `product_type_id` (integer, sometimes|required, exists:products_type,id)
+  - **Success Response (200):** Returns updated product resource.
+    ```json
+    {
+      "success": true,
+      "message": "Producto actualizado exitosamente",
+      "data": {
+        /* ProductResource */
+      }
+    }
+    ```
+  - **Error Responses:** `401`, `403`, `422` (same shapes as Create)
+
+---
+
+#### Admin-only: Delete Product
+
+- **DELETE** `/products/{product}`
+  - **Description:** Deletes a product. Restricted to admin users via the `admin` middleware. Deletion is prevented if the product has related posts.
+  - **Access:** Protected — requires `auth:sanctum` and `admin` middleware.
+  - **URL Parameters:** `product` (integer, required)
+  - **Success Response (200):**
+    ```json
+    {
+      "success": true,
+      "message": "Producto eliminado exitosamente",
+      "data": null
+    }
+    ```
+  - **Error Responses:**
+    - `401`, `403` as above
+    - `409 Conflict` if the product has associated posts:
+      ```json
+      {
+        "success": false,
+        "message": "No se puede eliminar el producto porque tiene publicaciones asociadas"
+      }
+      ```
+
+---
+
+Notes about the `admin` middleware and behavior
+
+- The project includes an `EnsureUserIsAdmin` middleware that checks the authenticated user's `is_admin` flag.
+- Middleware responses follow the API response pattern and return `401` if not authenticated, or `403` if authenticated but not an admin.
+- Example middleware response when not admin:
+  ```json
+  {
+    "success": false,
+    "message": "No tienes permisos para realizar esta acción. Solo administradores."
+  }
+  ```
+
+Security and usage tips
+
+- Always call the protected routes with an `Authorization: Bearer {token}` header obtained from `POST /auth/login`.
+- The `StoreProductRequest` and `UpdateProductRequest` include human-friendly error messages; validation failures return a `422` with the `errors` object mapping fields to messages.

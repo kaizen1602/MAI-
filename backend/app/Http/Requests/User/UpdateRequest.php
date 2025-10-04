@@ -62,11 +62,14 @@ class UpdateRequest extends FormRequest
     public function getUserData(): array
     {
         $data = $this->validated();
-
-        if (!empty($data['password'])) {
-            $data['password'] = bcrypt($data['password']);
-        }
-
-        return $data;
+        
+        return [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+            'phone_number' => $data['phone_number'] ?? null,
+            'address_details' => $data['address_details'] ?? null,
+            'role_id' => $data['role_id'],
+        ];
     }
 }
