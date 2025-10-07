@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use Illuminate\Http\JsonResponse;
+use Illuminate\Pagination\CursorPaginator;
 
 trait ApiResponse
 {
@@ -60,7 +61,34 @@ trait ApiResponse
             ],
         ], 200);
     }
-
+    /**
+     * Respuesta exitosa con datos paginados (cursor).
+     *
+     * @param CursorPaginator $paginator
+     * @param string $message
+     * @param array $additionalData
+     * @return JsonResponse
+     */
+    protected function cursorPaginatedResponse(
+        CursorPaginator $paginator,
+        string $message = 'Datos obtenidos exitosamente',
+        array $additionalData = []
+    ): JsonResponse {
+        return response()->json([
+            'success' => true,
+            'message' => $message,
+            'data' => $paginator->items(),
+            'pagination' => [
+                'per_page' => $paginator->perPage(),
+                'next_cursor' => $paginator->nextCursor()?->encode(),
+                'prev_cursor' => $paginator->previousCursor()?->encode(),
+                'next_page_url' => $paginator->nextPageUrl(),
+                'prev_page_url' => $paginator->previousPageUrl(),
+                'has_more_pages' => $paginator->hasMorePages(),
+            ],
+            ...$additionalData,
+        ], 200);
+    }
     /**
      * Respuesta no encontrado
      */

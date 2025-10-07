@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\AuthController;
 
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\PostController;
 
 // ==========================================
 // RUTAS PÚBLICAS
@@ -46,5 +47,10 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/{product}', [ProductController::class, 'update']);
             Route::delete('/{product}', [ProductController::class, 'destroy']);
         });
+    });
+
+    // Posts
+    Route::prefix('posts')->group(function () {
+        Route::get('/', [PostController::class, 'index']);
     });
 });
