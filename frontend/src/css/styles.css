@@ -1,0 +1,18 @@
+/* Que el body ocupe toda la pantalla con el fondo */
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-image: url("/fondo.jpg"); /* cambia por la ruta de tu imagen */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+/* Contenedor que centra el formulario */
+.container-form {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh; /* para que siempre quede centrado */
+}

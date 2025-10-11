@@ -1,0 +1,365 @@
+[
+  {
+    "post_id": 1,
+    "title": "Venta de tomates orgánicos",
+    "description": "Tomates 100% orgánicos, recién cosechados. Precio especial por mayor.",
+    "quantity_kg": 200,
+    "price_per_kg": 2500.0,
+    "created_at": "2025-09-29T10:30:00",
+    "updated_at": "2025-09-29T10:30:00",
+    "post_type": {
+      "type_id": 1,
+      "type_name": "Venta"
+    },
+    "product": {
+      "product_id": 1,
+      "name": "Tomate",
+      "description": "Tomate fresco orgánico",
+      "image_url": "https://picsum.photos/200/150?random=1",
+      "created_at": "2025-09-01"
+    },
+    "user": {
+      "user_id": 101,
+      "name": "Juan Pérez"
+    },
+    "municipality": {
+      "municipality_id": 11,
+      "name": "Bogotá",
+      "department_id": 1
+    },
+    "images": [
+      {
+        "image_id": 501,
+        "url": "https://picsum.photos/400/300?random=10",
+        "uploaded_at": "2025-09-29T10:30:00"
+      },
+      {
+        "image_id": 502,
+        "url": "https://picsum.photos/400/300?random=20",
+        "uploaded_at": "2025-09-29T10:31:00"
+      },
+      {
+        "image_id": 503,
+        "url": "https://picsum.photos/400/300?random=21",
+        "uploaded_at": "2025-09-29T10:32:00"
+      },
+      {
+        "image_id": 504,
+        "url": "https://picsum.photos/400/300?random=30",
+        "uploaded_at": "2025-09-29T10:33:00"
+      },
+      {
+        "image_id": 505,
+        "url": "https://picsum.photos/400/300?random=31",
+        "uploaded_at": "2025-09-29T10:34:00"
+      }
+    ]
+  },
+  {
+    "post_id": 2,
+    "title": "Busco proveedor de maíz",
+    "description": "Estoy interesada en encontrar un proveedor confiable de maíz amarillo en grandes cantidades.",
+    "quantity_kg": null,
+    "price_per_kg": null,
+    "created_at": "2025-09-29T09:15:00",
+    "updated_at": "2025-09-29T09:15:00",
+    "post_type": {
+      "type_id": 2,
+      "type_name": "Compra"
+    },
+    "product": {
+      "product_id": 2,
+      "name": "Maíz Amarillo",
+      "description": "Granos de maíz amarillo",
+      "image_url": "https://picsum.photos/200/150?random=2",
+      "created_at": "2025-09-02"
+    },
+    "user": {
+      "user_id": 102,
+      "name": "María García"
+    },
+    "municipality": {
+      "municipality_id": 22,
+      "name": "Medellín",
+      "department_id": 2
+    },
+    "images": [
+      {
+        "image_id": 506,
+        "url": "https://picsum.photos/400/300?random=22",
+        "uploaded_at": "2025-09-29T09:16:00"
+      },
+      {
+        "image_id": 507,
+        "url": "https://picsum.photos/400/300?random=23",
+        "uploaded_at": "2025-09-29T09:17:00"
+      }
+    ]
+  },
+  {
+    "post_id": 3,
+    "title": "Venta de huevos campesinos",
+    "description": "Huevos frescos de gallinas criadas en campo abierto. Envíos a domicilio en la región.",
+    "quantity_kg": 50,
+    "price_per_kg": 12000.0,
+    "created_at": "2025-09-28T18:45:00",
+    "updated_at": "2025-09-28T18:45:00",
+    "post_type": {
+      "type_id": 1,
+      "type_name": "Venta"
+    },
+    "product": {
+      "product_id": 3,
+      "name": "Huevo Campesino",
+      "description": "Huevo fresco de campo",
+      "image_url": "https://picsum.photos/200/150?random=3",
+      "created_at": "2025-09-03"
+    },
+    "user": {
+      "user_id": 103,
+      "name": "Carlos Ramírez"
+    },
+    "municipality": {
+      "municipality_id": 33,
+      "name": "Cali",
+      "department_id": 3
+    },
+    "images": [
+      {
+        "image_id": 508,
+        "url": "https://picsum.photos/400/300?random=11",
+        "uploaded_at": "2025-09-28T18:45:00"
+      },
+      {
+        "image_id": 509,
+        "url": "https://picsum.photos/400/300?random=24",
+        "uploaded_at": "2025-09-28T18:46:00"
+      },
+      {
+        "image_id": 510,
+        "url": "https://picsum.photos/400/300?random=25",
+        "uploaded_at": "2025-09-28T18:47:00"
+      }
+    ]
+  },
+  {
+    "post_id": 4,
+    "title": "Compra de plátanos maduros",
+    "description": "Necesito 50 kg de plátanos maduros para elaborar jugos naturales. Pago hasta $2000/kg.",
+    "quantity_kg": 50,
+    "price_per_kg": 2000.0,
+    "created_at": "2025-09-27T14:20:00",
+    "updated_at": "2025-09-27T14:20:00",
+    "post_type": {
+      "type_id": 2,
+      "type_name": "Compra"
+    },
+    "product": {
+      "product_id": 4,
+      "name": "Plátano Maduro",
+      "description": "Plátano amarillo y dulce",
+      "image_url": "https://picsum.photos/200/150?random=4",
+      "created_at": "2025-09-04"
+    },
+    "user": {
+      "user_id": 104,
+      "name": "Ana López"
+    },
+    "municipality": {
+      "municipality_id": 44,
+      "name": "Cartagena",
+      "department_id": 4
+    },
+    "images": [
+      {
+        "image_id": 511,
+        "url": "https://picsum.photos/400/300?random=40",
+        "uploaded_at": "2025-09-27T14:21:00"
+      }
+    ]
+  },
+  {
+    "post_id": 5,
+    "title": "Venta de aguacates Hass",
+    "description": "Aguacates Hass de primera calidad, recién recolectados. Excelente presentación.",
+    "quantity_kg": 100,
+    "price_per_kg": 4500.0,
+    "created_at": "2025-09-26T11:30:00",
+    "updated_at": "2025-09-26T11:30:00",
+    "post_type": {
+      "type_id": 1,
+      "type_name": "Venta"
+    },
+    "product": {
+      "product_id": 5,
+      "name": "Aguacate Hass",
+      "description": "Aguacate cremoso y nutritivo",
+      "image_url": "https://picsum.photos/200/150?random=5",
+      "created_at": "2025-09-05"
+    },
+    "user": {
+      "user_id": 105,
+      "name": "Pedro Gómez"
+    },
+    "municipality": {
+      "municipality_id": 55,
+      "name": "Barranquilla",
+      "department_id": 5
+    },
+    "images": [
+      {
+        "image_id": 512,
+        "url": "https://picsum.photos/400/300?random=50",
+        "uploaded_at": "2025-09-26T11:31:00"
+      },
+      {
+        "image_id": 513,
+        "url": "https://picsum.photos/400/300?random=51",
+        "uploaded_at": "2025-09-26T11:32:00"
+      }
+    ]
+  },
+  {
+    "post_id": 6,
+    "title": "Busco proveedor de arroz blanco",
+    "description": "Restaurante busca proveedor confiable de arroz blanco de grano largo. Requerimos 200 kg mensuales.",
+    "quantity_kg": 200,
+    "price_per_kg": null,
+    "created_at": "2025-09-25T16:45:00",
+    "updated_at": "2025-09-25T16:45:00",
+    "post_type": {
+      "type_id": 2,
+      "type_name": "Compra"
+    },
+    "product": {
+      "product_id": 6,
+      "name": "Arroz Blanco",
+      "description": "Arroz de grano largo tipo exportación",
+      "image_url": "https://picsum.photos/200/150?random=6",
+      "created_at": "2025-09-06"
+    },
+    "user": {
+      "user_id": 106,
+      "name": "Luis Martínez"
+    },
+    "municipality": {
+      "municipality_id": 11,
+      "name": "Bogotá",
+      "department_id": 1
+    },
+    "images": [
+      {
+        "image_id": 514,
+        "url": "https://picsum.photos/400/300?random=60",
+        "uploaded_at": "2025-09-25T16:46:00"
+      }
+    ]
+  },
+  {
+    "post_id": 7,
+    "title": "Venta de lechugas frescas",
+    "description": "Lechugas frescas cosechadas esta mañana. Disponibles en unidades o por mayor.",
+    "quantity_kg": 30,
+    "price_per_kg": 3200.0,
+    "created_at": "2025-09-24T08:15:00",
+    "updated_at": "2025-09-24T08:15:00",
+    "post_type": {
+      "type_id": 1,
+      "type_name": "Venta"
+    },
+    "product": {
+      "product_id": 7,
+      "name": "Lechuga Fresca",
+      "description": "Lechuga crujiente y verde",
+      "image_url": "https://picsum.photos/200/150?random=7",
+      "created_at": "2025-09-07"
+    },
+    "user": {
+      "user_id": 107,
+      "name": "Sofía Rodríguez"
+    },
+    "municipality": {
+      "municipality_id": 22,
+      "name": "Medellín",
+      "department_id": 2
+    },
+    "images": [
+      {
+        "image_id": 515,
+        "url": "https://picsum.photos/400/300?random=70",
+        "uploaded_at": "2025-09-24T08:16:00"
+      },
+      {
+        "image_id": 516,
+        "url": "https://picsum.photos/400/300?random=71",
+        "uploaded_at": "2025-09-24T08:17:00"
+      }
+    ]
+  },
+  {
+    "post_id": 8,
+    "title": "Compra de piñas frescas",
+    "description": "Empresa de jugos busca proveedor de piñas frescas y dulces. Necesitamos 100 unidades semanales.",
+    "quantity_kg": null,
+    "price_per_kg": 2800.0,
+    "created_at": "2025-09-23T13:30:00",
+    "updated_at": "2025-09-23T13:30:00",
+    "post_type": {
+      "type_id": 2,
+      "type_name": "Compra"
+    },
+    "product": {
+      "product_id": 8,
+      "name": "Piña Fresca",
+      "description": "Piña dulce y jugosa",
+      "image_url": "https://picsum.photos/200/150?random=8",
+      "created_at": "2025-09-08"
+    },
+    "user": {
+      "user_id": 108,
+      "name": "Jorge Silva"
+    },
+    "municipality": {
+      "municipality_id": 33,
+      "name": "Cali",
+      "department_id": 3
+    },
+    "images": [
+      {
+        "image_id": 517,
+        "url": "https://picsum.photos/400/300?random=80",
+        "uploaded_at": "2025-09-23T13:31:00"
+      }
+    ]
+  },
+  {
+    "post_id": 9,
+    "title": "Busco mangos orgánicos",
+    "description": "Mangos 100% orgánicos de la mejor calidad.",
+    "quantity_kg": 80,
+    "price_per_kg": 3500.0,
+    "created_at": "2025-09-22T10:00:00",
+    "updated_at": "2025-09-22T10:00:00",
+    "post_type": {
+      "type_id": 1,
+      "type_name": "Compra"
+    },
+    "product": {
+      "product_id": 9,
+      "name": "Mango Orgánico",
+      "description": "Mango dulce y jugoso",
+      "image_url": "https://picsum.photos/200/150?random=9",
+      "created_at": "2025-09-09"
+    },
+    "user": {
+      "user_id": 109,
+      "name": "Carmen Ruiz"
+    },
+    "municipality": {
+      "municipality_id": 44,
+      "name": "Cartagena",
+      "department_id": 4
+    },
+    "images": []
+  }
+]
