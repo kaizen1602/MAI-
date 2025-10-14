@@ -13,7 +13,7 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
-      - ./docker/mysql/data:/var/lib/mysql
+      - agro_mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
     networks:
@@ -31,6 +31,10 @@ services:
        - ./backend:/var/www/html
     depends_on:
       - mysql
+    command: >
+      sh -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+      && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+      && php-fpm"
     networks:
       - my_network
 
@@ -82,36 +86,15 @@ services:
     environment:
       - GENERIC_TIMEZONE=America/Bogota
     volumes:
-      - agro_n8n_data:/home/node/.n8n  # Persistencia de datos
+      - agro_n8n_data:/home/node/.n8n  # Si quieres persistencia en n8n, descomenta esta línea y el volumen en la sección volumes
     networks:
       - my_network
-
-  # ------------------------
-  # Frontend (React + Vite)
-  # ------------------------
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: frontend
-    ports:
-      - "5173:80"
-    volumes:
-      - ./frontend:/app
-    depends_on:
-      - nginx
-    networks:
-      - my_network
-
-# ------------------------
-# Volúmenes persistentes
-# ------------------------
 volumes:
   agro_mysql_data:
-  agro_n8n_data:
+  agro_n8n_data:  # Si quieres persistencia en n8n, descomenta esta línea y el volumen en la sección n8n
 
 # ------------------------
-# Redes
+# Networks
 # ------------------------
 networks:
   my_network:
