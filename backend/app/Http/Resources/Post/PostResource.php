@@ -76,7 +76,7 @@ class PostResource extends JsonResource
                 return $this->images->map(function ($image) {
                     return [
                         'id' => $image->id,
-                        'url' => $image->url,
+                        'url' => $image->image_url,
                     ];
                 });
             }),

@@ -50,6 +50,16 @@ return Application::configure(basePath: dirname(__DIR__))
                 ], 404);
             }
         });
+        // Manejo de errores de validación
+        $exceptions->render(function (ValidationException $e, $request) {
+            if ($request->is('api/*')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error de validación',
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+        });
 
         // Manejo de excepciones generales para API
         $exceptions->render(function (\Throwable $e, $request) {

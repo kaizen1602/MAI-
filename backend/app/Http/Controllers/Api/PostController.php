@@ -6,9 +6,13 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\Post\IndexPostRequest;
 use App\Models\Post;
+use App\Services\ImageService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 use App\Http\Resources\Post\PostResource;
 use App\Traits\ApiResponse;
+use App\Http\Requests\Post\StorePostRequest;
 
 
 class PostController extends Controller
@@ -17,6 +21,14 @@ class PostController extends Controller
     /**
      * Display a listing of the resource.
      */
+    protected ImageService $imageService;
+    public function __construct(ImageService $imageService)
+    {
+        $this->imageService = $imageService;
+    }
+
+
+
     public function index(IndexPostRequest $request)
     {
 
@@ -99,8 +111,67 @@ class PostController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StorePostRequest  $request)
     {
+
+        try {
+            DB::beginTransaction();
+
+            // 1. Crear el post
+            $post = Post::create($request->getPostData());
+
+            // 2. Procesar y subir imágenes si existen
+            $imageFiles = $request->getImages();
+            
+            if ($imageFiles && count($imageFiles) > 0) {
+               
+                
+                foreach ($imageFiles as $index => $imageFile) {
+                    // Subir imagen al storage
+                    $imageUrl = $this->imageService->uploadImage(
+                        $imageFile,
+                        'posts/' . $post->id // Directorio específico para este post
+                    );
+                    
+                    // Crear registro en la base de datos
+                    $post->images()->create([
+                        'image_url' => $imageUrl
+                    ]);
+                }
+            }
+
+            // 3. Cargar las relaciones
+            $post->load([
+                'postType:id,type_name,type_desc',
+                'product:id,name,description,image_url,product_type_id',
+                'product.productType:id,type_name',
+                'user:id,name,email,phone_number,address_details,is_verified',
+                'municipality:id,name',
+                'images:id,post_id,image_url',
+            ]);
+
+            DB::commit();
+
+            return $this->successResponse(
+                new PostResource($post),
+                'Publicación creada exitosamente',
+                201
+            );
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Si hubo error, eliminar las imágenes que se subieron
+            if (isset($post) && $post->images()->exists()) {
+                $imageUrls = $post->images()->pluck('image_url')->toArray();
+                $this->imageService->deleteMultipleImages($imageUrls);
+            }
+
+            return $this->errorResponse(
+                'Error al crear la publicación. Por favor, intenta nuevamente.',
+                500
+            );
+        }
         //
     }
 
