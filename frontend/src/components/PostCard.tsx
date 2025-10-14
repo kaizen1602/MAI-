@@ -66,38 +66,38 @@ function PostCard({ post, onSelectPost, formatDate }: PostCardProps) {
         {post.description}
       </p>
 
-{/* Miniaturas en fila centradas */}
-{photos && photos.length > 0 && (
-  <div className="mb-4 flex gap-3 justify-center">
-    {photos.slice(0, 3).map((photo, index) => {
-      // Si es la última visible y hay más imágenes, mostramos el overlay +n
-      if (index === 2 && photos.length > 3) {
-        return (
-          <div key={index} className="relative w-32 h-24 rounded-lg overflow-hidden">
-            <img
-              src={photo}
-              alt={`miniatura ${index + 1}`}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-              <span className="text-white font-semibold text-lg">
-                +{photos.length - 3}
-              </span>
-            </div>
-          </div>
-        );
-      }
-      return (
-        <img
-          key={index}
-          src={photo}
-          alt={`miniatura ${index + 1}`}
-          className="w-32 h-24 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
-        />
-      );
-    })}
-  </div>
-)}
+      {/* Miniaturas en fila centradas */}
+      {photos && photos.length > 0 && (
+        <div className="mb-4 flex gap-3 justify-center">
+          {photos.slice(0, 2).map((photo, index) => {
+            // Si es la última visible y hay más imágenes, mostramos el overlay +n
+            if (index === 1 && photos.length > 2) {
+              return (
+                <div key={index} className="relative w-32 h-24 rounded-lg overflow-hidden">
+                  <img
+                    src={photo}
+                    alt={`miniatura ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <span className="text-white font-semibold text-lg">
+                      +{photos.length - 2}
+                    </span>
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <img
+                key={index}
+                src={photo}
+                alt={`miniatura ${index + 1}`}
+                className="w-32 h-24 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
+              />
+            );
+          })}
+        </div>
+      )}
       {/* Footer */}
       <div className="flex justify-between items-center">
         <div className="flex space-x-6 text-gray-500 dark:text-gray-400">

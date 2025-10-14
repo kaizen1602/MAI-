@@ -202,6 +202,17 @@ function PostPage() {
     toast.success("Cargando publicación...");
     // Navegar a la publicación
     navigate(`/post/${postId}`);
+    // Simple scroll to top with minimal approach to avoid simulator issues
+    if (window.scrollTo) {
+      setTimeout(() => {
+        try {
+          window.scrollTo(0, 0);
+        } catch (e) {
+          // Silently fail in simulator environment
+          console.log("Scroll to top skipped due to simulator limitations");
+        }
+      }, 50);
+    }
   };
 
   if (!post) {
@@ -229,7 +240,9 @@ function PostPage() {
         backgroundImage: "url('/fondoMuro.jpg')",
       }}
     >
-      <Navbar />
+      <div className="sticky top-0 z-50">
+        <Navbar />
+      </div>
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="flex flex-col lg:flex-row gap-6 items-start">
           {/* Columna izquierda - Imágenes */}

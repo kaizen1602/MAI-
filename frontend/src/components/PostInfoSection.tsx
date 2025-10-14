@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import WhatsAppContactModal from "./WhatsAppContactModal";
+import PurchaseConfirmationModal from "./PurchaseConfirmationModal";
 
 interface PostInfoSectionProps {
   post: {
@@ -24,6 +25,7 @@ interface PostInfoSectionProps {
 
 function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
   const handleContactClick = () => {
     setIsModalOpen(true);
@@ -42,8 +44,30 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
     
     // Close the modal and redirect to WhatsApp
     setIsModalOpen(false);
+    // Show confirmation modal after a short delay to simulate WhatsApp interaction
+    setTimeout(() => {
+      setIsConfirmationModalOpen(true);
+    }, 1000);
     window.open(whatsappUrl, "_blank");
   };
+
+  const handleConfirmPurchase = (rating?: number) => {
+    // In a real application, you would save the rating to the database
+    if (rating !== undefined) {
+      console.log(`Purchase confirmed with rating: ${rating}`);
+    } else {
+      console.log("Purchase confirmed");
+    }
+    // You could also show a toast notification here
+  };
+
+  const handleRateLater = () => {
+    // In a real application, you might set a reminder to rate later
+    console.log("User chose to rate later");
+  };
+
+  // Determine if this is a purchase (Venta) or sale (Compra)
+  const isPurchase = post.post_type?.type_name === "Venta";
 
   return (
     <>
@@ -119,6 +143,16 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
         sellerName={post.user.name}
         productName={post.title}
         onContact={handleWhatsAppContact}
+      />
+      
+      <PurchaseConfirmationModal
+        isOpen={isConfirmationModalOpen}
+        onClose={() => setIsConfirmationModalOpen(false)}
+        productName={post.title}
+        sellerName={post.user.name}
+        isPurchase={isPurchase}
+        onConfirm={handleConfirmPurchase}
+        onRateLater={handleRateLater}
       />
     </>
   );

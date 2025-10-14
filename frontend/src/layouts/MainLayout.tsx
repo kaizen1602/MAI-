@@ -17,7 +17,9 @@ export default function MainLayout({ children, onFilter }: MainLayoutProps) {
         backgroundImage: "url('/fondoMuro.jpg')",
       }}
     >
-      <Navbar />
+      <div className="sticky top-0 z-50">
+        <Navbar />
+      </div>
 
       <div className="flex flex-col lg:flex-row p-4 lg:p-6 gap-6 w-full">
         {/* Sidebar filtros */}
@@ -33,6 +35,13 @@ export default function MainLayout({ children, onFilter }: MainLayoutProps) {
           <AdBanner />
         </aside>
       </div>
+
+      {/* Mobile filters - the Filters component handles its own mobile rendering */}
+      {onFilter && (
+        <div className="lg:hidden fixed inset-0 pointer-events-none">
+          <Filters onFilter={onFilter} />
+        </div>
+      )}
     </div>
   );
 }
