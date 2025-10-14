@@ -485,3 +485,137 @@ Security and usage tips
 
 - Always call the protected routes with an `Authorization: Bearer {token}` header obtained from `POST /auth/login`.
 - The `StoreProductRequest` and `UpdateProductRequest` include human-friendly error messages; validation failures return a `422` with the `errors` object mapping fields to messages.
+
+## Posts
+
+### List Posts (with Cursor Pagination)
+
+- **GET** `/posts`
+  - **Description:** Retrieves a cursor-paginated list of posts. Supports filtering, searching and sorting. By default returns posts with status `ACTIVE`.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **Query Parameters:**
+    - `search` (string, optional, max:255): Search term to filter posts by title or description.
+    - `product_id` (integer, optional, exists:products,id): Filter posts by a specific product.
+    - `municipality_id` (integer, optional, exists:municipalities,id): Filter posts by a specific municipality.
+    - `post_type_id` (integer, optional, exists:post_types,id): Filter posts by type (e.g., sale or purchase).
+    - `user_id` (integer, optional, exists:users,id): Filter posts by the user who created them.
+    - `status` (string, optional, in:ACTIVE,CLOSED,EXPIRED, default: `ACTIVE`): Filter posts by status.
+    - `sort_by` (string, optional, in:created_at,price_per_kg,quantity_kg,title,updated_at, default:`created_at`): Field to sort by. Must remain the same across paginated requests.
+    - `sort_order` (string, optional, in:asc,desc, default:`desc`): Sort direction.
+    - `per_page` (integer, optional, min:1, max:100, default:15): Number of items per page.
+    - `cursor` (string, optional): Opaque cursor string used for cursor pagination. Use `pagination.next_cursor` / `pagination.prev_cursor` from the previous response.
+  - **Success Response (200):** A cursor-paginated response where the `data` array contains a list of `PostResource` objects.
+
+```json
+{
+  "success": true,
+  "message": "Publicaciones obtenidas exitosamente",
+  "data": [
+    {
+      "id": 1,
+      "title": "Vendo Café Orgánico",
+      "description": "Café de alta calidad de la región",
+      "quantity_kg": 100.0,
+      "price_per_kg": 8500.0,
+      "total_price": 850000.0,
+      "status": "ACTIVE",
+      "post_type": {
+        "id": 1,
+        "name": "Venta",
+        "description": "Publicación de venta de productos"
+      },
+      "product": {
+        "id": 5,
+        "name": "Café",
+        "description": "Café colombiano",
+        "image_url": "https://example.com/cafe.jpg",
+        "product_type": {
+          "id": 1,
+          "name": "Agrícola",
+          "description": "Tipo de producto"
+        }
+      },
+      "user": {
+        "id": 10,
+        "name": "Juan Pérez",
+        "email": "juan@example.com",
+        "phone_number": "+57 300 123 4567",
+        "address_details": "Calle 10 #20-30",
+        "is_verified": true
+      },
+      "municipality": {
+        "id": 120,
+        "name": "Cali"
+      },
+      "images": [
+        {
+          "id": 1,
+          "url": "https://example.com/image1.jpg"
+        }
+      ],
+      "favorites_count": 5,
+      "is_favorited": false,
+      "created_at": "2025-10-01T10:00:00.000000Z",
+      "updated_at": "2025-10-01T10:00:00.000000Z"
+    }
+  ],
+  "pagination": {
+    "per_page": 15,
+    "next_cursor": "eyJjcmVhdGVkX2F0IjoiMjAyNS0xMC0wMSAxMDowMDowMCIsImlkIjoxNSwiX3BvaW50c1RvTmV4dEl0ZW1zIjp0cnVlfQ",
+    "prev_cursor": null,
+    "next_page_url": "http://localhost/api/posts?cursor=eyJjcmVhdGVk...",
+    "prev_page_url": null,
+    "has_more_pages": true
+  },
+  "filters_applied": {
+    "search": null,
+    "product_id": null,
+    "municipality_id": null,
+    "post_type_id": null,
+    "user_id": null,
+    "status": "ACTIVE"
+  },
+  "sort_applied": {
+    "sort_by": "created_at",
+    "sort_order": "desc"
+  }
+}
+```
+
+- **Error Response (422):** If validation fails.
+
+```json
+{
+  "success": false,
+  "message": "The given data was invalid.",
+  "errors": {
+    "product_id": ["El producto seleccionado no existe."],
+    "sort_by": [
+      "El campo de ordenamiento no es válido. Valores permitidos: created_at, price_per_kg, quantity_kg, title, updated_at."
+    ]
+  }
+}
+```
+
+
+---
+
+### Notes on Cursor Pagination
+
+- **Cursor-based pagination** is used instead of traditional offset-based pagination for better performance and consistency, especially with large datasets or when data is frequently changing.
+- The `cursor` parameter is an opaque, encoded string that represents a specific position in the dataset. Clients should not attempt to modify or decode this value.
+- To navigate through pages:
+  1. Make an initial request without a `cursor` parameter to get the first page.
+  2. Use the `pagination.next_cursor` value from the response to fetch the next page.
+  3. Use the `pagination.prev_cursor` value to navigate back to the previous page.
+  4. Check `pagination.has_more_pages` to determine if additional pages are available.
+- Unlike offset pagination, cursor pagination does not provide a total count or specific page numbers, but it ensures consistent results even when new records are added or removed between requests.
+- The `sort_by` field must always be consistent across paginated requests. Changing the sort order mid-pagination will result in inconsistent results.
+
+Notes / implementation details to keep in mind:
+
+- The endpoint is registered under the `auth:sanctum` middleware in `routes/api.php` — you must provide a valid bearer token.
+- `is_favorited` is evaluated only when an authenticated user is present; it checks whether the current user has favorited the post and returns a boolean.
+- `favorites_count` is returned when the `favoritedBy` relation is loaded; otherwise the resource returns `0` by default.
+- The `images` returned by the resource include `id` and `url` (the resource maps the image model to `url`).
+- The response `pagination` object follows the shape produced by the API trait's `cursorPaginatedResponse`: `per_page`, `next_cursor`, `prev_cursor`, `next_page_url`, `prev_page_url`, `has_more_pages`.
