@@ -22,7 +22,7 @@ All API responses follow a consistent structure.
 
 ### Paginated Response
 
-```json
+``json
 {
     "success": true,
     "message": "Descriptive message of the result.",
@@ -1086,3 +1086,277 @@ Notes / implementation details to keep in mind:
     - Only the owner of the post can delete its images.
     - The image is deleted from both the database and storage.
     - Once deleted, an image cannot be recovered.
+
+## Price References
+
+### List Price References
+
+- **GET** `/price-references`
+  - **Description:** Retrieves a list of price references. Supports filtering by product, municipality, and date range.
+  - **Access:** Public
+  - **Query Parameters:**
+    - `product_id` (integer, optional, exists:products,id): Filter price references by a specific product.
+    - `municipality_id` (integer, optional, exists:municipalities,id): Filter price references by a specific municipality.
+    - `start_date` (date, optional): Filter price references from this date onwards (format: YYYY-MM-DD).
+    - `end_date` (date, optional): Filter price references up to this date (format: YYYY-MM-DD).
+    - `sort_by` (string, optional, in:date,price_per_kg,created_at, default:`date`): Field to sort by.
+    - `sort_order` (string, optional, in:asc,desc, default:`desc`): Sort direction.
+
+  - **Success Response (200):** Returns an array of price reference objects.
+    ```json
+    {
+      "success": true,
+      "message": "Referencias de precios obtenidas exitosamente",
+      "data": [
+        {
+          "id": 1,
+          "price_per_kg": 2500.00,
+          "date": "2025-10-01",
+          "source": "Mercado Central",
+          "product_id": 5,
+          "municipality_id": 120,
+          "created_at": "2025-10-01T10:00:00.000000Z",
+          "updated_at": "2025-10-01T10:00:00.000000Z",
+          "product": {
+            "id": 5,
+            "name": "Café",
+            "description": "Café colombiano"
+          },
+          "municipality": {
+            "id": 120,
+            "name": "Cali"
+          }
+        }
+      ],
+      "filters_applied": {
+        "product_id": null,
+        "municipality_id": null,
+        "start_date": null,
+        "end_date": null
+      },
+      "sort_applied": {
+        "sort_by": "date",
+        "sort_order": "desc"
+      }
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "product_id": ["El producto seleccionado no existe."],
+        "start_date": ["La fecha de inicio debe ser una fecha válida."],
+        "sort_by": ["El campo de ordenamiento no es válido."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - This endpoint is public and doesn't require authentication.
+    - Results are ordered by date descending by default.
+    - All filters are optional and can be combined.
+    - Date range filters can be used independently (only start_date, only end_date, or both).
+    - The response includes `filters_applied` and `sort_applied` objects showing which filters and sorting options were applied.
+
+---
+
+### Get Price Reference Details
+
+- **GET** `/price-references/{priceReference}`
+  - **Description:** Retrieves the details of a specific price reference by its ID.
+  - **Access:** Public
+  - **URL Parameters:**
+    - `priceReference` (integer, required): The ID of the price reference.
+  - **Success Response (200):** Returns a single price reference object.
+    ```json
+    {
+      "success": true,
+      "message": "Detalles de la referencia de precio obtenidos exitosamente",
+      "data": {
+        "id": 1,
+        "price_per_kg": 2500.00,
+        "date": "2025-10-01",
+        "source": "Mercado Central",
+        "product_id": 5,
+        "municipality_id": 120,
+        "created_at": "2025-10-01T10:00:00.000000Z",
+        "updated_at": "2025-10-01T10:00:00.000000Z",
+        "product": {
+          "id": 5,
+          "name": "Café",
+          "description": "Café colombiano"
+        },
+        "municipality": {
+          "id": 120,
+          "name": "Cali"
+        }
+      }
+    }
+    ```
+
+  - **Error Response (404):** If the price reference doesn't exist.
+    ```json
+    {
+      "success": false,
+      "message": "Recurso no encontrado"
+    }
+    ```
+
+---
+
+### Admin-only: Create Price Reference
+
+- **POST** `/price-references`
+  - **Description:** Create a new price reference. Restricted to admin users via the `admin` middleware.
+  - **Access:** Protected — requires `auth:sanctum` and `admin` middleware (user must have `is_admin = true`).
+  - **Request Body (application/json):**
+    - `price_per_kg` (number, required, min: 0.01, max: 999999.99): Price per kilogram.
+    - `date` (date, required): Date of the price reference (format: YYYY-MM-DD).
+    - `source` (string, optional, max: 200): Source of the price information.
+    - `product_id` (integer, required, exists:products,id): Product ID.
+    - `municipality_id` (integer, required, exists:municipalities,id).
+
+  - **Success Response (201):** Returns the created price reference object.
+    ```json
+    {
+      "success": true,
+      "message": "Referencia de precio creada exitosamente",
+      "data": {
+        "id": 2,
+        "price_per_kg": 3200.00,
+        "date": "2025-10-02",
+        "source": "Mercado de Agricultores",
+        "product_id": 5,
+        "municipality_id": 120,
+        "created_at": "2025-10-02T15:30:00.000000Z",
+        "updated_at": "2025-10-02T15:30:00.000000Z",
+        "product": {
+          "id": 5,
+          "name": "Café"
+        },
+        "municipality": {
+          "id": 120,
+          "name": "Cali"
+        }
+      }
+    }
+    ```
+
+  - **Error Response (401):** If not authenticated.
+    ```json
+    {
+      "success": false,
+      "message": "No estás autenticado."
+    }
+    ```
+
+  - **Error Response (403):** If authenticated but not admin.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para realizar esta acción. Solo administradores."
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "price_per_kg": ["El precio debe ser mayor a 0."],
+        "date": ["La fecha es obligatoria."],
+        "product_id": ["El producto seleccionado no existe."],
+        "municipality_id": ["El municipio seleccionado no existe."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - Only admin users can create price references.
+    - All fields except `source` are required.
+    - The `date` field should represent when the price was observed, not when it was entered into the system.
+    - Once created, price references cannot be deleted, only updated.
+
+---
+
+### Admin-only: Update Price Reference
+
+- **PUT** `/price-references/{priceReference}` (or POST with `_method=PUT`)
+  - **Description:** Update an existing price reference. Restricted to admin users via the `admin` middleware.
+  - **Access:** Protected — requires `auth:sanctum` and `admin` middleware (user must have `is_admin = true`).
+  - **URL Parameters:**
+    - `priceReference` (integer, required): The ID of the price reference to update.
+  - **Request Body (application/json or multipart/form-data):**
+    - `price_per_kg` (number, optional, min: 0.01, max: 999999.99): Price per kilogram.
+    - `date` (date, optional): Date of the price reference (format: YYYY-MM-DD).
+    - `source` (string, optional, max: 200): Source of the price information.
+    - `product_id` (integer, optional, exists:products,id): Product ID.
+    - `municipality_id` (integer, optional, exists:municipalities,id).
+    - `_method` (string, optional): Set to "PUT" when using POST method to simulate PUT request (required for multipart/form-data).
+
+  - **Success Response (200):** Returns the updated price reference object.
+    ```json
+    {
+      "success": true,
+      "message": "Referencia de precio actualizada exitosamente",
+      "data": {
+        "id": 1,
+        "price_per_kg": 2800.00,
+        "date": "2025-10-05",
+        "source": "Mercado Central Actualizado",
+        "product_id": 5,
+        "municipality_id": 120,
+        "created_at": "2025-10-01T10:00:00.000000Z",
+        "updated_at": "2025-10-05T14:30:00.000000Z",
+        "product": {
+          "id": 5,
+          "name": "Café"
+        },
+        "municipality": {
+          "id": 120,
+          "name": "Cali"
+        }
+      }
+    }
+    ```
+
+  - **Error Response (401):** If not authenticated.
+    ```json
+    {
+      "success": false,
+      "message": "No estás autenticado."
+    }
+    ```
+
+  - **Error Response (403):** If authenticated but not admin.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para realizar esta acción. Solo administradores."
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "price_per_kg": ["El precio debe ser mayor a 0."],
+        "date": ["La fecha debe ser una fecha válida."],
+        "product_id": ["El producto seleccionado no existe."],
+        "municipality_id": ["El municipio seleccionado no existe."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - Only admin users can update price references.
+    - All fields are optional; only provided fields will be updated.
+    - When sending form data (multipart/form-data), you must use the POST method with `_method=PUT` parameter to simulate a PUT request due to Laravel's handling of form data with PUT requests.
+    - When sending JSON data, you can use the standard PUT method.
+    - Price references cannot be deleted once created. If a price reference is no longer valid, it should be updated with appropriate information.

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\PriceReferenceController;
 
 // ==========================================
 // RUTAS PÚBLICAS
@@ -60,5 +61,17 @@ Route::middleware('auth:sanctum')->group(function () {
         // Post Images
         Route::post('/{post}/images', [PostController::class, 'addImage']);
         Route::delete('/images/{image}', [PostController::class, 'deleteImage']);
+    });
+
+    // Price References
+    Route::prefix('price-references')->group(function () {
+        Route::get('/', [PriceReferenceController::class, 'index']);
+        Route::get('/{priceReference}', [PriceReferenceController::class, 'show']);
+        
+        // ✅ Rutas protegidas (solo administradores)
+        Route::middleware('admin')->group(function () {
+            Route::post('/', [PriceReferenceController::class, 'store']);
+            Route::put('/{priceReference}', [PriceReferenceController::class, 'update']);
+        });
     });
 });
