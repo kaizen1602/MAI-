@@ -44,7 +44,7 @@ All API responses follow a consistent structure.
 
 ### Error Response
 
-```json
+``json
 {
     "success": false,
     "message": "Error description.",
@@ -619,3 +619,470 @@ Notes / implementation details to keep in mind:
 - `favorites_count` is returned when the `favoritedBy` relation is loaded; otherwise the resource returns `0` by default.
 - The `images` returned by the resource include `id` and `url` (the resource maps the image model to `url`).
 - The response `pagination` object follows the shape produced by the API trait's `cursorPaginatedResponse`: `per_page`, `next_cursor`, `prev_cursor`, `next_page_url`, `prev_page_url`, `has_more_pages`.
+
+
+### Create Post (with Images)
+
+- **POST** `/posts`
+  - **Description:** Creates a new post (publication) with optional image upload. Only authenticated users can create posts.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **Request Body (multipart/form-data):**
+    - `title` (string, required, max: 100): Title of the post.
+    - `description` (string, optional, max: 400): Description of the post.
+    - `quantity_kg` (number, required, min: 0.01, max: 999999.99): Quantity in kilograms.
+    - `price_per_kg` (number, required, min: 0.01, max: 999999.99): Price per kilogram.
+    - `post_type_id` (integer, required, exists:post_types,id): Type of post (sale/purchase).
+    - `product_id` (integer, required, exists:products,id): Product ID.
+    - `municipality_id` (integer, required, exists:municipalities,id): Municipality ID.
+    - `images` (array of files, optional, max: 5): Up to 5 images. Each must be jpeg, png, jpg, or webp, max 5MB each.
+
+  - **Validation Rules:**
+    - All fields are validated as described above. See error messages for details.
+    - Images must be sent as an array: `images[]`.
+
+  - **Example Request (multipart/form-data):**
+    ```http
+    POST /api/posts
+    Authorization: Bearer {token}
+    Content-Type: multipart/form-data
+
+    title: "Vendo Café Orgánico"
+    description: "Café de alta calidad de la región"
+    quantity_kg: 100.0
+    price_per_kg: 8500.0
+    post_type_id: 1
+    product_id: 5
+    municipality_id: 120
+    images[]: [file1.jpg, file2.png]
+    ```
+
+  - **Success Response (201):** Returns the created post as a `PostResource`.
+    ```json
+    {
+      "success": true,
+      "message": "Publicación creada exitosamente",
+      "data": {
+        "id": 1,
+        "title": "Vendo Café Orgánico",
+        "description": "Café de alta calidad de la región",
+        "quantity_kg": 100.0,
+        "price_per_kg": 8500.0,
+        "total_price": 850000.0,
+        "status": "ACTIVE",
+        "post_type": {
+          "id": 1,
+          "name": "Venta",
+          "description": "Publicación de venta de productos"
+        },
+        "product": {
+          "id": 5,
+          "name": "Café",
+          "description": "Café colombiano",
+          "image_url": "https://example.com/cafe.jpg",
+          "product_type": {
+            "id": 1,
+            "name": "Agrícola",
+            "description": "Tipo de producto"
+          }
+        },
+        "user": {
+          "id": 10,
+          "name": "Juan Pérez",
+          "email": "juan@example.com",
+          "phone_number": "+57 300 123 4567",
+          "address_details": "Calle 10 #20-30",
+          "is_verified": true
+        },
+        "municipality": {
+          "id": 120,
+          "name": "Cali"
+        },
+        "images": [
+          {
+            "id": 1,
+            "url": "https://example.com/image1.jpg"
+          },
+          {
+            "id": 2,
+            "url": "https://example.com/image2.jpg"
+          }
+        ],
+        "favorites_count": 0,
+        "is_favorited": false,
+        "created_at": "2025-10-01T10:00:00.000000Z",
+        "updated_at": "2025-10-01T10:00:00.000000Z"
+      }
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "title": ["El título de la publicación es obligatorio."],
+        "images": ["No puedes subir más de 5 imágenes."],
+        "images.0": ["Cada archivo debe ser una imagen."],
+        "images.1": ["Las imágenes deben ser de tipo: jpeg, png, jpg o webp."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - The post is always created with status `ACTIVE`.
+    - Images are uploaded and stored; their URLs are returned in the response.
+    - If an error occurs after uploading images, the API will attempt to delete any uploaded images.
+    - The authenticated user is set as the post owner (`user_id`).
+
+
+### Get Post Details
+
+- **GET** `/posts/{post}`
+  - **Description:** Retrieves the details of a specific post by its ID.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `post` (integer, required): The ID of the post.
+  - **Success Response (200):** Returns a single post object as a `PostResource`.
+    ```json
+    {
+      "success": true,
+      "message": "Detalles de la publicación obtenidos exitosamente",
+      "data": {
+        "id": 1,
+        "title": "Vendo Café Orgánico",
+        "description": "Café de alta calidad de la región",
+        "quantity_kg": 100.0,
+        "price_per_kg": 8500.0,
+        "total_price": 850000.0,
+        "status": "ACTIVE",
+        "post_type": {
+          "id": 1,
+          "name": "Venta",
+          "description": "Publicación de venta de productos"
+        },
+        "product": {
+          "id": 5,
+          "name": "Café",
+          "description": "Café colombiano",
+          "image_url": "https://example.com/cafe.jpg",
+          "product_type": {
+            "id": 1,
+            "name": "Agrícola",
+            "description": "Tipo de producto"
+          }
+        },
+        "user": {
+          "id": 10,
+          "name": "Juan Pérez",
+          "email": "juan@example.com",
+          "phone_number": "+57 300 123 4567",
+          "address_details": "Calle 10 #20-30",
+          "is_verified": true
+        },
+        "municipality": {
+          "id": 120,
+          "name": "Cali"
+        },
+        "images": [
+          {
+            "id": 1,
+            "url": "https://example.com/image1.jpg"
+          }
+        ],
+        "favorites_count": 5,
+        "is_favorited": false,
+        "created_at": "2025-10-01T10:00:00.000000Z",
+        "updated_at": "2025-10-01T10:00:00.000000Z"
+      }
+    }
+    ```
+
+---
+
+### Update Post
+
+- **PUT** `/posts/{post}` (or POST with `_method=PUT` for form data)
+  - **Description:** Updates an existing post. Only the owner of the post can update it.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `post` (integer, required): The ID of the post to update.
+  - **Request Body (multipart/form-data or application/json):**
+    - `title` (string, optional, max: 100): Title of the post.
+    - `description` (string, optional, max: 400): Description of the post.
+    - `quantity_kg` (number, optional, min: 0.01, max: 999999.99): Quantity in kilograms.
+    - `price_per_kg` (number, optional, min: 0.01, max: 999999.99): Price per kilogram.
+    - `post_type_id` (integer, optional, exists:post_types,id): Type of post (sale/purchase).
+    - `product_id` (integer, optional, exists:products,id): Product ID.
+    - `municipality_id` (integer, optional, exists:municipalities,id): Municipality ID.
+    - `images` (array of files, optional, max: 5): Additional images to add to the post. Each must be jpeg, png, jpg, or webp, max 5MB each.
+    - `_method` (string, optional): Set to "PUT" when using POST method to simulate PUT request (required for multipart/form-data).
+
+  - **Validation Rules:**
+    - Only the owner of the post can update it.
+    - All fields are optional but validated when present.
+    - Images must be sent as an array: `images[]`.
+
+  - **Example Request (multipart/form-data):**
+    ```http
+    POST /api/posts/1
+    Authorization: Bearer {token}
+    Content-Type: multipart/form-data
+
+    _method: PUT
+    title: "Vendo Café Orgánico Premium"
+    description: "Café de alta calidad de la región, cosecha especial"
+    quantity_kg: 150.0
+    price_per_kg: 9000.0
+    images[]: [new_image.jpg]
+    ```
+
+  - **Success Response (200):** Returns the updated post as a `PostResource`.
+    ```json
+    {
+      "success": true,
+      "message": "Publicación actualizada exitosamente",
+      "data": {
+        "id": 1,
+        "title": "Vendo Café Orgánico Premium",
+        "description": "Café de alta calidad de la región, cosecha especial",
+        "quantity_kg": 150.0,
+        "price_per_kg": 9000.0,
+        "total_price": 1350000.0,
+        "status": "ACTIVE",
+        "post_type": {
+          "id": 1,
+          "name": "Venta",
+          "description": "Publicación de venta de productos"
+        },
+        "product": {
+          "id": 5,
+          "name": "Café",
+          "description": "Café colombiano",
+          "image_url": "https://example.com/cafe.jpg",
+          "product_type": {
+            "id": 1,
+            "name": "Agrícola",
+            "description": "Tipo de producto"
+          }
+        },
+        "user": {
+          "id": 10,
+          "name": "Juan Pérez",
+          "email": "juan@example.com",
+          "phone_number": "+57 300 123 4567",
+          "address_details": "Calle 10 #20-30",
+          "is_verified": true
+        },
+        "municipality": {
+          "id": 120,
+          "name": "Cali"
+        },
+        "images": [
+          {
+            "id": 1,
+            "url": "https://example.com/image1.jpg"
+          },
+          {
+            "id": 3,
+            "url": "https://example.com/new_image.jpg"
+          }
+        ],
+        "favorites_count": 5,
+        "is_favorited": false,
+        "created_at": "2025-10-01T10:00:00.000000Z",
+        "updated_at": "2025-10-02T15:30:00.000000Z"
+      }
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the owner of the post.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para editar esta publicación."
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "title": ["El título no debe exceder los 100 caracteres."],
+        "images": ["No puedes subir más de 5 imágenes."],
+        "images.0": ["Cada archivo debe ser una imagen."],
+        "product_id": ["El producto seleccionado no existe."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - Only the owner of the post can update it.
+    - All fields are optional; only provided fields will be updated.
+    - New images can be added but existing images cannot be removed through this endpoint.
+    - The `updated_at` timestamp is automatically updated.
+    - When sending form data (multipart/form-data), you must use the POST method with `_method=PUT` parameter to simulate a PUT request due to Laravel's handling of form data with PUT requests.
+    - When sending JSON data, you can use the standard PUT method.
+
+---
+
+### Delete Post
+
+- **DELETE** `/posts/{post}`
+  - **Description:** Deletes a post and all associated images. Only the owner of the post can delete it.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `post` (integer, required): The ID of the post to delete.
+  - **Success Response (200):**
+    ```json
+    {
+      "success": true,
+      "message": "Publicación eliminada exitosamente",
+      "data": null
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the owner of the post.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para eliminar esta publicación."
+    }
+    ```
+
+  - **Error Response (500):** If there's an error during deletion.
+    ```json
+    {
+      "success": false,
+      "message": "Error al eliminar la publicación. Por favor, intenta nuevamente."
+    }
+    ```
+
+  - **Notes:**
+    - Only the owner of the post can delete it.
+    - All associated images are deleted from both the database and storage.
+    - This operation is performed within a database transaction to ensure consistency.
+    - Once deleted, a post cannot be recovered.
+
+---
+
+### Add Image to Post
+
+- **POST** `/posts/{post}/images`
+  - **Description:** Adds an image to an existing post. Only the owner of the post can add images.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `post` (integer, required): The ID of the post to which the image will be added.
+  - **Request Body (multipart/form-data):**
+    - `image` (file, required): The image file to upload. Must be jpeg, png, jpg, or webp, max 5MB.
+
+  - **Validation Rules:**
+    - Only the owner of the post can add images.
+    - Posts can have a maximum of 5 images.
+    - Image must be in jpeg, png, jpg, or webp format.
+    - Image size must not exceed 5MB.
+
+  - **Example Request (multipart/form-data):**
+    ```http
+    POST /api/posts/1/images
+    Authorization: Bearer {token}
+    Content-Type: multipart/form-data
+
+    image: [image_file.jpg]
+    ```
+
+  - **Success Response (201):** Returns the created image object.
+    ```json
+    {
+      "success": true,
+      "message": "Imagen añadida exitosamente",
+      "data": {
+        "id": 5,
+        "post_id": 1,
+        "image_url": "http://localhost/storage/posts/1/1700000000_a1b2c3d4e5.jpg",
+        "created_at": "2025-10-02T15:30:00.000000Z",
+        "updated_at": "2025-10-02T15:30:00.000000Z"
+      }
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the owner of the post.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para añadir imágenes a esta publicación."
+    }
+    ```
+
+  - **Error Response (422):** If validation fails or the post already has 5 images.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "image": ["La imagen es obligatoria."]
+      }
+    }
+    ```
+    or
+    ```json
+    {
+      "success": false,
+      "message": "No puedes añadir más de 5 imágenes a una publicación."
+    }
+    ```
+
+  - **Error Response (500):** If there's an error during the upload process.
+    ```json
+    {
+      "success": false,
+      "message": "Error al añadir la imagen. Por favor, intenta nuevamente."
+    }
+    ```
+
+  - **Notes:**
+    - Only the owner of the post can add images.
+    - Posts can have a maximum of 5 images.
+    - Images are stored in the `storage/app/public/posts/{post_id}` directory.
+    - Image filenames are automatically generated to prevent conflicts.
+
+---
+
+### Delete Post Image
+
+- **DELETE** `/posts/images/{image}`
+  - **Description:** Deletes an image from a post. Only the owner of the post can delete its images.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `image` (integer, required): The ID of the image to delete.
+  - **Success Response (200):**
+    ```json
+    {
+      "success": true,
+      "message": "Imagen eliminada exitosamente",
+      "data": null
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the owner of the post to which the image belongs.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para eliminar esta imagen."
+    }
+    ```
+
+  - **Error Response (500):** If there's an error during deletion.
+    ```json
+    {
+      "success": false,
+      "message": "Error al eliminar la imagen. Por favor, intenta nuevamente."
+    }
+    ```
+
+  - **Notes:**
+    - Only the owner of the post can delete its images.
+    - The image is deleted from both the database and storage.
+    - Once deleted, an image cannot be recovered.

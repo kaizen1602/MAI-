@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\Post\IndexPostRequest;
 use App\Models\Post;
+use App\Models\PostImage;
 use App\Services\ImageService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -13,7 +14,8 @@ use Illuminate\Support\Facades\Log;
 use App\Http\Resources\Post\PostResource;
 use App\Traits\ApiResponse;
 use App\Http\Requests\Post\StorePostRequest;
-
+use App\Http\Requests\Post\UpdatePostRequest;
+use App\Http\Requests\Post\AddImageRequest;
 
 class PostController extends Controller
 {
@@ -122,17 +124,17 @@ class PostController extends Controller
 
             // 2. Procesar y subir imágenes si existen
             $imageFiles = $request->getImages();
-            
+
             if ($imageFiles && count($imageFiles) > 0) {
-               
-                
+
+
                 foreach ($imageFiles as $index => $imageFile) {
                     // Subir imagen al storage
                     $imageUrl = $this->imageService->uploadImage(
                         $imageFile,
                         'posts/' . $post->id // Directorio específico para este post
                     );
-                    
+
                     // Crear registro en la base de datos
                     $post->images()->create([
                         'image_url' => $imageUrl
@@ -157,7 +159,6 @@ class PostController extends Controller
                 'Publicación creada exitosamente',
                 201
             );
-
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -178,24 +179,176 @@ class PostController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Post $post)
     {
-        //
+        $post->load([
+            'postType:id,type_name,type_desc',
+            'product:id,name,description,image_url,product_type_id',
+            'product.productType:id,type_name',
+            'user:id,name,email,phone_number,address_details,is_verified',
+            'municipality:id,name',
+            'images:id,post_id,image_url',
+        ]);
+
+        return $this->successResponse(
+            new PostResource($post),
+            'Detalles de la publicación obtenidos exitosamente'
+        );
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdatePostRequest $request, Post $post)
     {
-        //
+        // Solo el dueño puede editar
+        if ($request->user()->id !== $post->user_id) {
+            return $this->errorResponse('No tienes permisos para editar esta publicación.', 403);
+        }
+
+        $post->update($request->getPostData());
+
+        
+
+        // Procesar imágenes si se envían
+        if ($imageFiles = $request->getImages()) {
+            foreach ($imageFiles as $imageFile) {
+                $imageUrl = $this->imageService->uploadImage(
+                    $imageFile,
+                    'posts/' . $post->id
+                );
+                $post->images()->create([
+                    'image_url' => $imageUrl
+                ]);
+            }
+        }
+
+        $post->load([
+            'postType:id,type_name,type_desc',
+            'product:id,name,description,image_url,product_type_id',
+            'product.productType:id,type_name',
+            'user:id,name,email,phone_number,address_details,is_verified',
+            'municipality:id,name',
+            'images:id,post_id,image_url',
+        ]);
+
+        return $this->successResponse(
+            new PostResource($post),
+            'Publicación actualizada exitosamente 444'
+        );
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Request $request, Post $post)
     {
-        //
+        // Verificar que el usuario autenticado sea el dueño del post
+        if ($request->user()->id !== $post->user_id) {
+            return $this->errorResponse('No tienes permisos para eliminar esta publicación.', 403);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Obtener las URLs de las imágenes antes de eliminarlas
+            $imageUrls = $post->images()->pluck('image_url')->toArray();
+
+            // Eliminar las imágenes del storage
+            if (!empty($imageUrls)) {
+                $this->imageService->deleteMultipleImages($imageUrls);
+            }
+
+            // Eliminar registros de imágenes de la base de datos
+            $post->images()->delete();
+
+            // Eliminar el post
+            $post->delete();
+
+            DB::commit();
+
+            return $this->successResponse(
+                null,
+                'Publicación eliminada exitosamente',
+                200
+            );
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return $this->errorResponse(
+                'Error al eliminar la publicación. Por favor, intenta nuevamente.',
+                500
+            );
+        }
+    }
+
+    /**
+     * Add an image to the specified post.
+     */
+    public function addImage(AddImageRequest $request, Post $post)
+    {
+        // Verificar que el usuario autenticado sea el dueño del post
+        if ($request->user()->id !== $post->user_id) {
+            return $this->errorResponse('No tienes permisos para añadir imágenes a esta publicación.', 403);
+        }
+
+        try {
+            // Verificar que el post no tenga ya 5 imágenes
+            if ($post->images()->count() >= 5) {
+                return $this->errorResponse('No puedes añadir más de 5 imágenes a una publicación.', 422);
+            }
+
+            // Subir imagen al storage
+            $imageUrl = $this->imageService->uploadImage(
+                $request->getImage(),
+                'posts/' . $post->id
+            );
+
+            // Crear registro en la base de datos
+            $postImage = $post->images()->create([
+                'image_url' => $imageUrl
+            ]);
+
+            return $this->successResponse(
+                $postImage,
+                'Imagen añadida exitosamente',
+                201
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Error al añadir la imagen. Por favor, intenta nuevamente.',
+                500
+            );
+        }
+    }
+
+    /**
+     * Remove the specified image from storage.
+     */
+    public function deleteImage(Request $request, PostImage $image)
+    {
+        // Verificar que el usuario autenticado sea el dueño del post al que pertenece la imagen
+        if ($request->user()->id !== $image->post->user_id) {
+            return $this->errorResponse('No tienes permisos para eliminar esta imagen.', 403);
+        }
+
+        try {
+            // Eliminar la imagen del storage
+            $this->imageService->deleteImage($image->image_url);
+
+            // Eliminar el registro de la base de datos
+            $image->delete();
+
+            return $this->successResponse(
+                null,
+                'Imagen eliminada exitosamente',
+                200
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Error al eliminar la imagen. Por favor, intenta nuevamente.',
+                500
+            );
+        }
     }
 }
