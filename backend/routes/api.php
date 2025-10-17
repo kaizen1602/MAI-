@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PriceReferenceController;
+use App\Http\Controllers\Api\PriceAlertController;
 
 // ==========================================
 // RUTAS PÚBLICAS
@@ -73,5 +74,14 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/', [PriceReferenceController::class, 'store']);
             Route::put('/{priceReference}', [PriceReferenceController::class, 'update']);
         });
+    });
+
+    // Price Alerts
+    Route::prefix('my-alerts')->group(function () {
+        Route::get('/', [PriceAlertController::class, 'index']);
+        Route::post('/', [PriceAlertController::class, 'store']);
+        Route::get('/{priceAlert}', [PriceAlertController::class, 'show']);
+        Route::put('/{priceAlert}', [PriceAlertController::class, 'update']);
+        Route::delete('/{priceAlert}', [PriceAlertController::class, 'destroy']);
     });
 });

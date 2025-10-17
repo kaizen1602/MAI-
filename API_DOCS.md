@@ -1360,3 +1360,303 @@ Notes / implementation details to keep in mind:
     - When sending form data (multipart/form-data), you must use the POST method with `_method=PUT` parameter to simulate a PUT request due to Laravel's handling of form data with PUT requests.
     - When sending JSON data, you can use the standard PUT method.
     - Price references cannot be deleted once created. If a price reference is no longer valid, it should be updated with appropriate information.
+
+## Price Alerts
+
+### List My Price Alerts
+
+- **GET** `/my-alerts`
+  - **Description:** Retrieves a list of price alerts created by the authenticated user. Supports filtering and sorting.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **Query Parameters:**
+    - `product_id` (integer, optional, exists:products,id): Filter price alerts by a specific product.
+    - `municipality_id` (integer, optional, exists:municipalities,id): Filter price alerts by a specific municipality.
+    - `status` (string, optional, in:ACTIVE,INACTIVE): Filter price alerts by status.
+    - `sort_by` (string, optional, in:condition,threshold_price,status,created_at, default:`created_at`): Field to sort by.
+    - `sort_order` (string, optional, in:asc,desc, default:`desc`): Sort direction.
+
+  - **Success Response (200):** Returns an array of price alert objects.
+    ```json
+    {
+      "success": true,
+      "message": "Alertas de precios obtenidas exitosamente",
+      "data": [
+        {
+          "id": 1,
+          "condition": "ABOVE",
+          "threshold_price": 2500.00,
+          "status": "ACTIVE",
+          "user_id": 10,
+          "product_id": 5,
+          "municipality_id": 120,
+          "created_at": "2025-10-01T10:00:00.000000Z",
+          "updated_at": "2025-10-01T10:00:00.000000Z",
+          "product": {
+            "id": 5,
+            "name": "Café",
+            "description": "Café colombiano"
+          },
+          "municipality": {
+            "id": 120,
+            "name": "Cali"
+          }
+        }
+      ],
+      "filters_applied": {
+        "product_id": null,
+        "municipality_id": null,
+        "status": null
+      },
+      "sort_applied": {
+        "sort_by": "created_at",
+        "sort_order": "desc"
+      }
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "product_id": ["El producto seleccionado no existe."],
+        "status": ["El estado debe ser: ACTIVE o INACTIVE."],
+        "sort_by": ["El campo de ordenamiento no es válido. Valores permitidos: condition, threshold_price, status, created_at."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - This endpoint only returns price alerts created by the authenticated user.
+    - Results are ordered by creation date descending by default.
+    - All filters are optional and can be combined.
+    - The response includes `filters_applied` and `sort_applied` objects showing which filters and sorting options were applied.
+
+---
+
+### Create Price Alert
+
+- **POST** `/my-alerts`
+  - **Description:** Create a new price alert for the authenticated user.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **Request Body (application/json):**
+    - `condition` (string, required, in:ABOVE,BELOW): Condition for the alert (ABOVE or BELOW the threshold price).
+    - `threshold_price` (number, required, min: 0.01, max: 999999.99): Threshold price for the alert.
+    - `product_id` (integer, required, exists:products,id): Product ID.
+    - `municipality_id` (integer, required, exists:municipalities,id).
+
+  - **Success Response (201):** Returns the created price alert object.
+    ```json
+    {
+      "success": true,
+      "message": "Alerta de precio creada exitosamente",
+      "data": {
+        "id": 2,
+        "condition": "BELOW",
+        "threshold_price": 3200.00,
+        "status": "INACTIVE",
+        "user_id": 10,
+        "product_id": 5,
+        "municipality_id": 120,
+        "created_at": "2025-10-02T15:30:00.000000Z",
+        "updated_at": "2025-10-02T15:30:00.000000Z",
+        "product": {
+          "id": 5,
+          "name": "Café"
+        },
+        "municipality": {
+          "id": 120,
+          "name": "Cali"
+        }
+      }
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "condition": ["La condición debe ser ABOVE o BELOW."],
+        "threshold_price": ["El precio límite debe ser mayor a 0."],
+        "product_id": ["El producto seleccionado no existe."],
+        "municipality_id": ["El municipio seleccionado no existe."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - Only authenticated users can create price alerts.
+    - The `user_id` is automatically set to the authenticated user's ID.
+    - New price alerts are created with `INACTIVE` status by default.
+    - All fields except `status` are required.
+
+---
+
+### Get Price Alert Details
+
+- **GET** `/my-alerts/{priceAlert}`
+  - **Description:** Retrieves the details of a specific price alert by its ID.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `priceAlert` (integer, required): The ID of the price alert.
+  - **Success Response (200):** Returns a single price alert object.
+    ```json
+    {
+      "success": true,
+      "message": "Detalles de la alerta de precio obtenidos exitosamente",
+      "data": {
+        "id": 1,
+        "condition": "ABOVE",
+        "threshold_price": 2500.00,
+        "status": "ACTIVE",
+        "user_id": 10,
+        "product_id": 5,
+        "municipality_id": 120,
+        "created_at": "2025-10-01T10:00:00.000000Z",
+        "updated_at": "2025-10-01T10:00:00.000000Z",
+        "product": {
+          "id": 5,
+          "name": "Café",
+          "description": "Café colombiano"
+        },
+        "municipality": {
+          "id": 120,
+          "name": "Cali"
+        }
+      }
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the owner of the price alert.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para ver esta alerta de precio."
+    }
+    ```
+
+  - **Error Response (404):** If the price alert doesn't exist.
+    ```json
+    {
+      "success": false,
+      "message": "Recurso no encontrado"
+    }
+    ```
+
+  - **Notes:**
+    - Only the owner of the price alert can view its details.
+    - The endpoint uses Laravel's route model binding to automatically fetch the PriceAlert instance.
+
+---
+
+### Update Price Alert
+
+- **PUT** `/my-alerts/{priceAlert}` (or POST with `_method=PUT`)
+  - **Description:** Update an existing price alert. Only the owner can update their alerts.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `priceAlert` (integer, required): The ID of the price alert to update.
+  - **Request Body (application/json or multipart/form-data):**
+    - `condition` (string, optional, in:ABOVE,BELOW): Condition for the alert (ABOVE or BELOW the threshold price).
+    - `threshold_price` (number, optional, min: 0.01, max: 999999.99): Threshold price for the alert.
+    - `status` (string, optional, in:ACTIVE,INACTIVE): Status of the alert.
+    - `product_id` (integer, optional, exists:products,id): Product ID.
+    - `municipality_id` (integer, optional, exists:municipalities,id).
+    - `_method` (string, optional): Set to "PUT" when using POST method to simulate PUT request (required for multipart/form-data).
+
+  - **Success Response (200):** Returns the updated price alert object.
+    ```json
+    {
+      "success": true,
+      "message": "Alerta de precio actualizada exitosamente",
+      "data": {
+        "id": 1,
+        "condition": "BELOW",
+        "threshold_price": 2800.00,
+        "status": "ACTIVE",
+        "user_id": 10,
+        "product_id": 5,
+        "municipality_id": 120,
+        "created_at": "2025-10-01T10:00:00.000000Z",
+        "updated_at": "2025-10-05T14:30:00.000000Z",
+        "product": {
+          "id": 5,
+          "name": "Café"
+        },
+        "municipality": {
+          "id": 120,
+          "name": "Cali"
+        }
+      }
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the owner of the price alert.
+    ```json
+    {
+      "success": false,
+      "message": "This action is unauthorized."
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "condition": ["La condición debe ser ABOVE o BELOW."],
+        "threshold_price": ["El precio límite debe ser mayor a 0."],
+        "status": ["El estado debe ser ACTIVE o INACTIVE."],
+        "product_id": ["El producto seleccionado no existe."],
+        "municipality_id": ["El municipio seleccionado no existe."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - Only the owner of the price alert can update it.
+    - All fields are optional; only provided fields will be updated.
+    - When sending form data (multipart/form-data), you must use the POST method with `_method=PUT` parameter to simulate a PUT request due to Laravel's handling of form data with PUT requests.
+    - When sending JSON data, you can use the standard PUT method.
+
+---
+
+### Delete Price Alert
+
+- **DELETE** `/my-alerts/{priceAlert}`
+  - **Description:** Deletes a price alert. Only the owner can delete their alerts.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `priceAlert` (integer, required): The ID of the price alert to delete.
+  - **Success Response (200):**
+    ```json
+    {
+      "success": true,
+      "message": "Alerta de precio eliminada exitosamente",
+      "data": null
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the owner of the price alert.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para eliminar esta alerta de precio."
+    }
+    ```
+
+  - **Error Response (404):** If the price alert doesn't exist.
+    ```json
+    {
+      "success": false,
+      "message": "Recurso no encontrado"
+    }
+    ```
+
+  - **Notes:**
+    - Only the owner of the price alert can delete it.
+    - Once deleted, a price alert cannot be recovered.
