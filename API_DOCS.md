@@ -921,6 +921,365 @@ Notes / implementation details to keep in mind:
   - **Notes:**
     - Only the owner of the post can update it.
     - All fields are optional; only provided fields will be updated.
+
+---
+
+### Delete Post
+
+- **DELETE** `/posts/{post}`
+  - **Description:** Deletes an existing post. Only the owner of the post can delete it.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `post` (integer, required): The ID of the post to delete.
+  - **Success Response (200):**
+    ```json
+    {
+      "success": true,
+      "message": "Publicación eliminada exitosamente",
+      "data": null
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the owner of the post.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para eliminar esta publicación."
+    }
+    ```
+
+  - **Notes:**
+    - Only the owner of the post can delete it.
+    - Once deleted, a post cannot be recovered.
+
+## Reviews
+
+### List Reviews
+
+- **GET** `/posts/{post}/reviews`
+  - **Description:** Retrieves the list of reviews for a specific post.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `post` (integer, required): The ID of the post.
+  - **Success Response (200):** Returns an array of review objects.
+    ```json
+    {
+      "success": true,
+      "message": "Lista de reseñas obtenida exitosamente",
+      "data": [
+        {
+          "id": 1,
+          "user": {
+            "id": 15,
+            "name": "Pedro Gómez",
+            "email": "pedro@example.com",
+            "phone_number": "+57 310 456 7890",
+            "address_details": "Calle 15 #30-40",
+            "is_verified": false
+          },
+          "post": {
+            "id": 1,
+            "title": "Vendo Café Orgánico",
+            "description": "Café de alta calidad de la región",
+            "quantity_kg": 100.0,
+            "price_per_kg": 8500.0,
+            "total_price": 850000.0,
+            "status": "ACTIVE",
+            "post_type": {
+              "id": 1,
+              "name": "Venta",
+              "description": "Publicación de venta de productos"
+            },
+            "product": {
+              "id": 5,
+              "name": "Café",
+              "description": "Café colombiano",
+              "image_url": "https://example.com/cafe.jpg",
+              "product_type": {
+                "id": 1,
+                "name": "Agrícola",
+                "description": "Tipo de producto"
+              }
+            },
+            "user": {
+              "id": 10,
+              "name": "Juan Pérez",
+              "email": "juan@example.com",
+              "phone_number": "+57 300 123 4567",
+              "address_details": "Calle 10 #20-30",
+              "is_verified": true
+            },
+            "municipality": {
+              "id": 120,
+              "name": "Cali"
+            },
+            "images": [
+              {
+                "id": 1,
+                "url": "https://example.com/image1.jpg"
+              }
+            ],
+            "favorites_count": 5,
+            "is_favorited": false,
+            "created_at": "2025-10-01T10:00:00.000000Z",
+            "updated_at": "2025-10-01T10:00:00.000000Z"
+          },
+          "comment": "Excelente café, muy rico y de buena calidad.",
+          "rating": 5,
+          "date": "2025-10-03T16:45:00.000000Z"
+        }
+      ]
+    }
+    ```
+
+  - **Notes:**
+    - This endpoint only returns reviews for the specified post.
+    - The response includes full user and post details with all relationships loaded.
+
+---
+
+### Add Review
+
+- **POST** `/posts/{post}/reviews`
+  - **Description:** Adds a new review to a specific post.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `post` (integer, required): The ID of the post.
+  - **Request Body (application/json):**
+    - `comment` (string, optional, max: 255): Comment of the review.
+    - `rating` (integer, required, min: 1, max: 5): Rating of the review (1 to 5 stars).
+
+  - **Validation Rules:**
+    - All fields are validated as described above. See error messages for details.
+    - Only authenticated users can add reviews.
+
+  - **Example Request (application/json):**
+    ```http
+    POST /api/posts/1/reviews
+    Authorization: Bearer {token}
+    Content-Type: application/json
+
+    {
+      "comment": "Excelente café!",
+      "rating": 4
+    }
+    ```
+
+  - **Success Response (201):**
+    ```json
+    {
+      "success": true,
+      "message": "Reseña agregada exitosamente",
+      "data": {
+        "user_id": 15,
+        "post_id": 1,
+        "comment": "Excelente café!",
+        "rating": 4,
+        "date": "2025-10-04T18:00:00.000000Z"
+      }
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "comment": ["El comentario no debe exceder los 255 caracteres."],
+        "rating": ["El rating es obligatorio."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - Users can add reviews to any existing post.
+    - The `user_id` is automatically set to the authenticated user's ID.
+    - The `date` is automatically set to the current timestamp.
+
+---
+
+### Delete Review
+
+- **DELETE** `/posts/{post}/reviews/{review}`
+  - **Description:** Deletes a specific review from a post.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `post` (integer, required): The ID of the post.
+    - `review` (integer, required): The ID of the review.
+
+  - **Success Response (200):**
+    ```json
+    {
+      "success": true,
+      "message": "Reseña eliminada exitosamente",
+      "data": null
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the reviewer of the review.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para eliminar esta reseña."
+    }
+    ```
+
+  - **Notes:**
+    - Only the reviewer of the review can delete it.
+    - Once deleted, a review cannot be recovered.
+
+## Favorites
+
+### List My Favorites
+
+- **GET** `/my-favorites`
+  - **Description:** Retrieves the list of favorite publications for the authenticated user.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **Success Response (200):** Returns an array of favorite post objects.
+    ```json
+    {
+      "success": true,
+      "message": "Lista de publicaciones favoritas obtenida exitosamente",
+      "data": [
+        {
+          "id": 1,
+          "title": "Vendo Café Orgánico",
+          "description": "Café de alta calidad de la región",
+          "quantity_kg": 100.0,
+          "price_per_kg": 8500.0,
+          "total_price": 850000.0,
+          "status": "ACTIVE",
+          "post_type": {
+            "id": 1,
+            "name": "Venta",
+            "description": "Publicación de venta de productos"
+          },
+          "product": {
+            "id": 5,
+            "name": "Café",
+            "description": "Café colombiano",
+            "image_url": "https://example.com/cafe.jpg",
+            "product_type": {
+              "id": 1,
+              "name": "Agrícola",
+              "description": "Tipo de producto"
+            }
+          },
+          "user": {
+            "id": 10,
+            "name": "Juan Pérez",
+            "email": "juan@example.com",
+            "phone_number": "+57 300 123 4567",
+            "address_details": "Calle 10 #20-30",
+            "is_verified": true
+          },
+          "municipality": {
+            "id": 120,
+            "name": "Cali"
+          },
+          "images": [
+            {
+              "id": 1,
+              "url": "https://example.com/image1.jpg"
+            }
+          ],
+          "favorites_count": 5,
+          "is_favorited": true,
+          "created_at": "2025-10-01T10:00:00.000000Z",
+          "updated_at": "2025-10-01T10:00:00.000000Z"
+        }
+      ]
+    }
+    ```
+
+  - **Notes:**
+    - This endpoint only returns posts that the authenticated user has marked as favorites.
+    - The response includes full post details with all relationships loaded.
+    - The `is_favorited` field will always be `true` for these posts.
+
+---
+
+### Add to Favorites
+
+- **POST** `/my-favorites`
+  - **Description:** Mark a publication as favorite.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **Request Body (application/json):**
+    - `post_id` (integer, required, exists:posts,id): The ID of the post to mark as favorite.
+
+  - **Success Response (201):** If the post was not previously favorited.
+    ```json
+    {
+      "success": true,
+      "message": "Publicación añadida a favoritos exitosamente",
+      "data": {
+        "user_id": 15,
+        "post_id": 1,
+        "date": "2025-10-05T14:30:00.000000Z"
+      }
+    }
+    ```
+
+  - **Success Response (200):** If the post was already favorited.
+    ```json
+    {
+      "success": true,
+      "message": "La publicación ya está en tus favoritos",
+      "data": null
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "post_id": ["El ID de la publicación es obligatorio."],
+        "post_id.exists": ["La publicación seleccionada no existe."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - Users can favorite any existing post.
+    - If a post is already favorited, the endpoint returns a 200 status with a message.
+    - The `user_id` is automatically set to the authenticated user's ID.
+    - The `date` is automatically set to the current timestamp.
+
+---
+
+### Remove from Favorites
+
+- **DELETE** `/my-favorites/{postId}`
+  - **Description:** Remove a publication from the favorites list.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `postId` (integer, required): The ID of the post to remove from favorites.
+
+  - **Success Response (200):**
+    ```json
+    {
+      "success": true,
+      "message": "Publicación eliminada de favoritos exitosamente",
+      "data": null
+    }
+    ```
+
+  - **Error Response (404):** If the post doesn't exist or is not in favorites.
+    ```json
+    {
+      "success": false,
+      "message": "La publicación no está en tus favoritos."
+    }
+    ```
+
+  - **Notes:**
+    - Only the authenticated user can remove posts from their favorites.
+    - If the post doesn't exist, a different error message is returned.
+    - Once removed, the post will no longer appear in the user's favorites list.
+
     - New images can be added but existing images cannot be removed through this endpoint.
     - The `updated_at` timestamp is automatically updated.
     - When sending form data (multipart/form-data), you must use the POST method with `_method=PUT` parameter to simulate a PUT request due to Laravel's handling of form data with PUT requests.
@@ -1660,3 +2019,296 @@ Notes / implementation details to keep in mind:
   - **Notes:**
     - Only the owner of the price alert can delete it.
     - Once deleted, a price alert cannot be recovered.
+
+## Reviews
+
+### List Reviews
+
+- **GET** `/reviews`
+  - **Description:** Retrieves a list of reviews. Supports filtering by reviewer or reviewed user, and sorting.
+  - **Access:** Public
+  - **Query Parameters:**
+    - `reviewer_id` (integer, optional, exists:users,id): Filter reviews by the user who wrote them.
+    - `reviewed_id` (integer, optional, exists:users,id): Filter reviews by the user who was reviewed.
+    - `sort_by` (string, optional, in:rating,created_at,updated_at, default:`created_at`): Field to sort by.
+    - `sort_order` (string, optional, in:asc,desc, default:`desc`): Sort direction.
+
+  - **Success Response (200):** Returns an array of review objects.
+    ```json
+    {
+      "success": true,
+      "message": "Reseñas obtenidas exitosamente",
+      "data": [
+        {
+          "id": 1,
+          "rating": 5,
+          "comment": "Excelente vendedor, muy confiable",
+          "reviewer_id": 10,
+          "reviewed_id": 15,
+          "created_at": "2025-10-01T10:00:00.000000Z",
+          "updated_at": "2025-10-01T10:00:00.000000Z",
+          "reviewer": {
+            "id": 10,
+            "name": "Juan Pérez"
+          },
+          "reviewed": {
+            "id": 15,
+            "name": "María García"
+          }
+        }
+      ],
+      "filters_applied": {
+        "reviewer_id": null,
+        "reviewed_id": null
+      },
+      "sort_applied": {
+        "sort_by": "created_at",
+        "sort_order": "desc"
+      }
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "reviewer_id": ["El usuario que califica no existe."],
+        "reviewed_id": ["El usuario calificado no existe."],
+        "sort_by": ["El campo de ordenamiento no es válido. Valores permitidos: rating, created_at, updated_at."],
+        "sort_order": ["El orden debe ser: asc o desc."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - This endpoint is public and doesn't require authentication.
+    - Results are ordered by creation date descending by default.
+    - All filters are optional and can be combined.
+    - The response includes `filters_applied` and `sort_applied` objects showing which filters and sorting options were applied.
+
+---
+
+### Create Review
+
+- **POST** `/reviews`
+  - **Description:** Create a new review for a user.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **Request Body (application/json):**
+    - `rating` (integer, required, min:1, max:5): Rating from 1 to 5 stars.
+    - `comment` (string, optional, max:400): Comment about the user.
+    - `reviewed_id` (integer, required, exists:users,id): ID of the user being reviewed.
+
+  - **Success Response (201):** Returns the created review object.
+    ```json
+    {
+      "success": true,
+      "message": "Reseña creada exitosamente",
+      "data": {
+        "id": 2,
+        "rating": 4,
+        "comment": "Buen vendedor, entrega a tiempo",
+        "reviewer_id": 10,
+        "reviewed_id": 20,
+        "created_at": "2025-10-02T15:30:00.000000Z",
+        "updated_at": "2025-10-02T15:30:00.000000Z",
+        "reviewer": {
+          "id": 10,
+          "name": "Juan Pérez"
+        },
+        "reviewed": {
+          "id": 20,
+          "name": "Carlos López"
+        }
+      }
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "rating": ["La calificación es obligatoria."],
+        "rating.min": ["La calificación mínima es 1."],
+        "rating.max": ["La calificación máxima es 5."],
+        "comment": ["El comentario no debe exceder los 400 caracteres."],
+        "reviewed_id": ["El usuario a calificar es obligatorio."]
+      }
+    }
+    ```
+    
+  - **Error Response (422):** If user tries to review themselves.
+    ```json
+    {
+      "success": false,
+      "message": "No puedes calificarte a ti mismo."
+    }
+    ```
+
+  - **Error Response (422):** If user has already reviewed the same user.
+    ```json
+    {
+      "success": false,
+      "message": "Ya has calificado previamente a este usuario."
+    }
+    ```
+
+  - **Notes:**
+    - Only authenticated users can create reviews.
+    - Users cannot review themselves.
+    - Each user can only review another user once.
+    - The `reviewer_id` is automatically set to the authenticated user's ID.
+    - All fields except `comment` are required.
+
+---
+
+### Get Review Details
+
+- **GET** `/reviews/{review}`
+  - **Description:** Retrieves the details of a specific review by its ID.
+  - **Access:** Public
+  - **URL Parameters:**
+    - `review` (integer, required): The ID of the review.
+  - **Success Response (200):** Returns a single review object.
+    ```json
+    {
+      "success": true,
+      "message": "Detalles de la reseña obtenidos exitosamente",
+      "data": {
+        "id": 1,
+        "rating": 5,
+        "comment": "Excelente vendedor, muy confiable",
+        "reviewer_id": 10,
+        "reviewed_id": 15,
+        "created_at": "2025-10-01T10:00:00.000000Z",
+        "updated_at": "2025-10-01T10:00:00.000000Z",
+        "reviewer": {
+          "id": 10,
+          "name": "Juan Pérez"
+        },
+        "reviewed": {
+          "id": 15,
+          "name": "María García"
+        }
+      }
+    }
+    ```
+
+  - **Error Response (404):** If the review doesn't exist.
+    ```json
+    {
+      "success": false,
+      "message": "Recurso no encontrado"
+    }
+    ```
+
+  - **Notes:**
+    - This endpoint is public and doesn't require authentication.
+    - The endpoint uses Laravel's route model binding to automatically fetch the Review instance.
+
+---
+
+### Update Review
+
+- **PUT** `/reviews/{review}` (or POST with `_method=PUT`)
+  - **Description:** Update an existing review. Only the reviewer can update their review.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `review` (integer, required): The ID of the review to update.
+  - **Request Body (application/json or multipart/form-data):**
+    - `rating` (integer, optional, min:1, max:5): Rating from 1 to 5 stars.
+    - `comment` (string, optional, max:400): Comment about the user.
+    - `_method` (string, optional): Set to "PUT" when using POST method to simulate PUT request (required for multipart/form-data).
+
+  - **Success Response (200):** Returns the updated review object.
+    ```json
+    {
+      "success": true,
+      "message": "Reseña actualizada exitosamente",
+      "data": {
+        "id": 1,
+        "rating": 4,
+        "comment": "Buen vendedor, entrega a tiempo. Actualizado después de más interacciones.",
+        "reviewer_id": 10,
+        "reviewed_id": 15,
+        "created_at": "2025-10-01T10:00:00.000000Z",
+        "updated_at": "2025-10-05T14:30:00.000000Z",
+        "reviewer": {
+          "id": 10,
+          "name": "Juan Pérez"
+        },
+        "reviewed": {
+          "id": 15,
+          "name": "María García"
+        }
+      }
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the reviewer of the review.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para actualizar esta reseña."
+    }
+    ```
+
+  - **Error Response (422):** If validation fails.
+    ```json
+    {
+      "success": false,
+      "message": "The given data was invalid.",
+      "errors": {
+        "rating": ["La calificación mínima es 1."],
+        "comment": ["El comentario no debe exceder los 400 caracteres."]
+      }
+    }
+    ```
+
+  - **Notes:**
+    - Only the reviewer of the review can update it.
+    - All fields are optional; only provided fields will be updated.
+    - When sending form data (multipart/form-data), you must use the POST method with `_method=PUT` parameter to simulate a PUT request due to Laravel's handling of form data with PUT requests.
+    - When sending JSON data, you can use the standard PUT method.
+
+---
+
+### Delete Review
+
+- **DELETE** `/reviews/{review}`
+  - **Description:** Deletes a review. Only the reviewer can delete their review.
+  - **Access:** Protected — requires `auth:sanctum` (include header `Authorization: Bearer {token}`).
+  - **URL Parameters:**
+    - `review` (integer, required): The ID of the review to delete.
+  - **Success Response (200):**
+    ```json
+    {
+      "success": true,
+      "message": "Reseña eliminada exitosamente",
+      "data": null
+    }
+    ```
+
+  - **Error Response (403):** If the user is not the reviewer of the review.
+    ```json
+    {
+      "success": false,
+      "message": "No tienes permisos para eliminar esta reseña."
+    }
+    ```
+
+  - **Error Response (404):** If the review doesn't exist.
+    ```json
+    {
+      "success": false,
+      "message": "Recurso no encontrado"
+    }
+    ```
+
+  - **Notes:**
+    - Only the reviewer of the review can delete it.
+    - Once deleted, a review cannot be recovered.
+

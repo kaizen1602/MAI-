@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PriceReferenceController;
 use App\Http\Controllers\Api\PriceAlertController;
+use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\FavoriteController;
 
 // ==========================================
 // RUTAS PÚBLICAS
@@ -83,5 +85,21 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/{priceAlert}', [PriceAlertController::class, 'show']);
         Route::put('/{priceAlert}', [PriceAlertController::class, 'update']);
         Route::delete('/{priceAlert}', [PriceAlertController::class, 'destroy']);
+    });
+
+    // Reviews
+    Route::prefix('reviews')->group(function () {
+        Route::get('/', [ReviewController::class, 'index']);
+        Route::post('/', [ReviewController::class, 'store']);
+        Route::get('/{review}', [ReviewController::class, 'show']);
+        Route::put('/{review}', [ReviewController::class, 'update']);
+        Route::delete('/{review}', [ReviewController::class, 'destroy']);
+    });
+
+    // Favorites
+    Route::prefix('my-favorites')->group(function () {
+        Route::get('/', [FavoriteController::class, 'index']);
+        Route::post('/', [FavoriteController::class, 'store']);
+        Route::delete('/{postId}', [FavoriteController::class, 'destroy']);
     });
 });
