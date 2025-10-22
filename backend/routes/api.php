@@ -7,6 +7,10 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\PriceReferenceController;
+use App\Http\Controllers\Api\PriceAlertController;
+use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\FavoriteController;
 
 // ==========================================
 // RUTAS PÚBLICAS
@@ -52,5 +56,50 @@ Route::middleware('auth:sanctum')->group(function () {
     // Posts
     Route::prefix('posts')->group(function () {
         Route::get('/', [PostController::class, 'index']);
+        Route::get('/{post}', [PostController::class, 'show']);
+        Route::post('/', [PostController::class, 'store']);
+        Route::put('/{post}', [PostController::class, 'update']);
+        Route::delete('/{post}', [PostController::class, 'destroy']);
+        
+        // Post Images
+        Route::post('/{post}/images', [PostController::class, 'addImage']);
+        Route::delete('/images/{image}', [PostController::class, 'deleteImage']);
+    });
+
+    // Price References
+    Route::prefix('price-references')->group(function () {
+        Route::get('/', [PriceReferenceController::class, 'index']);
+        Route::get('/{priceReference}', [PriceReferenceController::class, 'show']);
+        
+        // ✅ Rutas protegidas (solo administradores)
+        Route::middleware('admin')->group(function () {
+            Route::post('/', [PriceReferenceController::class, 'store']);
+            Route::put('/{priceReference}', [PriceReferenceController::class, 'update']);
+        });
+    });
+
+    // Price Alerts
+    Route::prefix('my-alerts')->group(function () {
+        Route::get('/', [PriceAlertController::class, 'index']);
+        Route::post('/', [PriceAlertController::class, 'store']);
+        Route::get('/{priceAlert}', [PriceAlertController::class, 'show']);
+        Route::put('/{priceAlert}', [PriceAlertController::class, 'update']);
+        Route::delete('/{priceAlert}', [PriceAlertController::class, 'destroy']);
+    });
+
+    // Reviews
+    Route::prefix('reviews')->group(function () {
+        Route::get('/', [ReviewController::class, 'index']);
+        Route::post('/', [ReviewController::class, 'store']);
+        Route::get('/{review}', [ReviewController::class, 'show']);
+        Route::put('/{review}', [ReviewController::class, 'update']);
+        Route::delete('/{review}', [ReviewController::class, 'destroy']);
+    });
+
+    // Favorites
+    Route::prefix('my-favorites')->group(function () {
+        Route::get('/', [FavoriteController::class, 'index']);
+        Route::post('/', [FavoriteController::class, 'store']);
+        Route::delete('/{postId}', [FavoriteController::class, 'destroy']);
     });
 });

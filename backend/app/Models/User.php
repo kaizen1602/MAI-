@@ -95,6 +95,6 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Post::class, 'user_publication_favorites', 'user_id', 'post_id')
             ->withPivot('date')
-            ->withTimestamps();
+            ->withTimestamps(false);
     }
 }

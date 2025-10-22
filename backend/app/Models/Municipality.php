@@ -28,4 +28,9 @@ class Municipality extends Model
     {
         return $this->hasMany(PriceReference::class);
     }
+    
+    public function priceAlerts()
+    {
+        return $this->hasMany(PriceAlert::class);
+    }
 }
