@@ -34,6 +34,7 @@ class UpdateRequest extends FormRequest
             'password' => 'sometimes|string|min:8|confirmed',
             'phone_number' => 'sometimes|nullable|string|max:100',
             'address_details' => 'sometimes|nullable|string|max:300',
+            'profile_image' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'role_id' => 'sometimes|exists:roles,id',
         ];
     }
@@ -52,6 +53,9 @@ class UpdateRequest extends FormRequest
             'phone_number.max' => 'El campo número de teléfono no debe exceder los 100 caracteres.',
             'address_details.string' => 'El campo detalles de dirección debe ser una cadena de texto.',
             'address_details.max' => 'El campo detalles de dirección no debe exceder los 300 caracteres.',
+            'profile_image.image' => 'El archivo debe ser una imagen válida.',
+            'profile_image.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif.',
+            'profile_image.max' => 'La imagen no debe exceder los 2MB.',
             'role_id.exists' => 'El rol seleccionado no es válido.',
         ];
     }
@@ -63,13 +67,38 @@ class UpdateRequest extends FormRequest
     {
         $data = $this->validated();
         
-        return [
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-            'phone_number' => $data['phone_number'] ?? null,
-            'address_details' => $data['address_details'] ?? null,
-            'role_id' => $data['role_id'],
-        ];
+        $userData = [];
+
+        // Solo incluir campos que se proporcionaron
+        if (isset($data['name'])) {
+            $userData['name'] = $data['name'];
+        }
+        if (isset($data['email'])) {
+            $userData['email'] = $data['email'];
+        }
+        if (isset($data['phone_number'])) {
+            $userData['phone_number'] = $data['phone_number'];
+        }
+        if (isset($data['address_details'])) {
+            $userData['address_details'] = $data['address_details'];
+        }
+        if (isset($data['role_id'])) {
+            $userData['role_id'] = $data['role_id'];
+        }
+
+        // Solo incluir password si se proporciona
+        if (isset($data['password'])) {
+            $userData['password'] = bcrypt($data['password']);
+        }
+
+        return $userData;
+    }
+
+    /**
+     * Obtiene la imagen de perfil si se proporciona
+     */
+    public function getProfileImage()
+    {
+        return $this->file('profile_image');
     }
 }

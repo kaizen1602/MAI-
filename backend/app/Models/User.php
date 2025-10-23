@@ -24,6 +24,7 @@ class User extends Authenticatable
         'password',
         'phone_number',
         'address_details',
+        'profile_image',
         'role_id',
         // ❌ NO incluir 'is_admin' aquí
     ];

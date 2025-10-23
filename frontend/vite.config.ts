@@ -9,9 +9,16 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       "/api": {
-        target: "http://localhost",
+        target: "http://localhost:80",
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path, // Mantener /api en la ruta
+      },
+      "/storage": {
+        target: "http://localhost:80",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path, // Mantener /storage en la ruta
       },
     },
   },

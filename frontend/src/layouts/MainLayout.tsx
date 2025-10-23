@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import Navbar from "../components/Navbar";
-import Filters from "../components/Filters";
+import Filters from "../components/filters.tsx";
 import AdBanner from "../components/AdBanner";
 
 interface MainLayoutProps {

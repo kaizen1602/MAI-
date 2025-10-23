@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FaSeedling,
   FaDrumstickBite,
@@ -17,21 +17,23 @@ import {
 } from "react-icons/fi";
 import toast from "react-hot-toast";
 import PublishPostModal from "./PublishPostModal";
+import { useAuth } from "../data/context/AuthContext";
 
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // Aquí borras la sesión o token
-    localStorage.removeItem("token");
-
-    toast.success("Sesión cerrada con éxito ✅");
-
-    // Redirigir al login
-    setTimeout(() => {
-      window.location.href = "/";
-    }, 1500);
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success("Sesión cerrada con éxito ✅");
+      navigate("/login");
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      toast.error("Error al cerrar sesión");
+    }
   };
 
   const toggleMenu = () => {
@@ -42,10 +44,12 @@ function Navbar() {
     setIsMenuOpen(false);
   };
 
-  const handlePublishSubmit = (postData: any) => {
-    // En una aplicación real, aquí harías una llamada a la API para publicar
-    console.log("Publicando:", postData);
+  const handlePublishSubmit = async (postData: any) => {
+    // El PublishPostModal ya maneja la creación del post
     toast.success("¡Publicación creada con éxito!");
+    setShowPublishModal(false);
+    // Recargar la página para mostrar el nuevo post
+    window.location.reload();
   };
 
   return (
@@ -60,9 +64,16 @@ function Navbar() {
               className="w-10 h-10 rounded-full shadow-md"
             />
           </div>
-          <span className="text-lg font-bold text-1xl md:text-4xl">
-            Mercado Agro Inteligente
-          </span>
+          <div className="flex flex-col">
+            <span className="text-lg font-bold text-1xl md:text-4xl">
+              Mercado Agro Inteligente
+            </span>
+            {user && (
+              <span className="text-xs text-yellow-300 hidden md:block">
+                Hola, {user.name}
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Mobile menu button */}

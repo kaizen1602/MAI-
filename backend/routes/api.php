@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
-
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\PostController;
@@ -11,6 +10,11 @@ use App\Http\Controllers\Api\PriceReferenceController;
 use App\Http\Controllers\Api\PriceAlertController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\DepartmentController;
+use App\Http\Controllers\Api\MunicipalityController;
+use App\Http\Controllers\Api\PostTypeController;
+use App\Http\Controllers\Api\ProductTypeController;
+use App\Http\Controllers\Api\TransactionController;
 
 // ==========================================
 // RUTAS PÚBLICAS
@@ -24,6 +28,13 @@ Route::get('/ping', function () {
     return response()->json(['message' => 'API ON'], 200);
 });
 
+// Datos de soporte (públicos para facilitar formularios)
+Route::get('/departments', [DepartmentController::class, 'index']);
+Route::get('/municipalities', [MunicipalityController::class, 'index']);
+Route::get('/municipalities/department/{departmentId}', [MunicipalityController::class, 'byDepartment']);
+Route::get('/post-types', [PostTypeController::class, 'index']);
+Route::get('/product-types', [ProductTypeController::class, 'index']);
+
 // ==========================================
 // RUTAS PROTEGIDAS (requieren autenticación)
 // ==========================================
@@ -32,7 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::prefix('auth')->group(function () {
         Route::get('/profile', [AuthController::class, 'profile']);
-        Route::put('/profile', [AuthController::class, 'updateProfile']);
+        Route::post('/profile', [AuthController::class, 'updateProfile']); // Cambiado de PUT a POST
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     });
@@ -60,6 +71,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/', [PostController::class, 'store']);
         Route::put('/{post}', [PostController::class, 'update']);
         Route::delete('/{post}', [PostController::class, 'destroy']);
+        Route::patch('/{post}/status', [PostController::class, 'updateStatus']);
         
         // Post Images
         Route::post('/{post}/images', [PostController::class, 'addImage']);
@@ -101,5 +113,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', [FavoriteController::class, 'index']);
         Route::post('/', [FavoriteController::class, 'store']);
         Route::delete('/{postId}', [FavoriteController::class, 'destroy']);
+    });
+
+    // Transactions
+    Route::prefix('transactions')->group(function () {
+        Route::get('/', [TransactionController::class, 'index']);
+        Route::post('/', [TransactionController::class, 'store']);
+        Route::get('/purchase-history', [TransactionController::class, 'purchaseHistory']);
+        Route::get('/{transaction}', [TransactionController::class, 'show']);
+        Route::put('/{transaction}', [TransactionController::class, 'update']);
+        Route::delete('/{transaction}', [TransactionController::class, 'destroy']);
+        Route::post('/{transaction}/review', [TransactionController::class, 'createReview']);
     });
 });

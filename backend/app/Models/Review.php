@@ -14,6 +14,7 @@ class Review extends Model
         'comment',
         'reviewer_id',
         'reviewed_id',
+        'transaction_id',
     ];
 
     public function reviewer()
@@ -24,5 +25,10 @@ class Review extends Model
     public function reviewed()
     {
         return $this->belongsTo(User::class, 'reviewed_id');
+    }
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class);
     }
 }

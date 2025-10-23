@@ -42,23 +42,26 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
     const message = `Hola, estoy interesado en tu publicación: ${post.title}`;
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
     
-    // Close the modal and redirect to WhatsApp
-    setIsModalOpen(false);
-    // Show confirmation modal after a short delay to simulate WhatsApp interaction
-    setTimeout(() => {
-      setIsConfirmationModalOpen(true);
-    }, 1000);
+    // Abrir WhatsApp inmediatamente
     window.open(whatsappUrl, "_blank");
+    
+    // Cerrar modal de WhatsApp y mostrar confirmación de forma más suave
+    setIsModalOpen(false);
+    
+    // Usar requestAnimationFrame para evitar parpadeos
+    requestAnimationFrame(() => {
+      setIsConfirmationModalOpen(true);
+    });
   };
 
-  const handleConfirmPurchase = (rating?: number) => {
-    // In a real application, you would save the rating to the database
-    if (rating !== undefined) {
+  const handleConfirmPurchase = async (rating?: number) => {
+    if (rating && rating > 0) {
       console.log(`Purchase confirmed with rating: ${rating}`);
     } else {
-      console.log("Purchase confirmed");
+      console.log("Purchase confirmed without rating");
     }
-    // You could also show a toast notification here
+    
+    setIsConfirmationModalOpen(false);
   };
 
   const handleRateLater = () => {
@@ -128,12 +131,15 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
         {/* Botón de acción */}
         <button 
           onClick={handleContactClick}
-          className={`w-full py-5 rounded-2xl text-white font-bold text-2xl shadow-lg ${
+          className={`w-full py-5 rounded-2xl text-white font-bold text-2xl shadow-lg transition-all ${
             post.post_type?.type_name === "Venta"
               ? "bg-blue-600 hover:bg-blue-700"
               : "bg-green-600 hover:bg-green-700"
           }`}>
-          {post.post_type?.type_name === "Venta" ? "🛒 Comprar" : "🤝 Ofrecer"}
+          {post.post_type?.type_name === "Venta" 
+            ? "🛒 Comprar" 
+            : "🤝 Ofrecer"
+          }
         </button>
       </div>
 

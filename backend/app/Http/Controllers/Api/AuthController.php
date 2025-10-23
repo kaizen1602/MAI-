@@ -71,17 +71,41 @@ class AuthController extends Controller
     {
         $user = Auth::user();
 
-        // 2. Validar y traer data lista (con bcrypt si el request lo hace en getUserData)
-        $data = $request->getUserData();
+        try {
+            // 1. Obtener datos del usuario
+            $data = $request->getUserData();
 
-        // 3. Actualizar
-        $user->update($data);
-        $user->load('role'); // Cargar relación role
+            // 2. Manejar imagen de perfil si se proporciona
+            if ($request->hasFile('profile_image')) {
+                $imageService = app(\App\Services\ImageService::class);
+                
+                // Eliminar imagen anterior si existe
+                if ($user->profile_image) {
+                    $imageService->deleteImage($user->profile_image);
+                }
+                
+                // Subir nueva imagen
+                $imageUrl = $imageService->uploadImage(
+                    $request->getProfileImage(),
+                    'profiles/' . $user->id
+                );
+                
+                $data['profile_image'] = $imageUrl;
+            }
 
+            // 3. Actualizar usuario
+            $user->update($data);
+            $user->load('role');
 
-        return $this->successResponse([
-            'user' => new UserResource($user),
-        ], 'Perfil actualizado correctamente');
+            return $this->successResponse([
+                'user' => new UserResource($user),
+            ], 'Perfil actualizado correctamente');
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Error al actualizar el perfil. Por favor, intenta nuevamente.',
+                500
+            );
+        }
     }
 
     /**

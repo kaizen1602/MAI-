@@ -1,38 +1,54 @@
 import { FaThumbsUp, FaRegCommentDots } from "react-icons/fa";
-
-// Definimos la interfaz para los posts con la estructura real de los datos
-interface Post {
-  post_id: number;
-  title: string;
-  user: { user_id: number; name: string };
-  description: string;
-  created_at: string;
-  post_type: { type_id: number; type_name: string };
-  images?: { image_id: number; url: string }[];
-  likes?: number;
-  comments?: number;
-}
+import { useAuth } from "../data/context/AuthContext";
+import type { Post } from "../data/types/post.types";
+import FavoriteButton from "./FavoriteButton";
+import { MoreVertical } from "lucide-react";
+import { useState } from "react";
+import PostActionsModal from "./PostActionsModal";
 
 interface PostCardProps {
   post: Post;
   onSelectPost: (post: Post) => void;
   formatDate: (dateString: string) => string;
+  onPostUpdated?: (updatedPost: Post) => void;
+  onPostDeleted?: (postId: number) => void;
 }
 
 const typeStyles: Record<string, string> = {
-  Venta: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
-  Compra: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
+  Oferta: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
+  Demanda: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
 };
 
-function PostCard({ post, onSelectPost, formatDate }: PostCardProps) {
+function PostCard({ post, onSelectPost, formatDate, onPostUpdated, onPostDeleted }: PostCardProps) {
+  const { user } = useAuth();
+  const [showActionsModal, setShowActionsModal] = useState(false);
+  
   // Extraemos el nombre del usuario correctamente
   const userName = post.user?.name || "Usuario desconocido";
   
   // Extraemos el tipo de post correctamente
-  const postType = post.post_type?.type_name || "Tipo desconocido";
+  const postType = post.post_type?.name || "Tipo desconocido";
   
   // Extraemos las imágenes correctamente
   const photos = post.images?.map(img => img.url) || [];
+
+  // Verificar si el usuario es el dueño del post
+  const isOwner = user && post.user?.id === user.id;
+
+  const handleActionsClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowActionsModal(true);
+  };
+
+  const handlePostUpdated = (updatedPost: Post) => {
+    onPostUpdated?.(updatedPost);
+    setShowActionsModal(false);
+  };
+
+  const handlePostDeleted = (postId: number) => {
+    onPostDeleted?.(postId);
+    setShowActionsModal(false);
+  };
 
   return (
     <div
@@ -100,18 +116,51 @@ function PostCard({ post, onSelectPost, formatDate }: PostCardProps) {
       )}
       {/* Footer */}
       <div className="flex justify-between items-center">
-        <div className="flex space-x-6 text-gray-500 dark:text-gray-400">
-          
+        <div className="flex items-center space-x-4">
+          <FavoriteButton 
+            post={post} 
+            onFavoriteChange={(isFavorite) => {
+              // Actualizar el post localmente
+              const updatedPost = {
+                ...post,
+                is_favorited: isFavorite,
+                favorites_count: post.favorites_count + (isFavorite ? 1 : -1)
+              };
+              onSelectPost(updatedPost);
+            }}
+            size="sm"
+          />
         </div>
 
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            typeStyles[postType] || "bg-gray-200 text-gray-800"
-          }`}
-        >
-          {postType}
-        </span>
+        <div className="flex items-center space-x-2">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              typeStyles[postType] || "bg-gray-200 text-gray-800"
+            }`}
+          >
+            {postType}
+          </span>
+          
+          {isOwner && (
+            <button
+              onClick={handleActionsClick}
+              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+              title="Acciones de publicación"
+            >
+              <MoreVertical size={16} />
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* Modal de acciones */}
+      <PostActionsModal
+        isOpen={showActionsModal}
+        onClose={() => setShowActionsModal(false)}
+        post={post}
+        onPostUpdated={handlePostUpdated}
+        onPostDeleted={handlePostDeleted}
+      />
     </div>
   );
 }

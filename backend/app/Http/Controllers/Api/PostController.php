@@ -351,4 +351,48 @@ class PostController extends Controller
             );
         }
     }
+
+    /**
+     * Update the status of the specified post.
+     */
+    public function updateStatus(Request $request, Post $post)
+    {
+        // Verificar que el usuario autenticado sea el dueño del post
+        if ($request->user()->id !== $post->user_id) {
+            return $this->errorResponse('No tienes permisos para cambiar el estado de esta publicación.', 403);
+        }
+
+        $request->validate([
+            'status' => 'required|in:ACTIVE,CLOSED,EXPIRED'
+        ]);
+
+        try {
+            $post->update(['status' => $request->status]);
+
+            $post->load([
+                'postType:id,type_name,type_desc',
+                'product:id,name,description,image_url,product_type_id',
+                'product.productType:id,type_name',
+                'user:id,name,email,phone_number,address_details,is_verified',
+                'municipality:id,name',
+                'images:id,post_id,image_url',
+            ]);
+
+            $statusMessages = [
+                'ACTIVE' => 'Publicación activada exitosamente',
+                'CLOSED' => 'Publicación marcada como vendida exitosamente',
+                'EXPIRED' => 'Publicación desactivada exitosamente'
+            ];
+
+            return $this->successResponse(
+                new PostResource($post),
+                $statusMessages[$request->status]
+            );
+        } catch (\Exception $e) {
+            return $this->errorResponse(
+                'Error al cambiar el estado de la publicación. Por favor, intenta nuevamente.',
+                500
+            );
+        }
+    }
 }

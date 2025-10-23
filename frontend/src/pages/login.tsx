@@ -1,24 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../data/context/AuthContext";
 import ForgotPasswordModal from "../components/ForgotPasswordModal";
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{
     text: string;
     type: "error" | "success";
   } | null>(null);
   const [showForgotPasswordModal, setShowForgotPasswordModal] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
-  // Mock user data
-  const mockUser = {
-    email: "test@example.com",
-    password: "password123",
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
@@ -29,7 +26,12 @@ function Login() {
       return;
     }
 
-    if (email === mockUser.email && password === mockUser.password) {
+    try {
+      setIsLoading(true);
+      setMessage(null);
+      
+      await login({ email, password });
+      
       setMessage({
         text: "¡Inicio de sesión exitoso! 🎉 Bienvenido 🌱",
         type: "success",
@@ -38,12 +40,15 @@ function Login() {
       // Redirige después de un breve delay
       setTimeout(() => {
         navigate("/wall");
-      }, 1500);
-    } else {
+      }, 1000);
+    } catch (error: any) {
+      console.error('Error en login:', error);
       setMessage({
-        text: "Credenciales incorrectas ❌ Inténtalo de nuevo.",
+        text: error.response?.data?.message || "Credenciales incorrectas ❌ Inténtalo de nuevo.",
         type: "error",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -117,15 +122,16 @@ function Login() {
 
             <button
               type="submit"
-              className="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 transition text-2xl shadow-md"
+              disabled={isLoading}
+              className="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 transition text-2xl shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Entrar
+              {isLoading ? 'Cargando...' : 'Entrar'}
             </button>
           </form>
 
           <div className="mt-6 p-4 bg-gray-100 rounded-lg text-sm text-gray-700">
             <strong>Datos de prueba:</strong>
-            <p>Correo: test@example.com</p>
+            <p>Correo: test@mai.com</p>
             <p>Contraseña: password123</p>
           </div>
 

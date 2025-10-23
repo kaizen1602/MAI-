@@ -1,20 +1,22 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import MainLayout from "../layouts/MainLayout";
 import PostListSale from "../components/PostListSale";
 import PostDetail from "../components/PostDetail";
-import postsData from "../data/post.json";
+import { postService } from "../data/services";
+import type { Post } from "../data/types/post.types";
+import { toast } from "react-hot-toast";
+import EditPostModal from "../components/EditPostModal";
+import type { CursorPaginatedResponse } from "../data/types/api.types";
 
-// Definimos la interfaz para los posts con la estructura real
-interface PostData {
+// Adapter interface for PostDetail component
+interface PostDetailData {
   post_id: number;
   title: string;
+  user: { user_id: number; name: string };
   description: string;
   created_at: string;
   post_type: { type_id: number; type_name: string };
-  user: { user_id: number; name: string };
   images?: { image_id: number; url: string }[];
-  likes?: number;
-  comments?: number;
   quantity_kg?: number;
   price_per_kg?: number;
   municipality?: { municipality_id: number; name: string };
@@ -27,55 +29,164 @@ interface PostData {
 }
 
 export default function Shopping() {
-  const [posts, setPosts] = useState<PostData[]>([]);
-  const [filteredPosts, setFilteredPosts] = useState<PostData[]>([]);
-  const [selectedPost, setSelectedPost] = useState<PostData | null>(null);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [selectedPostDetail, setSelectedPostDetail] = useState<PostDetailData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const filterTimeout = useRef<NodeJS.Timeout | null>(null);
+  const isFirstFilter = useRef(true);
 
   useEffect(() => {
-    // Filtrar solo las publicaciones de tipo "Venta" para "Quiero Comprar" (mostrar lo que está en venta)
-    const ventaPosts = postsData
-      .filter((post: any) => post.post_type.type_name === "Venta")
-      .map((post: any) => ({
-        ...post,
-        likes: post.likes || 0,
-        comments: post.comments || 0
-      }));
-    
-    setPosts(ventaPosts);
-    setFilteredPosts(ventaPosts);
+    loadPosts();
   }, []);
 
-  const handleFilter = (filters: any) => {
-    let results = posts;
-    
-    if (filters.productType) {
-      results = results.filter(p => 
-        p.product?.name.toLowerCase().includes(filters.productType.toLowerCase())
-      );
-    }
-
-    if (filters.city) {
-      results = results.filter(p => 
-        p.municipality?.name.toLowerCase().includes(filters.city.toLowerCase())
-      );
-    }
-
-    if (filters.minPrice) {
-      results = results.filter(p => (p.price_per_kg ?? 0) >= Number(filters.minPrice));
-    }
-
-    if (filters.maxPrice) {
-      results = results.filter(p => (p.price_per_kg ?? 0) <= Number(filters.maxPrice));
-    }
-
-    if (filters.name) {
-      results = results.filter(p => 
-        p.title.toLowerCase().includes(filters.name.toLowerCase())
-      );
-    }
-
-    setFilteredPosts(results);
+  // Adapter function to convert Post to PostDetailData
+  const adaptPostToDetail = (post: Post): PostDetailData => {
+    return {
+      post_id: post.id,
+      title: post.title,
+      user: {
+        user_id: post.user.id,
+        name: post.user.name
+      },
+      description: post.description,
+      created_at: post.created_at,
+      post_type: {
+        type_id: post.post_type.id,
+        type_name: post.post_type.name
+      },
+      images: post.images?.map(img => ({
+        image_id: img.id,
+        url: img.url
+      })) || [],
+      quantity_kg: post.quantity_kg,
+      price_per_kg: post.price_per_kg,
+      municipality: {
+        municipality_id: post.municipality.id,
+        name: post.municipality.name
+      },
+      product: {
+        product_id: post.product.id,
+        name: post.product.name,
+        description: post.product.description,
+        image_url: post.product.image_url
+      }
+    };
   };
+
+  useEffect(() => {
+    if (selectedPost) {
+      setSelectedPostDetail(adaptPostToDetail(selectedPost));
+    } else {
+      setSelectedPostDetail(null);
+    }
+  }, [selectedPost]);
+
+  const loadPosts = async (filters: any = {}, cursor: string | null = null) => {
+    try {
+      setIsLoading(true);
+      
+      // Prepare filter parameters
+      const filterParams: any = {
+        post_type_id: 1, // OFERTA
+        per_page: 20
+      };
+      
+      // Add cursor for pagination
+      if (cursor) {
+        filterParams.cursor = cursor;
+      }
+      
+      // Map filters to API parameters
+      if (filters.productType) {
+        // We need to get the product ID from the name
+        // For now, we'll just search by name
+        filterParams.search = filters.productType;
+      }
+      
+      if (filters.city) {
+        filterParams.search = filterParams.search 
+          ? `${filterParams.search} ${filters.city}` 
+          : filters.city;
+      }
+      
+      if (filters.minPrice) {
+        filterParams.min_price = Number(filters.minPrice);
+      }
+      
+      if (filters.maxPrice) {
+        filterParams.max_price = Number(filters.maxPrice);
+      }
+      
+      if (filters.name) {
+        filterParams.search = filterParams.search 
+          ? `${filterParams.search} ${filters.name}` 
+          : filters.name;
+      }
+      
+      // Add sorting
+      if (filters.sortBy) {
+        switch (filters.sortBy) {
+          case 'priceAsc':
+            filterParams.sort_by = 'price_per_kg';
+            filterParams.sort_order = 'asc';
+            break;
+          case 'priceDesc':
+            filterParams.sort_by = 'price_per_kg';
+            filterParams.sort_order = 'desc';
+            break;
+          case 'dateDesc':
+            filterParams.sort_by = 'created_at';
+            filterParams.sort_order = 'desc';
+            break;
+          case 'dateAsc':
+            filterParams.sort_by = 'created_at';
+            filterParams.sort_order = 'asc';
+            break;
+        }
+      }
+
+      const response: CursorPaginatedResponse<Post> = await postService.getPosts(filterParams);
+
+      // If it's pagination, append to existing posts
+      if (cursor) {
+        setPosts(prev => [...prev, ...response.data]);
+      } else {
+        setPosts(response.data);
+      }
+
+      // Set pagination info
+      setHasMore(!!response.pagination.next_cursor);
+      setNextCursor(response.pagination.next_cursor || null);
+    } catch (error) {
+      console.error('Error cargando productos:', error);
+      toast.error('Error al cargar productos en venta');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFilter = useCallback((filters: any) => {
+    // Clear previous timeout
+    if (filterTimeout.current) {
+      clearTimeout(filterTimeout.current);
+    }
+    
+    // Skip first filter to prevent immediate API calls
+    if (isFirstFilter.current) {
+      isFirstFilter.current = false;
+      return;
+    }
+    
+    // Set new timeout to debounce filter requests
+    filterTimeout.current = setTimeout(() => {
+      loadPosts(filters);
+    }, 500); // Aumentar debounce para evitar re-renders
+  }, []);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("es-ES", {
@@ -87,31 +198,109 @@ export default function Shopping() {
     });
   };
 
+  const handleEdit = async (postDetail: PostDetailData) => {
+    try {
+      // Fetch the full post data for editing
+      const fullPost = await postService.getPost(postDetail.post_id);
+      setEditingPost(fullPost);
+      setShowEditModal(true);
+    } catch (error) {
+      console.error("Error fetching post for editing:", error);
+      toast.error("Error al cargar la publicación para editar");
+    }
+  };
+
+  const handleDelete = (postId: number) => {
+    // Remove the deleted post from the lists
+    setPosts(prev => prev.filter(p => p.id !== postId));
+    
+    // If the deleted post was selected, close the detail view
+    if (selectedPost && selectedPost.id === postId) {
+      setSelectedPost(null);
+    }
+  };
+
+  const handleUpdateSubmit = async (updatedPost: Post) => {
+    // Update the posts in state
+    setPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPost : p));
+    
+    // If this post is currently selected, update the selection
+    if (selectedPost && selectedPost.id === updatedPost.id) {
+      setSelectedPost(updatedPost);
+    }
+    
+    setShowEditModal(false);
+    setEditingPost(null);
+    toast.success("Publicación actualizada con éxito");
+  };
+
   return (
     <MainLayout onFilter={handleFilter}>
       <h1 className="text-3xl font-extrabold text-green-900 dark:text-green-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
         Productos en Venta
       </h1>
 
-      <div className="flex flex-col lg:flex-row gap-6 flex-grow">
-        {/* Lista en dos columnas */}
-        <div className="lg:w-1/2 w-full">
-          <PostListSale
-            posts={filteredPosts}
-            onSelectPost={(post: PostData) => setSelectedPost(post)}
-            formatDate={formatDate}
-          />
+      {isLoading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
         </div>
+      ) : (
+        <div className="flex flex-col lg:flex-row gap-6 flex-grow">
+          {/* Lista en dos columnas */}
+          <div className="lg:w-1/2 w-full">
+            <PostListSale
+              posts={posts}
+              onSelectPost={setSelectedPost}
+              formatDate={formatDate}
+            />
+          </div>
 
-        {/* Detalle */}
-        <div className="hidden lg:w-1/2 lg:block w-full">
-          <PostDetail
-            post={selectedPost}
-            onClose={() => setSelectedPost(null)}
-            formatDate={formatDate}
-          />
+          {/* Detalle */}
+          <div className="hidden lg:w-1/2 lg:block w-full">
+            <PostDetail
+              post={selectedPostDetail}
+              onClose={() => setSelectedPost(null)}
+              formatDate={formatDate}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          </div>
+          
+          {/* Mobile modal overlay for post details */}
+          {selectedPostDetail && (
+            <div className="lg:hidden fixed inset-0 z-50">
+              <div 
+                className="absolute inset-0 bg-black bg-opacity-50"
+                onClick={() => setSelectedPost(null)}
+              ></div>
+              <div className="absolute inset-0 flex items-center justify-center p-4">
+                <div className="bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+                  <PostDetail
+                    post={selectedPostDetail}
+                    onClose={() => setSelectedPost(null)}
+                    formatDate={formatDate}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Edit Post Modal */}
+          {editingPost && (
+            <EditPostModal
+              isOpen={showEditModal}
+              onClose={() => {
+                setShowEditModal(false);
+                setEditingPost(null);
+              }}
+              post={editingPost}
+              onSubmit={handleUpdateSubmit}
+            />
+          )}
         </div>
-      </div>
+      )}
     </MainLayout>
   );
 }

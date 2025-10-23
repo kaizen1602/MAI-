@@ -1,5 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Search, XCircle, Sliders } from "lucide-react";
+import { supportDataService } from "../data/services";
+import type { Department, Municipality, ProductType } from "../data/types/product.types";
+import type { PostType } from "../data/types/post.types";
 
 interface FiltersProps {
   onFilter: (filters: any) => void;
@@ -19,18 +22,55 @@ export default function Filters({ onFilter }: FiltersProps) {
   });
 
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const isFirstRender = useRef(true);
+  
+  // Support data
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+  const [postTypes, setPostTypes] = useState<PostType[]>([]);
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadSupportData();
+  }, []);
+
+  const loadSupportData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await supportDataService.loadAllSupportData();
+      setDepartments(data.departments);
+      setPostTypes(data.postTypes);
+      setProductTypes(data.productTypes); // Por ahora mostrar todos los tipos
+      
+      // Datos cargados correctamente
+    } catch (error) {
+      console.error('Error cargando datos de filtros:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Apply filters automatically when they change, but not on first render
+  useEffect(() => {
+    // Skip first render to prevent immediate API calls
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    
+    const timer = setTimeout(() => {
+      onFilter(filters);
+    }, 300); // Debounce estándar
+
+    return () => clearTimeout(timer);
+  }, [filters, onFilter]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onFilter(filters);
-    setShowMobileFilters(false); // Close mobile filters after applying
   };
 
   const handleReset = () => {
@@ -46,13 +86,18 @@ export default function Filters({ onFilter }: FiltersProps) {
       sortBy: "",
     };
     setFilters(resetFilters);
-    onFilter({});
     setShowMobileFilters(false); // Close mobile filters after resetting
   };
 
   // Filter form content (shared between desktop and mobile)
   const FilterForm = () => (
     <div className="flex-grow space-y-4">
+      {isLoading && (
+        <div className="text-center py-4">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-600 mx-auto"></div>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Cargando filtros...</p>
+        </div>
+      )}
       {/* Tipo de producto */}
       <div>
         <label className="block text-base font-semibold mb-1">
@@ -63,12 +108,14 @@ export default function Filters({ onFilter }: FiltersProps) {
           value={filters.productType}
           onChange={handleChange}
           className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+          aria-label="Tipo de Producto"
         >
           <option value="">Todos</option>
-          <option value="cultivo">Cultivo</option>
-          <option value="carnico">Cárnico</option>
-          <option value="lacteo">Lácteo</option>
-          <option value="otros">Otros</option>
+          {productTypes.map(product => (
+            <option key={product.id} value={product.id}>
+              {product.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -82,10 +129,14 @@ export default function Filters({ onFilter }: FiltersProps) {
           value={filters.postType}
           onChange={handleChange}
           className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+          aria-label="Tipo de Publicación"
         >
           <option value="">Todas</option>
-          <option value="venta">Venta</option>
-          <option value="compra">Compra</option>
+          {postTypes.map(type => (
+            <option key={type.id} value={type.id}>
+              {type.name}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -101,6 +152,7 @@ export default function Filters({ onFilter }: FiltersProps) {
             value={filters.minPrice}
             onChange={handleChange}
             className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+            aria-label="Precio Mínimo"
           />
         </div>
         <div className="flex-1">
@@ -113,6 +165,7 @@ export default function Filters({ onFilter }: FiltersProps) {
             value={filters.maxPrice}
             onChange={handleChange}
             className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+            aria-label="Precio Máximo"
           />
         </div>
       </div>
@@ -129,6 +182,7 @@ export default function Filters({ onFilter }: FiltersProps) {
           onChange={handleChange}
           placeholder="Ej: Bogotá"
           className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+          aria-label="Ciudad o Municipio"
         />
       </div>
 
@@ -146,6 +200,7 @@ export default function Filters({ onFilter }: FiltersProps) {
             onChange={handleChange}
             placeholder="Ej: Tomate"
             className="w-full border rounded-lg pl-10 px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+            aria-label="Nombre del Producto"
           />
         </div>
       </div>
@@ -162,6 +217,7 @@ export default function Filters({ onFilter }: FiltersProps) {
               value={filters.dateFrom}
               onChange={handleChange}
               className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+              aria-label="Fecha Desde"
             />
           </div>
           <div>
@@ -172,6 +228,7 @@ export default function Filters({ onFilter }: FiltersProps) {
               value={filters.dateTo}
               onChange={handleChange}
               className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+              aria-label="Fecha Hasta"
             />
           </div>
         </div>
@@ -187,6 +244,7 @@ export default function Filters({ onFilter }: FiltersProps) {
           value={filters.sortBy}
           onChange={handleChange}
           className="w-full border rounded-lg px-3 py-2 text-sm bg-gray-50 dark:bg-gray-800 dark:text-white"
+          aria-label="Ordenar por"
         >
           <option value="">Predeterminado</option>
           <option value="priceAsc">Precio: Menor a Mayor</option>
@@ -201,12 +259,6 @@ export default function Filters({ onFilter }: FiltersProps) {
   // Buttons section (shared between desktop and mobile)
   const FilterButtons = () => (
     <div className="flex justify-between pt-2">
-      <button
-        type="submit"
-        className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-      >
-        <Search className="h-4 w-4" /> Aplicar
-      </button>
       <button
         type="button"
         onClick={handleReset}
@@ -241,7 +293,7 @@ export default function Filters({ onFilter }: FiltersProps) {
       ></div>
       <div className="absolute inset-0 flex items-center justify-center p-4">
         <div className="bg-white dark:bg-gray-900/90 rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
-          <form onSubmit={handleSubmit} className="p-6">
+          <div className="p-6">
             {/* Header */}
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2">
@@ -264,12 +316,6 @@ export default function Filters({ onFilter }: FiltersProps) {
             {/* Botones */}
             <div className="flex justify-between pt-6">
               <button
-                type="submit"
-                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
-              >
-                <Search className="h-4 w-4" /> Aplicar
-              </button>
-              <button
                 type="button"
                 onClick={handleReset}
                 className="flex items-center gap-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white px-4 py-2 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-600 transition"
@@ -277,7 +323,7 @@ export default function Filters({ onFilter }: FiltersProps) {
                 <XCircle className="h-4 w-4" /> Limpiar
               </button>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </div>
@@ -286,8 +332,7 @@ export default function Filters({ onFilter }: FiltersProps) {
   return (
     <>
       {/* Desktop filters - visible only on large screens */}
-      <form
-        onSubmit={handleSubmit}
+      <div
         className="hidden lg:block bg-white dark:bg-gray-900/90 p-6 rounded-2xl shadow-lg space-y-5 h-full flex flex-col border border-gray-200 dark:border-gray-700"
       >
         {/* Header */}
@@ -300,7 +345,7 @@ export default function Filters({ onFilter }: FiltersProps) {
 
         <FilterForm />
         <FilterButtons />
-      </form>
+      </div>
 
       {/* Mobile filter button */}
       <MobileFilterButton />

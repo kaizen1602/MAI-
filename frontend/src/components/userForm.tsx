@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../data/context/AuthContext";
 import {
   FaUser,
   FaEnvelope,
@@ -9,42 +11,45 @@ import {
 } from "react-icons/fa";
 
 interface UserFormData {
-  full_name: string;
+  name: string;
   email: string;
   password: string;
-  phone_number: string;
-  address_details: string;
-  role: string;
+  password_confirmation: string;
 }
 
 const RegisterForm: React.FC = () => {
+  const navigate = useNavigate();
+  const { register } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "error" | "success";
+  } | null>(null);
+  
   const [formData, setFormData] = useState<UserFormData>({
-    full_name: "",
+    name: "",
     email: "",
     password: "",
-    phone_number: "",
-    address_details: "",
-    role: "",
+    password_confirmation: "",
   });
 
   const [errors, setErrors] = useState<Partial<UserFormData>>({});
 
   const validate = () => {
     const newErrors: Partial<UserFormData> = {};
-    if (!formData.full_name.trim())
-      newErrors.full_name = "El nombre es requerido";
+    if (!formData.name.trim())
+      newErrors.name = "El nombre es requerido";
     if (!formData.email.trim()) newErrors.email = "El email es requerido";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Email inválido";
     if (!formData.password.trim())
       newErrors.password = "La contraseña es requerida";
-    else if (formData.password.length < 6)
-      newErrors.password = "Debe tener al menos 6 caracteres";
-    if (!formData.phone_number.trim())
-      newErrors.phone_number = "El teléfono es requerido";
-    if (!formData.address_details.trim())
-      newErrors.address_details = "La dirección es requerida";
-    if (!formData.role.trim()) newErrors.role = "El rol es requerido";
+    else if (formData.password.length < 8)
+      newErrors.password = "Debe tener al menos 8 caracteres";
+    if (!formData.password_confirmation.trim())
+      newErrors.password_confirmation = "Debes confirmar la contraseña";
+    else if (formData.password !== formData.password_confirmation)
+      newErrors.password_confirmation = "Las contraseñas no coinciden";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -58,11 +63,40 @@ const RegisterForm: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
-      alert("Formulario válido ✅ (datos quemados por ahora)");
-      console.log(formData);
+      try {
+        setIsLoading(true);
+        setMessage(null);
+        
+        // Preparar datos con campos requeridos por el backend
+        const registerData = {
+          ...formData,
+          phone_number: "+502 0000 0000", // Valor por defecto
+          address_details: "Por definir", // Valor por defecto
+          role_id: 2 // Rol de comprador por defecto
+        };
+        
+        await register(registerData);
+        
+        setMessage({
+          text: "¡Registro exitoso! 🎉 Redirigiendo...",
+          type: "success",
+        });
+        
+        setTimeout(() => {
+          navigate("/wall");
+        }, 1000);
+      } catch (error: any) {
+        console.error('Error en registro:', error);
+        setMessage({
+          text: error.response?.data?.message || "Error al registrarse. Inténtalo de nuevo.",
+          type: "error",
+        });
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -76,6 +110,20 @@ const RegisterForm: React.FC = () => {
           Registro de Usuario
         </h2>
 
+        {/* Mensaje dinámico */}
+        {message && (
+          <div
+            className={`mb-4 p-4 rounded-lg text-center font-semibold transition-all duration-500 transform
+            ${
+              message.type === "error"
+                ? "bg-red-100 text-red-700 border border-red-300 animate-shake"
+                : "bg-green-100 text-green-700 border border-green-300 animate-fadeIn"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+
         {/* Nombre */}
         <div>
           <label className="block font-medium mb-1">Nombre completo</label>
@@ -83,37 +131,16 @@ const RegisterForm: React.FC = () => {
             <FaUser className="text-gray-400 mr-2" />
             <input
               type="text"
-              name="full_name"
-              value={formData.full_name}
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               className="w-full outline-none text-lg"
               placeholder="Ej: Juan Pérez"
             />
           </div>
-          {errors.full_name && (
-            <p className="text-red-500 text-sm">{errors.full_name}</p>
+          {errors.name && (
+            <p className="text-red-500 text-sm">{errors.name}</p>
           )}
-        </div>
-
-        
-
-        {/* Rol */}
-        <div>
-          <label className="block font-medium mb-1">Rol</label>
-          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-500">
-            <FaUserTag className="text-gray-400 mr-2" />
-            <select
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              className="w-full outline-none text-lg bg-transparent"
-            >
-              <option value="">Seleccione un rol</option>
-              <option value="1">Usuario</option>
-              <option value="2">Administrador</option>
-            </select>
-          </div>
-          {errors.role && <p className="text-red-500 text-sm">{errors.role}</p>}
         </div>
 
         {/* Email */}
@@ -146,7 +173,7 @@ const RegisterForm: React.FC = () => {
               value={formData.password}
               onChange={handleChange}
               className="w-full outline-none text-lg"
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 8 caracteres"
             />
           </div>
           {errors.password && (
@@ -154,31 +181,43 @@ const RegisterForm: React.FC = () => {
           )}
         </div>
 
-        {/* confirmacion de Contraseña */}
+        {/* Confirmación de Contraseña */}
         <div>
-          <label className="block font-medium mb-1">Ingrese de nuevo contraseña</label>
+          <label className="block font-medium mb-1">Confirmar contraseña</label>
           <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-500">
             <FaLock className="text-gray-400 mr-2" />
             <input
               type="password"
-              name="password"
-              value={formData.password}
+              name="password_confirmation"
+              value={formData.password_confirmation}
               onChange={handleChange}
               className="w-full outline-none text-lg"
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Confirma tu contraseña"
             />
           </div>
-          {errors.password && (
-            <p className="text-red-500 text-sm">{errors.password}</p>
+          {errors.password_confirmation && (
+            <p className="text-red-500 text-sm">{errors.password_confirmation}</p>
           )}
         </div>
+        
         {/* Botón */}
         <button
           type="submit"
-          className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold text-lg"
+          disabled={isLoading}
+          className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Registrarse
+          {isLoading ? 'Registrando...' : 'Registrarse'}
         </button>
+        
+        <p className="text-center text-gray-600 mt-4">
+          ¿Ya tienes cuenta?{" "}
+          <a
+            href="/login"
+            className="text-green-600 hover:underline font-semibold"
+          >
+            Iniciar sesión
+          </a>
+        </p>
       </form>
     </div>
   );

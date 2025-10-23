@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaCheckCircle, FaTimes, FaStar } from "react-icons/fa";
 
 interface PurchaseConfirmationModalProps {
@@ -15,6 +15,15 @@ function PurchaseConfirmationModal({ isOpen, onClose, productName, sellerName, i
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+
+  // Reset state when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setRating(0);
+      setHover(0);
+      setShowSuccessMessage(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 

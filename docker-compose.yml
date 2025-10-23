@@ -28,7 +28,7 @@ services:
       dockerfile: ./docker/dockerfiles/php.dockerfile
     container_name: php_fpm
     volumes:
-       - ./backend:/var/www/html
+      - ./backend:/var/www/html
     depends_on:
       - mysql
     command: >
@@ -59,7 +59,7 @@ services:
   # ------------------------
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
-    platform: linux/amd64   # 👈 Forzar compatibilidad en Mac M1/M2
+    platform: linux/amd64
     container_name: phpmyadmin
     restart: always
     ports:
@@ -86,12 +86,33 @@ services:
     environment:
       - GENERIC_TIMEZONE=America/Bogota
     volumes:
-      - agro_n8n_data:/home/node/.n8n  # Si quieres persistencia en n8n, descomenta esta línea y el volumen en la sección volumes
+      - agro_n8n_data:/home/node/.n8n
     networks:
       - my_network
+
+  # ------------------------
+  # Frontend
+  # ------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend_app
+    volumes:
+      - ./frontend:/app
+    environment:
+      - NODE_ENV=production
+    networks:
+      - my_network
+    depends_on:
+      - nginx
+
+# ------------------------
+# Volumes
+# ------------------------
 volumes:
   agro_mysql_data:
-  agro_n8n_data:  # Si quieres persistencia en n8n, descomenta esta línea y el volumen en la sección n8n
+  agro_n8n_data:
 
 # ------------------------
 # Networks

@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { FaTrash, FaCheck, FaBan } from "react-icons/fa";
+import { toast } from "react-hot-toast";
+import { FaTrash, FaCheck, FaBan, FaEdit } from "react-icons/fa";
 
 interface Post {
-  post_id: number;
+  id: number;
   title: string;
   imageUrl?: string;
   description?: string;
@@ -13,12 +14,17 @@ interface Post {
 
 interface UserPostsProps {
   posts: Post[];
+  onEdit?: (postId: number) => void;
+  onDelete?: (postId: number) => void;
+  onMarkAsSold?: (postId: number, soldOnPlatform: boolean) => void;
+  onDeactivate?: (postId: number) => void;
 }
 
 interface PostModalProps {
   post: Post;
   onClose: () => void;
-  onDelete: (postId: number) => void;
+  onEdit?: (postId: number) => void;
+  onDelete?: (postId: number) => void;
   onMarkAsSold: (postId: number, soldOnPlatform: boolean) => void;
   onDeactivate: (postId: number) => void;
 }
@@ -108,20 +114,31 @@ function SoldConfirmationModal({ post, onConfirm, onCancel }: SoldConfirmationMo
   );
 }
 
-function PostModal({ post, onClose, onDelete, onMarkAsSold, onDeactivate }: PostModalProps) {
+function PostModal({ post, onClose, onEdit, onDelete, onMarkAsSold, onDeactivate }: PostModalProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSoldModal, setShowSoldModal] = useState(false);
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(post.id);
+    }
+    onClose();
+  };
+
+  const handleEdit = () => {
+    if (onEdit) {
+      onEdit(post.id);
+    }
+    onClose();
+  };
 
   if (showDeleteConfirm) {
     return (
       <ConfirmationModal
         title="Eliminar Publicación"
         message="¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer."
-        onConfirm={() => {
-          onDelete(post.post_id);
-          onClose();
-        }}
+        onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
     );
@@ -132,7 +149,7 @@ function PostModal({ post, onClose, onDelete, onMarkAsSold, onDeactivate }: Post
       <SoldConfirmationModal
         post={post}
         onConfirm={(soldOnPlatform) => {
-          onMarkAsSold(post.post_id, soldOnPlatform);
+          onMarkAsSold(post.id, soldOnPlatform);
           onClose();
         }}
         onCancel={() => setShowSoldModal(false)}
@@ -146,7 +163,7 @@ function PostModal({ post, onClose, onDelete, onMarkAsSold, onDeactivate }: Post
         title="Desactivar Publicación"
         message="¿Estás seguro de que quieres desactivar esta publicación? Podrás reactivarla más tarde."
         onConfirm={() => {
-          onDeactivate(post.post_id);
+          onDeactivate(post.id);
           onClose();
         }}
         onCancel={() => setShowDeactivateConfirm(false)}
@@ -201,6 +218,13 @@ function PostModal({ post, onClose, onDelete, onMarkAsSold, onDeactivate }: Post
 
         <div className="flex flex-wrap gap-3 justify-center">
           <button
+            onClick={handleEdit}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center"
+          >
+            <FaEdit className="mr-2" /> Editar
+          </button>
+          
+          <button
             onClick={() => setShowSoldModal(true)}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center"
           >
@@ -227,26 +251,34 @@ function PostModal({ post, onClose, onDelete, onMarkAsSold, onDeactivate }: Post
   );
 }
 
-export default function UserPosts({ posts }: UserPostsProps) {
+export default function UserPosts({ posts, onEdit, onDelete, onMarkAsSold: onMarkAsSoldProp, onDeactivate: onDeactivateProp }: UserPostsProps) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   const handleDelete = (postId: number) => {
-    // En una aplicación real, aquí haríamos una llamada a la API para eliminar el post
-    console.log("Eliminar publicación con ID:", postId);
-    alert(`Publicación eliminada (ID: ${postId})`);
+    if (onDelete) {
+      onDelete(postId);
+    }
   };
 
   const handleMarkAsSold = (postId: number, soldOnPlatform: boolean) => {
-    // En una aplicación real, aquí haríamos una llamada a la API para marcar como vendido
-    const platform = soldOnPlatform ? "en la plataforma" : "fuera de la plataforma";
-    console.log(`Marcar publicación ${postId} como vendido ${platform}`);
-    alert(`Publicación marcada como vendida ${platform} (ID: ${postId})`);
+    if (onMarkAsSoldProp) {
+      onMarkAsSoldProp(postId, soldOnPlatform);
+    } else {
+      // Fallback si no se pasa la función
+      const platform = soldOnPlatform ? "en la plataforma" : "fuera de la plataforma";
+      console.log(`Marcar publicación ${postId} como vendido ${platform}`);
+      toast.success(`Publicación marcada como vendida ${platform}`);
+    }
   };
 
   const handleDeactivate = (postId: number) => {
-    // En una aplicación real, aquí haríamos una llamada a la API para desactivar el post
-    console.log("Desactivar publicación con ID:", postId);
-    alert(`Publicación desactivada (ID: ${postId})`);
+    if (onDeactivateProp) {
+      onDeactivateProp(postId);
+    } else {
+      // Fallback si no se pasa la función
+      console.log("Desactivar publicación con ID:", postId);
+      toast.success("Publicación desactivada exitosamente");
+    }
   };
 
   return (
@@ -261,7 +293,7 @@ export default function UserPosts({ posts }: UserPostsProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {posts.map((post) => (
             <div
-              key={post.post_id}
+              key={post.id}
               className="bg-white/90 dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-transform hover:-translate-y-1 cursor-pointer"
               onClick={() => setSelectedPost(post)}
             >
@@ -294,7 +326,8 @@ export default function UserPosts({ posts }: UserPostsProps) {
         <PostModal
           post={selectedPost}
           onClose={() => setSelectedPost(null)}
-          onDelete={handleDelete}
+          onEdit={onEdit}
+          onDelete={onDelete}
           onMarkAsSold={handleMarkAsSold}
           onDeactivate={handleDeactivate}
         />

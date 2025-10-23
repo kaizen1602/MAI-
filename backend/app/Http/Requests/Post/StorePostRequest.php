@@ -14,13 +14,12 @@ class StorePostRequest extends FormRequest
         return true;
     }
 
-    
     /**
      * Get the validation rules that apply to the request.
      *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+     public function rules(): array
     {
         return [
             'title' => 'required|string|max:100',
@@ -30,10 +29,10 @@ class StorePostRequest extends FormRequest
             'post_type_id' => 'required|integer|exists:post_types,id',
             'product_id' => 'required|integer|exists:products,id',
             'municipality_id' => 'required|integer|exists:municipalities,id',
-
-            // Validación de imágenes como archivos
+            
+            // Opcional: Si permites subir imágenes en el mismo request
             'images' => 'nullable|array|max:5',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:5120', // 5MB máximo
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Aceptar archivos de imagen
         ];
     }
 
@@ -49,45 +48,44 @@ class StorePostRequest extends FormRequest
             'title.required' => 'El título de la publicación es obligatorio.',
             'title.string' => 'El título debe ser una cadena de texto.',
             'title.max' => 'El título no debe exceder los 100 caracteres.',
-
+            
             // Description
             'description.string' => 'La descripción debe ser una cadena de texto.',
             'description.max' => 'La descripción no debe exceder los 400 caracteres.',
-
+            
             // Quantity
             'quantity_kg.required' => 'La cantidad en kilogramos es obligatoria.',
             'quantity_kg.numeric' => 'La cantidad debe ser un valor numérico.',
             'quantity_kg.min' => 'La cantidad debe ser mayor a 0.',
             'quantity_kg.max' => 'La cantidad no debe exceder 999999.99 kg.',
-
+            
             // Price
             'price_per_kg.required' => 'El precio por kilogramo es obligatorio.',
             'price_per_kg.numeric' => 'El precio debe ser un valor numérico.',
             'price_per_kg.min' => 'El precio debe ser mayor a 0.',
             'price_per_kg.max' => 'El precio no debe exceder 999999.99.',
-
+            
             // Post Type
             'post_type_id.required' => 'El tipo de publicación es obligatorio.',
             'post_type_id.integer' => 'El tipo de publicación debe ser un número entero.',
             'post_type_id.exists' => 'El tipo de publicación seleccionado no es válido.',
-
+            
             // Product
             'product_id.required' => 'El producto es obligatorio.',
             'product_id.integer' => 'El ID del producto debe ser un número entero.',
             'product_id.exists' => 'El producto seleccionado no existe.',
-
+            
             // Municipality
             'municipality_id.required' => 'El municipio es obligatorio.',
             'municipality_id.integer' => 'El ID del municipio debe ser un número entero.',
             'municipality_id.exists' => 'El municipio seleccionado no existe.',
-
-            // Mensajes para imágenes
+            
+            // Images (opcional)
             'images.array' => 'Las imágenes deben enviarse como un array.',
-            'images.max' => 'No puedes subir más de 5 imágenes.',
-            'images.*.image' => 'Cada archivo debe ser una imagen.',
-            'images.*.mimes' => 'Las imágenes deben ser de tipo: jpeg, png, jpg o webp.',
-            'images.*.max' => 'Cada imagen no debe exceder los 5MB.',
-
+            'images.max' => 'No puedes subir más de 5 imágenes por publicación.',
+            'images.*.image' => 'Cada elemento debe ser un archivo de imagen.',
+            'images.*.mimes' => 'Las imágenes deben ser de tipo JPEG, PNG, JPG, GIF o SVG.',
+            'images.*.max' => 'Cada imagen no debe exceder los 2MB de tamaño.',
         ];
     }
 
@@ -99,7 +97,7 @@ class StorePostRequest extends FormRequest
     public function getPostData(): array
     {
         $validated = $this->validated();
-
+        
         return [
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,

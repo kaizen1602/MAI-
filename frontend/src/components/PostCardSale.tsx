@@ -1,26 +1,8 @@
-import { FaThumbsUp, FaRegCommentDots, FaMapMarkerAlt, FaImage, FaAppleAlt, FaFish, FaEgg, FaCheese, FaCarrot, FaDrumstickBite, FaSeedling } from "react-icons/fa";
-
-// Definimos la interfaz para los posts con la estructura real de los datos
-interface Post {
-  post_id: number;
-  title: string;
-  user: { user_id: number; name: string };
-  description: string;
-  created_at: string;
-  post_type: { type_id: number; type_name: string };
-  images?: { image_id: number; url: string }[];
-  likes?: number;
-  comments?: number;
-  quantity_kg?: number;
-  price_per_kg?: number;
-  municipality?: { municipality_id: number; name: string };
-  product?: {
-    product_id: number;
-    name: string;
-    description: string;
-    image_url: string;
-  };
-}
+import { FaThumbsUp, FaRegCommentDots, FaMapMarkerAlt, FaImage, FaAppleAlt, FaFish, FaEgg, FaCheese, FaCarrot, FaDrumstickBite, FaSeedling, FaHeart } from "react-icons/fa";
+import { favoriteService } from "../data/services";
+import { useAuth } from "../data/context/AuthContext";
+import type { Post } from "../data/types/post.types";
+import { toast } from "react-hot-toast";
 
 interface PostCardSaleProps {
   post: Post;
@@ -72,11 +54,41 @@ const getProductIcon = (productName: string) => {
 };
 
 function PostCardSale({ post, onSelectPost, formatDate }: PostCardSaleProps) {
+  const { user } = useAuth();
+  
   // Extraemos solo la primera imagen
   const firstImage = post.images && post.images.length > 0 ? post.images[0].url : null;
   
   // Obtenemos el nombre del producto o un valor por defecto
   const productName = post.product?.name || "Producto";
+  
+  // Extraemos el tipo de post correctamente
+  const postType = post.post_type?.name || "Tipo desconocido";
+
+  const handleFavoriteToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    if (!user) {
+      toast.error("Debes iniciar sesión para guardar favoritos");
+      return;
+    }
+    
+    try {
+      await favoriteService.toggleFavorite(post.id);
+      // Create a new post object with updated values
+      const updatedPost = {
+        ...post,
+        is_favorited: !post.is_favorited,
+        favorites_count: post.favorites_count + (post.is_favorited ? -1 : 1)
+      };
+      
+      // Pass the updated post to the parent component
+      onSelectPost(updatedPost);
+    } catch (error) {
+      console.error("Error toggling favorite:", error);
+      toast.error("Error al actualizar favorito");
+    }
+  };
 
   return (
     <div
@@ -108,11 +120,40 @@ function PostCardSale({ post, onSelectPost, formatDate }: PostCardSaleProps) {
 
       {/* Municipio con icono */}
       {post.municipality?.name && (
-        <div className="flex items-center justify-center text-gray-600 dark:text-gray-400">
+        <div className="flex items-center justify-center text-gray-600 dark:text-gray-400 mb-2">
           <FaMapMarkerAlt className="mr-2 text-green-600 dark:text-green-400" />
           <span>{post.municipality.name}</span>
         </div>
       )}
+      
+      {/* Precio y cantidad */}
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-lg font-bold text-green-700 dark:text-green-400">
+          ${post.price_per_kg?.toLocaleString() || '0'} / kg
+        </span>
+        <span className="text-gray-600 dark:text-gray-400">
+          {post.quantity_kg?.toLocaleString() || '0'} kg
+        </span>
+      </div>
+      
+      {/* Footer */}
+      <div className="flex justify-between items-center mt-3">
+        <button 
+          onClick={handleFavoriteToggle}
+          className={`flex items-center space-x-1 ${post.is_favorited ? 'text-red-500' : 'text-gray-500 hover:text-red-400'}`}
+        >
+          <FaHeart className={post.is_favorited ? 'fill-current' : ''} />
+          <span>{post.favorites_count || 0}</span>
+        </button>
+
+        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+          postType === 'Oferta' 
+            ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200" 
+            : "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+        }`}>
+          {postType}
+        </span>
+      </div>
     </div>
   );
 }
