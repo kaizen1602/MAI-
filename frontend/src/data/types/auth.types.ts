@@ -13,6 +13,7 @@ export interface User {
   email: string;
   phone_number: string;
   address_details: string;
+  profile_image?: string | null;
   is_verified: boolean;
   is_admin: boolean;
   email_verified_at: string | null;
@@ -55,6 +56,7 @@ export interface UpdateProfileRequest {
   password_confirmation?: string;
   phone_number?: string;
   address_details?: string;
+  profile_image?: File;
   role_id?: number;
 }
 

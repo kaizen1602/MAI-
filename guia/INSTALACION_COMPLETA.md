@@ -155,4 +155,78 @@ lsof -i :5173
 cd frontend && npm run dev
 ```
 
+### Errores 404 y 500 en Consola (Clonación Nueva)
+
+Si ves estos errores en la consola del navegador:
+- `GET http://localhost:5173/api/my-favorites 404 (Not Found)`
+- `POST http://localhost:5173/api/auth/profile 500 (Internal Server Error)`
+- `Resource not found`
+
+**Causa**: El backend no está configurado correctamente o no está corriendo.
+
+**Solución paso a paso**:
+
+1. **Verificar que Docker esté corriendo**:
+```bash
+docker ps
+# Deberías ver: mysql_db, php_fpm, nginx, phpmyadmin
+```
+
+2. **Si no ves los contenedores, levantarlos**:
+```bash
+docker-compose up -d
+```
+
+3. **Verificar que las migraciones estén ejecutadas**:
+```bash
+docker exec php_fpm php artisan migrate:status
+```
+
+4. **Si no hay migraciones, ejecutarlas**:
+```bash
+docker exec php_fpm php artisan migrate
+docker exec php_fpm php artisan db:seed
+```
+
+5. **Verificar que el backend responda**:
+```bash
+curl http://localhost/api/auth/profile
+# Debería devolver un error 401 (no autenticado), no 404
+```
+
+6. **Si sigue fallando, reiniciar todo**:
+```bash
+docker-compose down
+docker-compose up -d
+docker exec php_fpm php artisan migrate
+docker exec php_fpm php artisan db:seed
+```
+
+7. **Verificar logs del backend**:
+```bash
+docker-compose logs php_fpm
+```
+
+### Error específico: "The POST method is not supported for route api/auth/profile"
+
+**Causa**: El endpoint `/api/auth/profile` solo acepta GET y PUT, no POST.
+
+**Solución**: Verificar que el frontend esté usando PUT para actualizar el perfil:
+```typescript
+// En AuthService.ts debería ser:
+await this.client.put(ENDPOINTS.AUTH.PROFILE, data);
+// NO POST
+```
+
+### Error específico: "my-favorites 404"
+
+**Causa**: El endpoint de favoritos no existe en el backend.
+
+**Solución**: Verificar que el backend tenga el endpoint:
+```bash
+docker exec php_fpm php artisan route:list | grep favorites
+```
+
+Si no existe, el componente `UserFavorites` fallará. Esto es normal si no se ha implementado aún.
+
 ¡Listo! Tu aplicación MAI debería estar funcionando completamente. 🎉

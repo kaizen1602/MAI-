@@ -7,6 +7,7 @@ import Sales from "./pages/sales";
 import Shopping from "./pages/shopping";
 import PostPage from "./pages/post";
 import ProfilePage from "./pages/Profile";
+import Charts from "./pages/Charts";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./data/context/AuthContext";
 import { PurchaseProvider } from "./data/context/PurchaseContext";
@@ -15,7 +16,7 @@ function App() {
   return (
     <AuthProvider>
       <PurchaseProvider>
-        <Router future={{ v7_relativeSplatPath: true }}>
+        <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
           <Toaster position="top-right" reverseOrder={false} />
           <Routes>
             <Route path="/" element={<Home />} />
@@ -26,6 +27,7 @@ function App() {
             <Route path="/shopping" element={<Shopping />} />
             <Route path="/post/:id" element={<PostPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/charts" element={<Charts />} />
           </Routes>
         </Router>
       </PurchaseProvider>

@@ -52,6 +52,17 @@ Documentación de la capa que conecta frontend y backend.
 - Manejo de autenticación
 - Optimizaciones
 
+### 🚨 [Troubleshooting](./TROUBLESHOOTING.md)
+Guía completa para solucionar errores comunes al clonar el repositorio.
+
+**Incluye:**
+- Errores 404 y 500 en consola
+- Problemas de autenticación
+- Errores de base de datos
+- Comandos de diagnóstico
+- Solución paso a paso
+- Debugging avanzado
+
 ## 🎯 Cómo Usar Esta Documentación
 
 1. **Para empezar**: Lee [Instalación Completa](./INSTALACION_COMPLETA.md)

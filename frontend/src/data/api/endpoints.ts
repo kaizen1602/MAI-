@@ -1,14 +1,6 @@
-/**
- * API Endpoints Configuration
- * 
- * Centralized definition of all API endpoints used in the application.
- * Following the Single Responsibility Principle (SOLID).
- * 
- * Note: Vite proxy intercepts /api/* and forwards to backend.
- * Axios baseURL is empty, so we include /api prefix here.
- */
 
-// Base URL - Include /api prefix for Vite proxy
+
+// Base URL 
 export const API_BASE_URL = '/api';
 
 /**
@@ -24,11 +16,18 @@ export const ENDPOINTS = {
     PROFILE: `${API_BASE_URL}/auth/profile`,
     LOGOUT: `${API_BASE_URL}/auth/logout`,
     LOGOUT_ALL: `${API_BASE_URL}/auth/logout-all`,
+    FORGOT_PASSWORD: `${API_BASE_URL}/auth/forgot-password`,
+    RESET_PASSWORD: `${API_BASE_URL}/auth/reset-password`,
+    CHANGE_PASSWORD: `${API_BASE_URL}/auth/change-password`,
   },
 
   // ==========================================
-  // Posts Endpoints
+  // User Endpoints
   // ==========================================
+  USERS: {
+    SHOW: (id: number) => `${API_BASE_URL}/users/${id}`,
+    RATING: (id: number) => `${API_BASE_URL}/users/${id}/rating`,
+  },
   POSTS: {
     BASE: `${API_BASE_URL}/posts`,
     DETAIL: (id: number) => `${API_BASE_URL}/posts/${id}`,
@@ -82,13 +81,6 @@ export const ENDPOINTS = {
       `${API_BASE_URL}/municipalities/department/${deptId}`,
     POST_TYPES: `${API_BASE_URL}/post-types`,
     PRODUCT_TYPES: `${API_BASE_URL}/product-types`,
-  },
-
-  // ==========================================
-  // Users Endpoints
-  // ==========================================
-  USERS: {
-    DETAIL: (id: number) => `${API_BASE_URL}/users/${id}`,
   },
 } as const;
 

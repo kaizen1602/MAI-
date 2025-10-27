@@ -44,6 +44,7 @@ cd frontend && npm install && npm run dev
 
 ### 🛠️ Instalación Detallada
 - **[Guía Completa](./guia/INSTALACION_COMPLETA.md)** - Paso a paso desde cero
+- **[Troubleshooting](./guia/TROUBLESHOOTING.md)** - Solución de errores comunes
 
 ## ✨ Características
 

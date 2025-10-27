@@ -1,6 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../data/context/AuthContext";
+import { authService } from "../data/services";
 import ForgotPasswordModal from "../components/ForgotPasswordModal";
 
 function Login() {
@@ -52,10 +53,14 @@ function Login() {
     }
   };
 
-  const handleResetPassword = (email: string) => {
-    // En una aplicación real, aquí harías una llamada a la API
-    console.log("Solicitud de restablecimiento de contraseña para:", email);
-    // Simulamos el proceso de restablecimiento
+  const handleResetPassword = async (email: string) => {
+    try {
+      const response = await authService.forgotPassword(email);
+      console.log("Token de restablecimiento:", response.reset_token);
+      console.log("Mensaje:", response.message);
+    } catch (error: any) {
+      console.error('Error en restablecimiento de contraseña:', error);
+    }
   };
 
   return (
@@ -129,13 +134,7 @@ function Login() {
             </button>
           </form>
 
-          <div className="mt-6 p-4 bg-gray-100 rounded-lg text-sm text-gray-700">
-            <strong>Datos de prueba:</strong>
-            <p>Correo: test@mai.com</p>
-            <p>Contraseña: password123</p>
-          </div>
-
-          <p className="text-center text-gray-600 mt-4">
+          <p className="text-center text-gray-600 mt-6">
             ¿No tienes cuenta?{" "}
             <a
               href="/register"

@@ -87,6 +87,11 @@ export default function Filters({ onFilter }: FiltersProps) {
     };
     setFilters(resetFilters);
     setShowMobileFilters(false); // Close mobile filters after resetting
+    
+    // Aplicar filtros inmediatamente después del reset
+    setTimeout(() => {
+      onFilter(resetFilters);
+    }, 100);
   };
 
   // Filter form content (shared between desktop and mobile)

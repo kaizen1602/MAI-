@@ -12,18 +12,25 @@ import CompleteProfileModal from "../components/CompleteProfileModal";
 import { useAuth } from "../data/context/AuthContext";
 import { usePurchases } from "../data/context/PurchaseContext";
 import { postService } from "../data/services";
+import authService from "../data/services/AuthService";
 import { toast } from "react-hot-toast";
 import type { Post } from "../data/types/post.types";
 
 export default function ProfilePage() {
   const { user, updateProfile, isLoading } = useAuth();
   const { purchases } = usePurchases();
+  
+  // Debug: ver qué datos de compras tenemos
+  console.log('ProfilePage - Datos de compras del contexto:', purchases);
   const [showModal, setShowModal] = useState(false);
   const [showEditPostModal, setShowEditPostModal] = useState(false);
   const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [userPosts, setUserPosts] = useState<any[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+
+  // Type assertion para acceder a profile_image
+  const userWithImage = user as any;
 
   useEffect(() => {
     if (user) {
@@ -63,11 +70,50 @@ export default function ProfilePage() {
 
   const handleSave = async (updatedUser: any) => {
     try {
-      await updateProfile({
-        name: updatedUser.name,
-        email: updatedUser.email,
-      });
-      toast.success('Perfil actualizado correctamente');
+      console.log('Iniciando actualización de perfil:', updatedUser);
+      console.log('authService methods:', Object.getOwnPropertyNames(authService));
+      console.log('authService.changePassword:', typeof authService.changePassword);
+      console.log('authService.testMethod:', typeof authService.testMethod);
+      console.log('authService.testMethod result:', authService.testMethod ? authService.testMethod() : 'No disponible');
+      
+      const formData = new FormData();
+      formData.append('name', updatedUser.name);
+      formData.append('email', updatedUser.email);
+      
+      // Si hay una nueva imagen, agregarla al FormData
+      if (updatedUser.profileImage) {
+        formData.append('profile_image', updatedUser.profileImage);
+      }
+      
+      // Actualizar perfil básico
+      console.log('Actualizando perfil básico...');
+      await updateProfile(formData);
+      console.log('Perfil básico actualizado exitosamente');
+      
+      // Si se está cambiando la contraseña, hacerlo por separado
+      if (updatedUser.currentPassword && updatedUser.newPassword && updatedUser.confirmPassword) {
+        console.log('Cambiando contraseña...');
+        try {
+          await authService.changePassword(
+            updatedUser.currentPassword,
+            updatedUser.newPassword,
+            updatedUser.confirmPassword
+          );
+          console.log('Contraseña cambiada exitosamente');
+          toast.success('Perfil y contraseña actualizados correctamente');
+        } catch (passwordError: any) {
+          console.error('Error cambiando contraseña:', passwordError);
+          console.error('Response data:', passwordError.response?.data);
+          console.error('Response status:', passwordError.response?.status);
+          toast.error(passwordError.response?.data?.message || 'Error al cambiar la contraseña');
+          return; // No cerrar el modal si falla el cambio de contraseña
+        }
+      } else {
+        console.log('No se está cambiando la contraseña');
+        toast.success('Perfil actualizado correctamente');
+      }
+      
+      console.log('Cerrando modal...');
       setShowModal(false);
     } catch (error) {
       console.error('Error actualizando perfil:', error);
@@ -181,13 +227,13 @@ export default function ProfilePage() {
             <ProfileHeader
               name={user.name}
               username={user.email}
-              imageUrl={user.profile_image || "/default-avatar.jpg"}
+              imageUrl={userWithImage.profile_image || "/default-avatar.jpg"}
               onEdit={handleEdit}
             />
 
             {/* Barra de progreso del perfil */}
             <ProfileProgressBar
-              user={user}
+              user={userWithImage}
               onCompleteProfile={handleCompleteProfile}
             />
 
@@ -207,7 +253,7 @@ export default function ProfilePage() {
 
             {/* Historial de compras */}
             <div className="mt-8">
-              <ProfilePurchases />
+              <ProfilePurchases purchases={purchases} />
             </div>
 
             {/* Favoritos */}
@@ -241,7 +287,7 @@ export default function ProfilePage() {
               name: user.name,
               email: user.email,
               username: user.email,
-              imageUrl: '/default-avatar.jpg',
+              imageUrl: userWithImage.profile_image || '/default-avatar.jpg',
               city: user.address_details || '',
               joinDate: user.created_at,
               bio: '',

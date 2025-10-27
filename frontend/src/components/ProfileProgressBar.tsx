@@ -7,12 +7,15 @@ interface ProfileProgressBarProps {
     email?: string;
     phone_number?: string;
     address_details?: string;
-    profile_image?: string;
+    profile_image?: string | null;
   };
   onCompleteProfile: () => void;
 }
 
 export default function ProfileProgressBar({ user, onCompleteProfile }: ProfileProgressBarProps) {
+  // Debug: ver qué datos está recibiendo el componente
+  console.log('ProfileProgressBar - Datos del usuario:', user);
+  
   // Calcular el progreso del perfil
   const calculateProgress = () => {
     const fields = [
@@ -25,21 +28,65 @@ export default function ProfileProgressBar({ user, onCompleteProfile }: ProfileP
 
     const completedFields = fields.filter(field => {
       const value = user[field.key as keyof typeof user];
-      return value && value.trim() !== '';
+      
+      // Para campos de texto, verificar que no estén vacíos y no sean valores por defecto
+      if (field.key !== 'profile_image') {
+        if (!value || value.toString().trim() === '') return false;
+        
+        // Verificar valores por defecto específicos
+        const defaultValue = value.toString().trim();
+        if (field.key === 'phone_number' && defaultValue.includes('0000 0000')) return false;
+        if (field.key === 'address_details' && defaultValue === 'Por definir') return false;
+        
+        return true;
+      }
+      
+      // Para la imagen de perfil, verificar que no sea la imagen por defecto
+      if (field.key === 'profile_image') {
+        return value && value !== '/default-avatar.jpg' && value !== null;
+      }
+      
+      return false;
     });
 
     return {
       completed: completedFields.length,
       total: fields.length,
       percentage: Math.round((completedFields.length / fields.length) * 100),
-      fields: fields.map(field => ({
-        ...field,
-        completed: !!(user[field.key as keyof typeof user] && user[field.key as keyof typeof user]?.trim() !== ''),
-      })),
+      fields: fields.map(field => {
+        const value = user[field.key as keyof typeof user];
+        let completed = false;
+        
+        if (field.key !== 'profile_image') {
+          if (!value || value.toString().trim() === '') {
+            completed = false;
+          } else {
+            // Verificar valores por defecto específicos
+            const defaultValue = value.toString().trim();
+            if (field.key === 'phone_number' && defaultValue.includes('0000 0000')) {
+              completed = false;
+            } else if (field.key === 'address_details' && defaultValue === 'Por definir') {
+              completed = false;
+            } else {
+              completed = true;
+            }
+          }
+        } else {
+          completed = !!(value && value !== '/default-avatar.jpg' && value !== null);
+        }
+        
+        return {
+          ...field,
+          completed,
+        };
+      }),
     };
   };
 
   const progress = calculateProgress();
+  
+  // Debug: ver qué campos se consideran completados
+  console.log('ProfileProgressBar - Progreso calculado:', progress);
 
   // No mostrar si el perfil está completo
   if (progress.percentage === 100) {

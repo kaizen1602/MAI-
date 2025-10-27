@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use App\Http\Requests\User\LoginRequest;
@@ -124,5 +125,87 @@ class AuthController extends Controller
     {
         $request->user()->tokens()->delete();
         return $this->successResponse(null, 'Todas las sesiones cerradas exitosamente');
+    }
+
+    /**
+     * Envía email para restablecer contraseña
+     */
+    public function forgotPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+        
+        // Generar token de restablecimiento (simple para este ejemplo)
+        $resetToken = bin2hex(random_bytes(32));
+        
+        // Guardar token en la base de datos (en un campo temporal)
+        $user->update([
+            'remember_token' => $resetToken
+        ]);
+
+        // En una aplicación real, aquí enviarías el email
+        // Por ahora, solo logueamos el token para desarrollo
+        \Log::info("Token de restablecimiento para {$user->email}: {$resetToken}");
+
+        return $this->successResponse([
+            'reset_token' => $resetToken, // Solo para desarrollo
+            'message' => 'Si tu correo está registrado, recibirás instrucciones para restablecer tu contraseña'
+        ], 'Instrucciones enviadas');
+    }
+
+    /**
+     * Restablece la contraseña usando el token
+     */
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+            'token' => 'required|string',
+            'password' => 'required|string|min:8|confirmed'
+        ]);
+
+        $user = User::where('email', $request->email)
+                   ->where('remember_token', $request->token)
+                   ->first();
+
+        if (!$user) {
+            return $this->errorResponse('Token inválido o expirado', 400);
+        }
+
+        // Actualizar contraseña
+        $user->update([
+            'password' => bcrypt($request->password),
+            'remember_token' => null // Limpiar token
+        ]);
+
+        return $this->successResponse(null, 'Contraseña restablecida exitosamente');
+    }
+
+    /**
+     * Cambia la contraseña del usuario autenticado
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:8|confirmed'
+        ]);
+
+        $user = $request->user();
+
+        // Verificar contraseña actual
+        if (!Hash::check($request->current_password, $user->password)) {
+            return $this->errorResponse('La contraseña actual es incorrecta', 400);
+        }
+
+        // Actualizar contraseña
+        $user->update([
+            'password' => bcrypt($request->new_password)
+        ]);
+
+        return $this->successResponse(null, 'Contraseña cambiada exitosamente');
     }
 }

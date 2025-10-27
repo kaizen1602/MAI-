@@ -140,10 +140,9 @@ function PostCardSale({ post, onSelectPost, formatDate }: PostCardSaleProps) {
       <div className="flex justify-between items-center mt-3">
         <button 
           onClick={handleFavoriteToggle}
-          className={`flex items-center space-x-1 ${post.is_favorited ? 'text-red-500' : 'text-gray-500 hover:text-red-400'}`}
+          className={`flex items-center ${post.is_favorited ? 'text-red-500' : 'text-gray-500 hover:text-red-400'}`}
         >
           <FaHeart className={post.is_favorited ? 'fill-current' : ''} />
-          <span>{post.favorites_count || 0}</span>
         </button>
 
         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${

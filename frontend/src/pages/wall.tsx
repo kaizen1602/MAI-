@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import MainLayout from "../layouts/MainLayout";
 import PostList from "../components/PostList";
 import PostDetail from "../components/PostDetail";
@@ -30,6 +31,7 @@ interface PostDetailData {
 function Wall() {
   console.log('Wall component rendering'); // Debug log
   
+  const location = useLocation();
   const [posts, setPosts] = useState<Post[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
@@ -76,18 +78,6 @@ function Wall() {
     };
   };
 
-  useEffect(() => {
-    if (selectedPost) {
-      setSelectedPostDetail(adaptPostToDetail(selectedPost));
-    } else {
-      setSelectedPostDetail(null);
-    }
-  }, [selectedPost]);
-
-  useEffect(() => {
-    loadPosts();
-  }, []); // Solo ejecutar una vez al montar
-
   const loadPosts = useCallback(async (loadMore = false) => {
     try {
       setIsLoading(true);
@@ -114,6 +104,51 @@ function Wall() {
       setIsLoading(false);
     }
   }, []); // Remover cursor de las dependencias
+
+  useEffect(() => {
+    if (selectedPost) {
+      setSelectedPostDetail(adaptPostToDetail(selectedPost));
+    } else {
+      setSelectedPostDetail(null);
+    }
+  }, [selectedPost]);
+
+  useEffect(() => {
+    loadPosts();
+  }, []); // Solo ejecutar una vez al montar
+
+  // Detectar cuando se vuelve a la página y recargar si es necesario
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && posts.length === 0) {
+        console.log('Page became visible and no posts loaded, reloading...');
+        loadPosts(false);
+      }
+    };
+
+    const handleFocus = () => {
+      if (posts.length === 0) {
+        console.log('Page focused and no posts loaded, reloading...');
+        loadPosts(false);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [posts.length, loadPosts]);
+
+  // Detectar cambios en la ubicación (navegación hacia atrás/adelante)
+  useEffect(() => {
+    if (location.pathname === '/wall' && posts.length === 0) {
+      console.log('Navigated to wall page with no posts, reloading...');
+      loadPosts(false);
+    }
+  }, [location.pathname, posts.length, loadPosts]);
 
   const handleFilter = useCallback((filters: any) => {
     // Clear previous timeout
@@ -180,14 +215,15 @@ function Wall() {
     );
     
     if (!hasFilters) {
-      // If no filters, show all posts
-      setFilteredPosts(posts);
+      // If no filters, reload all posts from the beginning
+      console.log('No filters applied, reloading all posts');
+      loadPosts(false); // Reload from beginning
       return;
     }
     
     // Aplicar filtros directamente llamando a la API
     loadFilteredPosts(apiFilters);
-  }, [posts]);
+  }, [loadPosts]);
 
   const loadFilteredPosts = useCallback(async (filters: any) => {
     try {

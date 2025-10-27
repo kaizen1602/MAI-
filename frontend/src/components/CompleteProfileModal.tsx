@@ -12,12 +12,12 @@ interface CompleteProfileModalProps {
 export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated }: CompleteProfileModalProps) {
   const { user, updateProfile } = useAuth();
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    phone_number: user?.phone_number || '',
-    address_details: user?.address_details || '',
+    name: '',
+    phone_number: '',
+    address_details: '',
   });
   const [profileImage, setProfileImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(user?.profile_image || null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 

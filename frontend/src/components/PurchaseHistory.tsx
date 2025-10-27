@@ -6,36 +6,45 @@ interface ProfilePurchasesProps {
 }
 
 export default function ProfilePurchases({ purchases: propPurchases }: ProfilePurchasesProps) {
-  // Datos de ejemplo para compras realizadas
-  const [purchases] = useState([
-    {
-      id: 1,
-      title: "Tomates Frescos",
-      sellerName: "Juan Pérez",
-      date: "2025-10-20",
-      price: 15000,
-      imageUrl: "/tomates1.jpg",
-      rating: 0
-    },
-    {
-      id: 2,
-      title: "Lechuga Orgánica",
-      sellerName: "María García",
-      date: "2025-10-19",
-      price: 8000,
-      imageUrl: "/tomates2.jpg",
-      rating: 5
-    },
-    {
-      id: 3,
-      title: "Cebollas Moradas",
-      sellerName: "Carlos López",
-      date: "2025-10-18",
-      price: 12000,
-      imageUrl: "/tomates1.jpg",
-      rating: 0
+  // Usar datos del contexto si están disponibles, sino usar datos de ejemplo
+  const [purchases] = useState(() => {
+    if (propPurchases && propPurchases.length > 0) {
+      console.log('Usando datos reales de compras:', propPurchases);
+      return propPurchases;
     }
-  ]);
+    
+    console.log('No hay datos reales, usando datos de ejemplo');
+    // Datos de ejemplo solo si no hay datos reales
+    return [
+      {
+        id: 1,
+        title: "Tomates Frescos",
+        sellerName: "Juan Pérez",
+        date: "2025-10-20",
+        price: 15000,
+        imageUrl: "/tomates1.jpg",
+        rating: 0
+      },
+      {
+        id: 2,
+        title: "Lechuga Orgánica",
+        sellerName: "María García",
+        date: "2025-10-19",
+        price: 8000,
+        imageUrl: "/tomates2.jpg",
+        rating: 5
+      },
+      {
+        id: 3,
+        title: "Cebollas Moradas",
+        sellerName: "Carlos López",
+        date: "2025-10-18",
+        price: 12000,
+        imageUrl: "/tomates1.jpg",
+        rating: 0
+      }
+    ];
+  });
 
   const [ratings, setRatings] = useState<{ [key: number]: number }>({});
   const [selectedId, setSelectedId] = useState<number | null>(null);

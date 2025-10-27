@@ -22,6 +22,8 @@ use App\Http\Controllers\Api\TransactionController;
 Route::prefix('auth')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
 });
 
 Route::get('/ping', function () {
@@ -44,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('auth')->group(function () {
         Route::get('/profile', [AuthController::class, 'profile']);
         Route::post('/profile', [AuthController::class, 'updateProfile']); // Cambiado de PUT a POST
+        Route::post('/change-password', [AuthController::class, 'changePassword']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
     });
@@ -51,6 +54,7 @@ Route::middleware('auth:sanctum')->group(function () {
     //User
     // Perfil público de usuarios
     Route::get('/users/{user}', [UserController::class, 'show']);
+    Route::get('/users/{user}/rating', [UserController::class, 'getUserRating']);
 
     Route::prefix('products')->group(function () {
         Route::get('/', [ProductController::class, 'index']);

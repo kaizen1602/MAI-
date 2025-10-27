@@ -13,6 +13,8 @@ import favoriteService from './FavoriteService';
 import reviewService from './ReviewService';
 import priceAlertService from './PriceAlertService';
 import supportDataService from './SupportDataService';
+import statisticsService from './StatisticsService';
+import userService from './UserService';
 
 // Export singleton instances for direct use
 export {
@@ -23,6 +25,8 @@ export {
   reviewService,
   priceAlertService,
   supportDataService,
+  statisticsService,
+  userService,
 };
 
 /**
@@ -37,4 +41,6 @@ export const services = {
   review: reviewService,
   priceAlert: priceAlertService,
   supportData: supportDataService,
+  statistics: statisticsService,
+  user: userService,
 } as const;

@@ -25,7 +25,7 @@ function Home() {
 
         {/* Título */}
         <h2 className="text-2xl md:text-5xl font-extrabold text-green-800 mb-4 md:mb-6">
-          Bienvenido a Agro Mercado Inteligente
+          Bienvenido a Mercado Agro Inteligente
         </h2>
 
         {/* Descripción */}

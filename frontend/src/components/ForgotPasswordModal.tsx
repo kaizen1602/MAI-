@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { FaTimes, FaEnvelope } from "react-icons/fa";
+import { authService } from "../data/services";
 
 interface ForgotPasswordModalProps {
   isOpen: boolean;
@@ -14,7 +15,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setMessage(null);
@@ -38,14 +39,13 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
       return;
     }
 
-    // Call the reset password function
-    onResetPassword(email);
-    
-    // Simulate API call
-    setTimeout(() => {
+    try {
+      // Call the real API service
+      const response = await authService.forgotPassword(email);
+      
       setIsLoading(false);
       setMessage({
-        text: "Si tu correo está registrado, recibirás instrucciones para restablecer tu contraseña",
+        text: response.message,
         type: "success"
       });
       
@@ -55,7 +55,13 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
         setEmail("");
         setMessage(null);
       }, 3000);
-    }, 1500);
+    } catch (error: any) {
+      setIsLoading(false);
+      setMessage({
+        text: error.response?.data?.message || "Error al enviar solicitud de restablecimiento",
+        type: "error"
+      });
+    }
   };
 
   return (

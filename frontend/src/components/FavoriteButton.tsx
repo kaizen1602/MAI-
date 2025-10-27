@@ -95,11 +95,6 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
         )}
       </button>
       
-      {showCount && (
-        <span className="text-sm text-gray-600 font-medium">
-          {post.favorites_count || 0}
-        </span>
-      )}
     </div>
   );
 };

@@ -6,6 +6,7 @@ import {
   FaUser,
   FaHistory,
   FaDollarSign,
+  FaChartLine,
 } from "react-icons/fa";
 import {
   FiHome,
@@ -114,11 +115,17 @@ function Navbar() {
             <FaUser /> <span>Mi Perfil</span>
           </Link>
           <Link
+            to="/charts"
+            className="flex items-center space-x-1 hover:text-yellow-300"
+          >
+            <FaChartLine /> <span>Gráficas</span>
+          </Link>
+          {/* <Link
             to="/"
             className="flex items-center space-x-1 hover:text-yellow-300"
           >
             <FaHistory /> <span>Historico</span>
-          </Link>
+          </Link> */}
         </div>
 
         {/* Acciones - Desktop */}
@@ -170,12 +177,19 @@ function Navbar() {
                 <FaUser /> <span>Mi Perfil</span>
               </Link>
               <Link
+                to="/charts"
+                className="flex items-center space-x-2 px-6 py-3 hover:bg-green-800"
+                onClick={closeMenu}
+              >
+                <FaChartLine /> <span>Gráficas</span>
+              </Link>
+              {/* <Link
                 to="/"
                 className="flex items-center space-x-2 px-6 py-3 hover:bg-green-800"
                 onClick={closeMenu}
               >
                 <FaHistory /> <span>Historico</span>
-              </Link>
+              </Link> */}
 
               <button
                 onClick={() => {

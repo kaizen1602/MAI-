@@ -3,13 +3,44 @@ import { FaStar } from "react-icons/fa";
 
 interface SellerInfoProps {
   user: { user_id: number; name: string };
+  rating?: {
+    average_rating: number;
+    total_reviews: number;
+  };
 }
 
-function SellerInfo({ user }: SellerInfoProps) {
+function SellerInfo({ user, rating }: SellerInfoProps) {
+  const renderStars = (averageRating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(averageRating);
+    const hasHalfStar = averageRating % 1 !== 0;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <FaStar key={i} className="text-yellow-400 text-sm" />
+      );
+    }
+
+    if (hasHalfStar) {
+      stars.push(
+        <FaStar key="half" className="text-yellow-400 text-sm opacity-50" />
+      );
+    }
+
+    const remainingStars = 5 - Math.ceil(averageRating);
+    for (let i = 0; i < remainingStars; i++) {
+      stars.push(
+        <FaStar key={`empty-${i}`} className="text-gray-300 text-sm" />
+      );
+    }
+
+    return stars;
+  };
+
   return (
-<div className="p-6 bg-yellow-50 dark:bg-yellow-900/30 rounded-2xl border border-yellow-200 dark:border-yellow-800 shadow-sm">
+    <div className="p-6 bg-yellow-50 dark:bg-yellow-900/30 rounded-2xl border border-yellow-200 dark:border-yellow-800 shadow-sm">
       <div className="flex items-center mb-3">
-<FaStar className="text-yellow-500 mr-2 text-xl" />
+        <FaStar className="text-yellow-500 mr-2 text-xl" />
         <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">Información del vendedor</h3>
       </div>
       <div className="flex flex-col items-center p-4 bg-white dark:bg-gray-700 rounded-lg">
@@ -19,9 +50,31 @@ function SellerInfo({ user }: SellerInfoProps) {
           </span>
         </div>
         <div className="text-center">
-          <h4 className="font-bold text-xl text-gray-800 dark:text-gray-200">
+          <h4 className="font-bold text-xl text-gray-800 dark:text-gray-200 mb-2">
             {user?.name || "Usuario desconocido"}
           </h4>
+          
+          {/* Calificación promedio */}
+          {rating && rating.total_reviews > 0 ? (
+            <div className="mt-3">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                {renderStars(rating.average_rating)}
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                <span className="font-semibold">{rating.average_rating.toFixed(1)}</span>
+                <span className="ml-1">({rating.total_reviews} {rating.total_reviews === 1 ? 'reseña' : 'reseñas'})</span>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-3">
+              <div className="flex items-center justify-center gap-1 mb-1">
+                {renderStars(0)}
+              </div>
+              <div className="text-sm text-gray-500 dark:text-gray-500">
+                Sin calificaciones
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
