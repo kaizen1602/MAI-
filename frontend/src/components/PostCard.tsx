@@ -35,8 +35,9 @@ function PostCard({
   // Extraemos el tipo de post correctamente
   const postType = post.post_type?.name || "Tipo desconocido";
 
-  // Extraemos las imágenes correctamente
+  // Extraemos las imágenes correctamente o usamos la imagen por defecto
   const photos = post.images?.map((img) => img.url) || [];
+  const displayPhotos = photos.length > 0 ? photos : ["/metodo-de-pago.png"];
 
   // Verificar si el usuario es el dueño del post
   const isOwner = user && post.user?.id === user.id;
@@ -58,7 +59,7 @@ function PostCard({
 
   return (
     <div
-      className="bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg hover:-translate-y-1 transform transition-all"
+      className="bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg hover:-translate-y-1 transform transition-all overflow-hidden"
       onClick={() => onSelectPost(post)}
     >
       {/* Header usuario */}
@@ -85,30 +86,39 @@ function PostCard({
         {post.title}
       </h4>
 
+      {/* Imagen principal destacada */}
+      <div className="mb-4 rounded-md overflow-hidden">
+        <img
+          src={displayPhotos[0]}
+          alt={`Imagen principal de ${post.title}`}
+          className={`w-full object-cover ${photos.length > 0 ? 'h-24' : 'h-16 opacity-60'}`}
+        />
+      </div>
+
       {/* Contenido */}
       <p className="mb-4 text-gray-700 dark:text-gray-300 line-clamp-2">
         {post.description}
       </p>
 
-      {/* Miniaturas en fila centradas */}
-      {photos && photos.length > 0 && (
-        <div className="mb-4 flex gap-3 justify-center">
-          {photos.slice(0, 2).map((photo, index) => {
+      {/* Miniaturas adicionales en fila centradas */}
+      {displayPhotos.length > 1 && (
+        <div className="mb-4 flex gap-2 justify-start overflow-x-auto pb-2">
+          {displayPhotos.slice(1, 4).map((photo, index) => {
             // Si es la última visible y hay más imágenes, mostramos el overlay +n
-            if (index === 1 && photos.length > 2) {
+            if (index === 2 && displayPhotos.length > 4) {
               return (
                 <div
                   key={index}
-                  className="relative w-32 h-24 rounded-lg overflow-hidden"
+                  className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
                 >
                   <img
                     src={photo}
-                    alt={`miniatura ${index + 1}`}
+                    alt={`miniatura ${index + 2}`}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <span className="text-white font-semibold text-lg">
-                      +{photos.length - 2}
+                    <span className="text-white font-semibold text-xs">
+                      +{displayPhotos.length - 4}
                     </span>
                   </div>
                 </div>
@@ -118,13 +128,14 @@ function PostCard({
               <img
                 key={index}
                 src={photo}
-                alt={`miniatura ${index + 1}`}
-                className="w-32 h-24 rounded-lg object-cover border border-gray-200 dark:border-gray-700"
+                alt={`miniatura ${index + 2}`}
+                className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
               />
             );
           })}
         </div>
       )}
+
       {/* Footer */}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">

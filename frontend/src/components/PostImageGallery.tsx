@@ -75,7 +75,7 @@ function PostImageGallery({
               key={index}
               className={`flex-shrink-0 w-28 h-28 rounded-lg overflow-hidden cursor-pointer border-2 ${
                 index === selectedImageIndex
-                  ? "border-green-500"
+                  ? "border-blue-500"
                   : "border-transparent"
               }`}
               onClick={() => onImageSelect(index)}

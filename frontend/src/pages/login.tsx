@@ -57,8 +57,11 @@ function Login() {
   const handleResetPassword = async (email: string) => {
     try {
       const response = await authService.forgotPassword(email);
-      console.log("Token de restablecimiento:", response.reset_token);
       console.log("Mensaje:", response.message);
+      // El reset_token puede no estar presente en la respuesta
+      if (response.reset_token) {
+        console.log("Token de restablecimiento:", response.reset_token);
+      }
     } catch (error: any) {
       console.error("Error en restablecimiento de contraseña:", error);
     }
@@ -74,11 +77,11 @@ function Login() {
         ></div>
 
         {/* Capa azul translúcida */}
-        <div className="absolute inset-0 bg-green-900/50"></div>
+        <div className="absolute inset-0 bg-blue-900/50"></div>
 
         {/* Contenedor principal */}
         <div className="relative z-10 bg-white/95 p-10 rounded-2xl shadow-2xl w-full max-w-md backdrop-blur-md">
-          <h1 className="text-5xl font-extrabold text-green-700 mb-6 text-center drop-shadow-sm">
+          <h1 className="text-5xl font-extrabold text-blue-700 mb-6 text-center drop-shadow-sm">
             Iniciar Sesión
           </h1>
 
@@ -88,7 +91,7 @@ function Login() {
               className={`mb-4 p-4 rounded-lg text-center font-semibold transition-all duration-500 transform ${
                 message.type === "error"
                   ? "bg-red-100 text-red-700 border border-red-300 animate-shake"
-                  : "bg-green-100 text-green-700 border border-green-300 animate-fadeIn"
+                  : "bg-blue-100 text-blue-700 border border-blue-300 animate-fadeIn"
               }`}
             >
               {message.text}
@@ -103,7 +106,7 @@ function Login() {
                 placeholder="Correo"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                className="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
             <div>
@@ -112,7 +115,7 @@ function Login() {
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
+                className="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
 
@@ -121,7 +124,7 @@ function Login() {
               <button
                 type="button"
                 onClick={() => setShowForgotPasswordModal(true)}
-                className="text-sm text-green-600 hover:underline font-semibold"
+                className="text-sm text-blue-600 hover:underline font-semibold"
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -131,7 +134,7 @@ function Login() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 transition text-2xl shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-blue-700 text-white py-3 rounded-lg hover:bg-blue-800 transition text-2xl shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Cargando..." : "Entrar"}
             </button>
@@ -142,7 +145,7 @@ function Login() {
             ¿No tienes cuenta?{" "}
             <a
               href="/register"
-              className="text-green-600 hover:underline font-semibold"
+              className="text-blue-600 hover:underline font-semibold"
             >
               Crear cuenta
             </a>

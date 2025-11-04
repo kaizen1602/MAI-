@@ -92,7 +92,7 @@ const RegisterForm: React.FC = () => {
         onSubmit={handleSubmit}
         className="w-full max-w-md bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl p-8 space-y-6"
       >
-        <h2 className="text-4xl font-bold text-center text-green-700">
+        <h2 className="text-4xl font-bold text-center text-blue-700">
           Registro de Usuario
         </h2>
 
@@ -103,7 +103,7 @@ const RegisterForm: React.FC = () => {
             ${
               message.type === "error"
                 ? "bg-red-100 text-red-700 border border-red-300 animate-shake"
-                : "bg-green-100 text-green-700 border border-green-300 animate-fadeIn"
+                : "bg-blue-100 text-blue-700 border border-blue-300 animate-fadeIn"
             }`}
           >
             {message.text}
@@ -113,7 +113,7 @@ const RegisterForm: React.FC = () => {
         {/* Nombre */}
         <div>
           <label className="block font-medium mb-1">Nombre completo</label>
-          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-500">
+          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
             <FaUser className="text-gray-400 mr-2" />
             <input
               type="text"
@@ -130,7 +130,7 @@ const RegisterForm: React.FC = () => {
         {/* Email */}
         <div>
           <label className="block font-medium mb-1">Correo electrónico</label>
-          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-500">
+          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
             <FaEnvelope className="text-gray-400 mr-2" />
             <input
               type="email"
@@ -149,7 +149,7 @@ const RegisterForm: React.FC = () => {
         {/* Contraseña */}
         <div>
           <label className="block font-medium mb-1">Contraseña</label>
-          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-500">
+          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
             <FaLock className="text-gray-400 mr-2" />
             <input
               type="password"
@@ -168,7 +168,7 @@ const RegisterForm: React.FC = () => {
         {/* Confirmación */}
         <div>
           <label className="block font-medium mb-1">Confirmar contraseña</label>
-          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-500">
+          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
             <FaLock className="text-gray-400 mr-2" />
             <input
               type="password"
@@ -190,7 +190,7 @@ const RegisterForm: React.FC = () => {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Registrando..." : "Registrarse"}
         </button>
@@ -199,7 +199,7 @@ const RegisterForm: React.FC = () => {
           ¿Ya tienes cuenta?{" "}
           <a
             href="/login"
-            className="text-green-600 hover:underline font-semibold"
+            className="text-blue-600 hover:underline font-semibold"
           >
             Iniciar sesión
           </a>

@@ -80,11 +80,6 @@ export default function ProfilePage() {
         "authService.changePassword:",
         typeof authService.changePassword
       );
-      console.log("authService.testMethod:", typeof authService.testMethod);
-      console.log(
-        "authService.testMethod result:",
-        authService.testMethod ? authService.testMethod() : "No disponible"
-      );
 
       const formData = new FormData();
       formData.append("name", updatedUser.name);
@@ -229,7 +224,7 @@ export default function ProfilePage() {
   if (isLoading || !user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
     );
   }
@@ -291,7 +286,7 @@ export default function ProfilePage() {
           <div className="lg:w-1/3 w-full">
             {isLoadingPosts ? (
               <div className="flex justify-center py-10">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
               </div>
             ) : (
               <UserPosts

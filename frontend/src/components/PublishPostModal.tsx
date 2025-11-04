@@ -12,7 +12,7 @@ import type {
   Municipality,
   ProductType,
 } from "../data/types/product.types";
-import type { PostType, CreatePostRequest } from "../data/types/post.types"; // Import the correct type
+import type { PostType, CreatePostRequest } from "../data/types/post.types"; 
 import { toast } from "react-hot-toast";
 
 interface PublishPostModalProps {
@@ -208,7 +208,7 @@ export default function PublishPostModal({
       <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-100 dark:border-slate-800">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 className="text-2xl font-bold text-green-700 dark:text-green-300">
+          <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-300">
             Publicar Producto
           </h2>
           <button
@@ -223,10 +223,10 @@ export default function PublishPostModal({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {isLoading && (
-            <div className="mb-0 p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+            <div className="mb-0 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
               <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-green-600 mr-2"></div>
-                <span className="text-green-700 dark:text-green-300">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                <span className="text-blue-700 dark:text-blue-300">
                   Cargando datos del formulario...
                 </span>
               </div>
@@ -247,8 +247,8 @@ export default function PublishPostModal({
                       className={`flex items-center justify-center px-4 py-3 min-h-[48px] border-2 rounded-lg cursor-pointer transition shadow-sm text-center
                         ${
                           selected
-                            ? "border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300"
-                            : "border-slate-200 dark:border-slate-700 hover:border-green-300 text-slate-700 dark:text-slate-300"
+                            ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                            : "border-slate-200 dark:border-slate-700 hover:border-blue-300 text-slate-700 dark:text-slate-300"
                         }
                       `}
                     >
@@ -285,7 +285,7 @@ export default function PublishPostModal({
               value={formData.title}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
+              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
               placeholder="Ej: Venta de tomates orgánicos"
             />
           </div>
@@ -301,7 +301,7 @@ export default function PublishPostModal({
               onChange={handleInputChange}
               required
               rows={4}
-              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
+              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
               placeholder="Describe tu producto en detalle..."
             />
           </div>
@@ -309,7 +309,7 @@ export default function PublishPostModal({
           {/* Producto */}
           <div>
             <label className="block text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-              <FaTag className="inline mr-2 text-green-600" /> Tipo de Producto
+              <FaTag className="inline mr-2 text-blue-600" /> Tipo de Producto
               *
             </label>
             <select
@@ -317,7 +317,7 @@ export default function PublishPostModal({
               value={formData.product_id}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
+              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
             >
               {productTypes.length > 0 ? (
                 productTypes.map((product) => (
@@ -344,13 +344,13 @@ export default function PublishPostModal({
                 onChange={handleInputChange}
                 min="0"
                 step="0.1"
-                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
                 placeholder="Ej: 100"
               />
             </div>
             <div>
               <label className="block text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-                <FaDollarSign className="inline mr-2 text-green-600" /> Precio
+                <FaDollarSign className="inline mr-2 text-blue-600" /> Precio
                 por kg ($)
               </label>
               <input
@@ -360,7 +360,7 @@ export default function PublishPostModal({
                 onChange={handleInputChange}
                 min="0"
                 step="100"
-                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
                 placeholder="Ej: 2500"
               />
             </div>
@@ -376,7 +376,7 @@ export default function PublishPostModal({
               value={formData.department_id}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
+              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
             >
               <option value="">Selecciona un departamento</option>
               {departments.length > 0 ? (
@@ -394,7 +394,7 @@ export default function PublishPostModal({
           {/* Municipio */}
           <div>
             <label className="block text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-              <FaMapMarkerAlt className="inline mr-2 text-green-600" />{" "}
+              <FaMapMarkerAlt className="inline mr-2 text-blue-600" />{" "}
               Municipio *
             </label>
             <select
@@ -403,7 +403,7 @@ export default function PublishPostModal({
               onChange={handleInputChange}
               required
               disabled={!formData.department_id}
-              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white disabled:opacity-50 transition"
+              className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white disabled:opacity-50 transition"
             >
               <option value="">Selecciona un municipio</option>
               {municipalities.map((mun) => (
@@ -417,12 +417,12 @@ export default function PublishPostModal({
           {/* Imágenes */}
           <div>
             <label className="block text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-              <FaImage className="inline mr-2 text-green-600" /> Imágenes
+              <FaImage className="inline mr-2 text-blue-600" /> Imágenes
             </label>
             <div className="flex items-center justify-center w-full">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border-green-200 dark:border-slate-700 transition">
+              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border-blue-200 dark:border-slate-700 transition">
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <FaImage className="w-8 h-8 mb-2 text-green-500 dark:text-green-400" />
+                  <FaImage className="w-8 h-8 mb-2 text-blue-500 dark:text-blue-400" />
                   <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
                     <span className="font-semibold">Haz clic para subir</span> o
                     arrastra
@@ -468,7 +468,7 @@ export default function PublishPostModal({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center disabled:opacity-50"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center disabled:opacity-50"
             >
               {isSubmitting ? "Publicando..." : "Publicar"}
             </button>

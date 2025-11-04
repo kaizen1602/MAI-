@@ -10,7 +10,7 @@ function Home() {
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/fondo-agro.jpg')" }}
       ></div>
-      <div className="absolute inset-0 bg-green-900/40"></div>
+      <div className="absolute inset-0 bg-blue-900/40"></div>
 
       {/* Contenedor */}
       <div className="relative bg-white/95 rounded-3xl shadow-xl p-8 md:p-16 max-w-3xl w-full text-center backdrop-blur-md">
@@ -24,7 +24,7 @@ function Home() {
         </div>
 
         {/* Título */}
-        <h2 className="text-2xl md:text-5xl font-extrabold text-green-800 mb-4 md:mb-6">
+        <h2 className="text-2xl md:text-5xl font-extrabold text-blue-800 mb-4 md:mb-6">
           Bienvenido a Mercado Agro Inteligente
         </h2>
 
@@ -38,13 +38,13 @@ function Home() {
         <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-6">
           <button
             onClick={() => navigate("/login")}
-            className="px-6 py-3 md:px-8 md:py-4 bg-green-600 text-white text-lg md:text-xl font-semibold rounded-xl shadow hover:bg-green-700 hover:scale-105 transition-transform"
+            className="px-6 py-3 md:px-8 md:py-4 bg-blue-600 text-white text-lg md:text-xl font-semibold rounded-xl shadow hover:bg-blue-700 hover:scale-105 transition-transform"
           >
             Iniciar Sesión
           </button>
           <button
             onClick={() => navigate("/register")}
-            className="px-6 py-3 md:px-8 md:py-4 border-2 border-green-600 text-green-700 text-lg md:text-xl font-semibold bg-white rounded-xl shadow hover:bg-green-50 hover:scale-105 transition-transform"
+            className="px-6 py-3 md:px-8 md:py-4 border-2 border-blue-600 text-blue-700 text-lg md:text-xl font-semibold bg-white rounded-xl shadow hover:bg-blue-50 hover:scale-105 transition-transform"
           >
             Crear Cuenta
           </button>

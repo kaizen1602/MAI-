@@ -27,8 +27,8 @@ export default function MainLayout({ children, onFilter }: MainLayoutProps) {
           {onFilter && <Filters onFilter={onFilter} />}
         </aside>
 
-        {/* Contenido principal */}
-        <div className="lg:w-4/6 w-full flex flex-col">{children}</div>
+        {/* Contenido principal - Ampliado de lg:w-4/6 a lg:w-5/6 para ocupar más espacio */}
+        <div className="lg:w-5/6 w-full flex flex-col">{children}</div>
 
         {/* Publicidad */}
         <aside className="hidden lg:block lg:w-1/6 w-full">

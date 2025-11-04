@@ -45,7 +45,7 @@ function ConfirmationModal({
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-md p-6 relative">
-        <h3 className="text-xl font-bold text-green-700 dark:text-green-300 mb-4 text-center">
+        <h3 className="text-xl font-bold text-blue-700 dark:text-blue-300 mb-4 text-center">
           {title}
         </h3>
 
@@ -62,7 +62,7 @@ function ConfirmationModal({
           </button>
           <button
             onClick={onConfirm}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
           >
             Confirmar
           </button>
@@ -86,7 +86,7 @@ function SoldConfirmationModal({
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-md p-6 relative">
-        <h3 className="text-xl font-bold text-green-700 dark:text-green-300 mb-4 text-center">
+        <h3 className="text-xl font-bold text-blue-700 dark:text-blue-300 mb-4 text-center">
           Marcar como Vendido
         </h3>
 
@@ -101,13 +101,13 @@ function SoldConfirmationModal({
         <div className="flex flex-col gap-3">
           <button
             onClick={() => onConfirm(true)}
-            className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center"
+            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
           >
             <FaCheck className="mr-2" /> En esta plataforma
           </button>
           <button
             onClick={() => onConfirm(false)}
-            className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center"
+            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
           >
             <FaCheck className="mr-2" /> Fuera de la plataforma
           </button>
@@ -197,7 +197,7 @@ function PostModal({
           ✕
         </button>
 
-        <h2 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-4 text-center">
+        <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-4 text-center">
           {post.title}
         </h2>
 
@@ -235,14 +235,14 @@ function PostModal({
         <div className="flex flex-wrap gap-3 justify-center">
           <button
             onClick={handleEdit}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center"
           >
             <FaEdit className="mr-2" /> Editar
           </button>
 
           <button
             onClick={() => setShowSoldModal(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center"
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center"
           >
             <FaCheck className="mr-2" /> Marcar como Vendido
           </button>
@@ -306,7 +306,7 @@ export default function UserPosts({
 
   return (
     <div className="mt-8">
-      <h3 className="text-3xl font-bold text-green-800 dark:text-green-300 mb-6 text-center">
+      <h3 className="text-3xl font-bold text-blue-800 dark:text-blue-300 mb-6 text-center">
         Mis Publicaciones Activas
       </h3>
 
@@ -330,12 +330,12 @@ export default function UserPosts({
                 />
               </div>
               <div className="p-4">
-                <h4 className="font-semibold text-lg text-green-700 dark:text-green-300 text-center">
+                <h4 className="font-semibold text-lg text-blue-700 dark:text-blue-300 text-center">
                   {post.title}
                 </h4>
                 {post.status && (
                   <div className="text-center mt-2">
-                    <span className="inline-block px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                    <span className="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
                       {post.status}
                     </span>
                   </div>

@@ -18,7 +18,7 @@ export default function SaleCard({
       <img src={image} alt={name} className="w-full h-40 object-cover" />
       <div className="p-3">
         <h2 className="text-lg font-semibold">{name}</h2>
-        <p className="text-green-700 font-bold">${price.toLocaleString()}</p>
+        <p className="text-blue-700 font-bold">${price.toLocaleString()}</p>
         <p className="text-sm text-gray-500">{city}</p>
         <p className="text-xs text-gray-400">📅 {date}</p>
       </div>

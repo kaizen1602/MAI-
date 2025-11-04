@@ -177,7 +177,7 @@ function PostPage() {
         <Navbar />
         <div className="max-w-4xl mx-auto p-4">
           <div className="text-center py-10">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
             <p className="mt-4 text-gray-700 dark:text-gray-300">
               Cargando publicación...
             </p>
@@ -203,7 +203,7 @@ function PostPage() {
             </p>
             <button
               onClick={() => navigate("/wall")}
-              className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               Volver al inicio
             </button>
@@ -251,7 +251,7 @@ function PostPage() {
 
         {/* Sección de publicaciones similares */}
         <div className="mt-20">
-          <h2 className="text-3xl font-bold text-green-800 dark:text-green-300 mb-10 text-center">
+          <h2 className="text-3xl font-bold text-blue-800 dark:text-blue-300 mb-10 text-center">
             Publicaciones Similares
           </h2>
           {similarPosts.length > 0 ? (
@@ -277,7 +277,7 @@ function PostPage() {
                       </div>
                     )}
                   </div>
-                  <h3 className="font-semibold text-xl text-green-800 dark:text-green-300 text-center">
+                  <h3 className="font-semibold text-xl text-blue-800 dark:text-blue-300 text-center">
                     {similarPost.title}
                   </h3>
                 </div>

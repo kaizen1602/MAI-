@@ -83,21 +83,25 @@ export default function Filters({ onFilter }: FiltersProps) {
 
   // --- HORIZONTAL BAR ---
   return (
-    <div className="bg-white dark:bg-blue-950 border-t border-b border-blue-200 dark:border-blue-800 shadow-md py-4 px-6 flex flex-wrap items-center justify-between gap-4">
+    <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-950 border-t border-b border-blue-200 dark:border-blue-800 shadow-lg py-5 px-6 rounded-xl flex flex-wrap items-center justify-between gap-4">
       {/* Tipo de Producto */}
-      <div className="flex flex-col">
-        <label className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+      <div className="flex flex-col min-w-[140px]">
+        <label className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1 text-center">
           Tipo de Producto
         </label>
         <select
           name="productType"
           value={filters.productType}
           onChange={handleChange}
-          className="border border-blue-300 rounded-lg px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/40 dark:text-white focus:ring-2 focus:ring-blue-400 transition"
+          className="border border-blue-300 dark:border-blue-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-blue-800/50 text-blue-900 dark:text-blue-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
         >
           <option value="">Todos</option>
           {productTypes.map((p) => (
-            <option key={p.id} value={p.id}>
+            <option
+              key={p.id}
+              value={p.id}
+              className="bg-white dark:bg-blue-800"
+            >
               {p.name}
             </option>
           ))}
@@ -105,8 +109,8 @@ export default function Filters({ onFilter }: FiltersProps) {
       </div>
 
       {/* Ciudad */}
-      <div className="flex flex-col">
-        <label className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+      <div className="flex flex-col min-w-[140px]">
+        <label className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1 text-center">
           Ciudad
         </label>
         <input
@@ -115,38 +119,38 @@ export default function Filters({ onFilter }: FiltersProps) {
           value={filters.city}
           onChange={handleChange}
           placeholder="Ej: Bogotá"
-          className="border border-blue-300 rounded-lg px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/40 dark:text-white focus:ring-2 focus:ring-blue-400 transition"
+          className="border border-blue-300 dark:border-blue-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-blue-800/50 text-blue-900 dark:text-blue-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
         />
       </div>
 
       {/* Nombre del Producto */}
-      <div className="flex flex-col">
-        <label className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+      <div className="flex flex-col min-w-[160px] flex-grow">
+        <label className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1 text-center">
           Nombre
         </label>
         <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-blue-400" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-blue-400 dark:text-blue-300" />
           <input
             type="text"
             name="name"
             value={filters.name}
             onChange={handleChange}
-            placeholder="Ej: Tomate"
-            className="border border-blue-300 rounded-lg pl-10 px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/40 dark:text-white focus:ring-2 focus:ring-blue-400 transition"
+            placeholder="Buscar productos..."
+            className="border border-blue-300 dark:border-blue-700 rounded-lg pl-10 px-3 py-2 text-sm bg-white dark:bg-blue-800/50 text-blue-900 dark:text-blue-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm w-full"
           />
         </div>
       </div>
 
       {/* Ordenar */}
-      <div className="flex flex-col">
-        <label className="text-sm font-semibold text-blue-900 dark:text-blue-300">
+      <div className="flex flex-col min-w-[160px]">
+        <label className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1 text-center">
           Ordenar
         </label>
         <select
           name="sortBy"
           value={filters.sortBy}
           onChange={handleChange}
-          className="border border-blue-300 rounded-lg px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/40 dark:text-white focus:ring-2 focus:ring-blue-400 transition"
+          className="border border-blue-300 dark:border-blue-700 rounded-lg px-3 py-2 text-sm bg-white dark:bg-blue-800/50 text-blue-900 dark:text-blue-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition shadow-sm"
         >
           <option value="">Predeterminado</option>
           <option value="priceAsc">Precio: Menor a Mayor</option>
@@ -160,7 +164,7 @@ export default function Filters({ onFilter }: FiltersProps) {
       <button
         type="button"
         onClick={handleReset}
-        className="flex items-center gap-2 bg-blue-100 text-blue-900 dark:bg-blue-800 dark:text-white px-4 py-2 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-700 transition"
+        className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 self-end h-fit mt-5"
       >
         <XCircle className="h-4 w-4" /> Limpiar
       </button>

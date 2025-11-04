@@ -10,8 +10,8 @@ interface SellerInfoProps {
 }
 
 function SellerInfo({ user, rating }: SellerInfoProps) {
-  const renderStars = (averageRating: number) => {
-    const stars = [];
+  const renderStars = (averageRating: number): JSX.Element[] => {
+    const stars: JSX.Element[] = [];
     const fullStars = Math.floor(averageRating);
     const hasHalfStar = averageRating % 1 !== 0;
 
@@ -44,8 +44,8 @@ function SellerInfo({ user, rating }: SellerInfoProps) {
         </h3>
       </div>
       <div className="flex flex-col items-center p-4 bg-white dark:bg-gray-700 rounded-lg">
-        <div className="bg-green-200 dark:bg-green-600 rounded-full w-20 h-20 flex items-center justify-center mb-3">
-          <span className="font-bold text-green-800 dark:text-white text-2xl">
+        <div className="bg-blue-200 dark:bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center mb-3">
+          <span className="font-bold text-blue-800 dark:text-white text-2xl">
             {user?.name?.charAt(0) || "?"}
           </span>
         </div>

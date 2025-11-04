@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, ReactElement } from "react";
 import MainLayout from "../layouts/MainLayout";
-import PostList from "../components/PostList";
+import PostCard from "../components/PostCard"; // Importar PostCard directamente
 import PostDetail from "../components/PostDetail";
 import { postService, supportDataService } from "../data/services";
 import type { Post } from "../data/types/post.types";
@@ -34,6 +34,9 @@ export default function Wall() {
   const [selectedPostDetail, setSelectedPostDetail] =
     useState<PostDetailData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showPostDetailModal, setShowPostDetailModal] = useState(false);
+  const postsPerPage = 6; // Aumentado a 6 para mostrar 2 filas de 3
   const filterTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isFirstFilter = useRef(true);
 
@@ -79,8 +82,10 @@ export default function Wall() {
   useEffect(() => {
     if (selectedPost) {
       setSelectedPostDetail(adaptPostToDetail(selectedPost));
+      setShowPostDetailModal(true);
     } else {
       setSelectedPostDetail(null);
+      setShowPostDetailModal(false);
     }
   }, [selectedPost]);
 
@@ -92,6 +97,7 @@ export default function Wall() {
       });
       setPosts(response.data);
       setFilteredPosts(response.data);
+      setCurrentPage(1); // Reset to first page when loading new posts
     } catch (error) {
       console.error("Error cargando publicaciones:", error);
       toast.error("Error al cargar publicaciones");
@@ -165,6 +171,7 @@ export default function Wall() {
       if (!hasAdditionalFilters) {
         // If no additional filters, show all posts
         setFilteredPosts(posts);
+        setCurrentPage(1); // Reset to first page
         return;
       }
 
@@ -184,6 +191,7 @@ export default function Wall() {
       });
 
       setFilteredPosts(response.data);
+      setCurrentPage(1); // Reset to first page when loading filtered posts
     } catch (error: any) {
       console.error("Error cargando publicaciones filtradas:", error);
       toast.error("Error al cargar publicaciones filtradas");
@@ -204,6 +212,123 @@ export default function Wall() {
     });
   };
 
+  // Get current posts for pagination
+  const getCurrentPosts = () => {
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    return filteredPosts.slice(indexOfFirstPost, indexOfLastPost);
+  };
+
+  // Change page
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+
+  // Generate pagination buttons with first 5, current, and last page
+  const generatePaginationButtons = (): ReactElement[] => {
+    const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+    const buttons: ReactElement[] = [];
+
+    // Always show first page
+    if (totalPages > 0) {
+      buttons.push(
+        <button
+          key={1}
+          onClick={() => paginate(1)}
+          className={`px-4 py-2 rounded-lg ${
+            currentPage === 1
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+          }`}
+        >
+          1
+        </button>
+      );
+    }
+
+    if (totalPages <= 7) {
+      // Show all pages if 7 or fewer
+      for (let i = 2; i <= totalPages; i++) {
+        buttons.push(
+          <button
+            key={i}
+            onClick={() => paginate(i)}
+            className={`px-4 py-2 rounded-lg ${
+              currentPage === i
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {i}
+          </button>
+        );
+      }
+    } else {
+      // Show first 5 pages
+      const maxInitialPages = Math.min(5, totalPages);
+      for (let i = 2; i <= maxInitialPages; i++) {
+        buttons.push(
+          <button
+            key={i}
+            onClick={() => paginate(i)}
+            className={`px-4 py-2 rounded-lg ${
+              currentPage === i
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {i}
+          </button>
+        );
+      }
+
+      // Show ellipsis and current page if needed
+      if (currentPage > 5 && currentPage < totalPages - 3) {
+        buttons.push(
+          <span key="ellipsis1" className="px-2 py-2">
+            ...
+          </span>
+        );
+
+        buttons.push(
+          <button
+            key={currentPage}
+            onClick={() => paginate(currentPage)}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white"
+          >
+            {currentPage}
+          </button>
+        );
+      }
+
+      // Show last pages
+      if (currentPage < totalPages - 3) {
+        buttons.push(
+          <span key="ellipsis2" className="px-2 py-2">
+            ...
+          </span>
+        );
+      }
+
+      // Show last page
+      if (totalPages > 1) {
+        buttons.push(
+          <button
+            key={totalPages}
+            onClick={() => paginate(totalPages)}
+            className={`px-4 py-2 rounded-lg ${
+              currentPage === totalPages
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+            }`}
+          >
+            {totalPages}
+          </button>
+        );
+      }
+    }
+
+    return buttons;
+  };
+
   useEffect(() => {
     return () => {
       if (filterTimeout.current) {
@@ -214,59 +339,75 @@ export default function Wall() {
 
   return (
     <MainLayout>
-      <h1 className="text-3xl font-extrabold text-blue-900 dark:text-blue-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
-        Muro de Publicaciones
-      </h1>
-
-      {/* Filtros debajo del título */}
-      <div className="mb-6">
-        <Filters onFilter={handleFilter} />
-      </div>
-
-      {isLoading ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+      {/* Contenedor principal que agrupa todo el contenido - Aumentado el ancho */}
+      <div className="container mx-auto px-4 py-6 max-w-7xl w-full">
+        {/* Filtros debajo del título */}
+        <div className="mb-6">
+          <Filters onFilter={handleFilter} />
         </div>
-      ) : (
-        <div className="flex flex-col lg:flex-row gap-6 flex-grow">
-          {/* Lista de publicaciones */}
-          <div className="lg:w-1/2 w-full">
-            <PostList
-              posts={filteredPosts}
-              onSelectPost={setSelectedPost}
-              formatDate={formatDate}
-            />
+        <h1 className="text-3xl font-extrabold text-blue-900 dark:text-blue-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
+          Muro de Publicaciones
+        </h1>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
+        ) : (
+          <div className="flex flex-col gap-6 flex-grow">
+            {/* Lista de publicaciones con paginación en filas de 3 */}
+            <div className="w-full">
+              {/* Grid de publicaciones - 2 filas de 3 columnas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                {getCurrentPosts()
+                  .slice(0, 3)
+                  .map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onSelectPost={setSelectedPost}
+                      formatDate={formatDate}
+                    />
+                  ))}
+              </div>
 
-          {/* Detalle de publicación */}
-          <div className="hidden lg:w-1/2 lg:block w-full">
-            <PostDetail
-              post={selectedPostDetail}
-              onClose={() => setSelectedPost(null)}
-              formatDate={formatDate}
-            />
-          </div>
+              {/* Segunda fila de publicaciones */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                {getCurrentPosts()
+                  .slice(3, 6)
+                  .map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onSelectPost={setSelectedPost}
+                      formatDate={formatDate}
+                    />
+                  ))}
+              </div>
 
-          {/* Mobile modal overlay for post details */}
-          {selectedPostDetail && (
-            <div className="lg:hidden fixed inset-0 z-50">
-              <div
-                className="absolute inset-0 bg-black bg-opacity-50"
-                onClick={() => setSelectedPost(null)}
-              ></div>
-              <div className="absolute inset-0 flex items-center justify-center p-4">
-                <div className="bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+              {/* Paginación */}
+              <div className="flex justify-center mt-6 space-x-2 flex-wrap">
+                {generatePaginationButtons()}
+              </div>
+            </div>
+
+            {/* Modal para detalle de publicación (en móvil y escritorio) */}
+            {showPostDetailModal && selectedPostDetail && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+                <div className="bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                   <PostDetail
                     post={selectedPostDetail}
-                    onClose={() => setSelectedPost(null)}
+                    onClose={() => {
+                      setSelectedPost(null);
+                      setShowPostDetailModal(false);
+                    }}
                     formatDate={formatDate}
                   />
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
     </MainLayout>
   );
 }

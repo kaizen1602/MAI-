@@ -30,12 +30,12 @@ function WhatsAppContactModal({
 
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-green-100 dark:bg-green-900/30 rounded-full w-16 h-16 flex items-center justify-center">
-              <FaWhatsapp className="text-green-500 text-3xl" />
+            <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full w-16 h-16 flex items-center justify-center">
+              <FaWhatsapp className="text-blue-500 text-3xl" />
             </div>
           </div>
 
-          <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-4">
+          <h3 className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-4">
             Contactar al Vendedor
           </h3>
 
@@ -59,7 +59,7 @@ function WhatsAppContactModal({
           <div className="flex flex-col gap-3">
             <button
               onClick={onContact}
-              className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center"
+              className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
             >
               <FaWhatsapp className="mr-2 text-xl" /> Contactar por WhatsApp
             </button>
