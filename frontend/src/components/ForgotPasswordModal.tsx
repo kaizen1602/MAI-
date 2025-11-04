@@ -8,9 +8,16 @@ interface ForgotPasswordModalProps {
   onResetPassword: (email: string) => void;
 }
 
-export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }: ForgotPasswordModalProps) {
+export default function ForgotPasswordModal({
+  isOpen,
+  onClose,
+  onResetPassword,
+}: ForgotPasswordModalProps) {
   const [email, setEmail] = useState("");
-  const [message, setMessage] = useState<{ text: string; type: "error" | "success" } | null>(null);
+  const [message, setMessage] = useState<{
+    text: string;
+    type: "error" | "success";
+  } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -24,7 +31,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
     if (!email) {
       setMessage({
         text: "Por favor ingresa tu correo electrónico",
-        type: "error"
+        type: "error",
       });
       setIsLoading(false);
       return;
@@ -33,7 +40,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
     if (!/\S+@\S+\.\S+/.test(email)) {
       setMessage({
         text: "Por favor ingresa un correo electrónico válido",
-        type: "error"
+        type: "error",
       });
       setIsLoading(false);
       return;
@@ -42,13 +49,13 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
     try {
       // Call the real API service
       const response = await authService.forgotPassword(email);
-      
+
       setIsLoading(false);
       setMessage({
         text: response.message,
-        type: "success"
+        type: "success",
       });
-      
+
       // Close the modal after a delay
       setTimeout(() => {
         onClose();
@@ -58,8 +65,10 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
     } catch (error: any) {
       setIsLoading(false);
       setMessage({
-        text: error.response?.data?.message || "Error al enviar solicitud de restablecimiento",
-        type: "error"
+        text:
+          error.response?.data?.message ||
+          "Error al enviar solicitud de restablecimiento",
+        type: "error",
       });
     }
   };
@@ -74,11 +83,12 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
           <FaTimes className="text-2xl" />
         </button>
 
-        <h2 className="text-2xl font-bold text-green-800 mb-2 text-center">
+        <h2 className="text-2xl font-bold text-blue-800 mb-2 text-center">
           ¿Olvidaste tu contraseña?
         </h2>
         <p className="text-gray-600 mb-6 text-center">
-          Ingresa tu correo electrónico y te enviaremos instrucciones para restablecer tu contraseña
+          Ingresa tu correo electrónico y te enviaremos instrucciones para
+          restablecer tu contraseña
         </p>
 
         {message && (
@@ -86,7 +96,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
             className={`mb-4 p-3 rounded-lg text-center text-sm ${
               message.type === "error"
                 ? "bg-red-100 text-red-700 border border-red-300"
-                : "bg-green-100 text-green-700 border border-green-300"
+                : "bg-blue-100 text-blue-700 border border-blue-300"
             }`}
           >
             {message.text}
@@ -103,7 +113,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="tu@ejemplo.com"
               disabled={isLoading}
             />
@@ -120,14 +130,30 @@ export default function ForgotPasswordModal({ isOpen, onClose, onResetPassword }
             </button>
             <button
               type="submit"
-              className="flex-1 py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center"
+              className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
               disabled={isLoading}
             >
               {isLoading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Enviando...
                 </>

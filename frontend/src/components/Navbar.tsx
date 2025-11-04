@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  FaSeedling,
-  FaDrumstickBite,
-  FaUser,
-  FaHistory,
-  FaDollarSign,
-  FaChartLine,
-} from "react-icons/fa";
+import { FaUser, FaDollarSign, FaChartLine } from "react-icons/fa";
 import {
   FiHome,
   FiPlus,
@@ -23,6 +16,7 @@ import { useAuth } from "../data/context/AuthContext";
 function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showPublishModal, setShowPublishModal] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -32,171 +26,171 @@ function Navbar() {
       toast.success("Sesión cerrada con éxito ✅");
       navigate("/login");
     } catch (error) {
-      console.error('Error al cerrar sesión:', error);
+      console.error("Error al cerrar sesión:", error);
       toast.error("Error al cerrar sesión");
     }
   };
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const closeMenu = () => {
-    setIsMenuOpen(false);
-  };
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const closeMenu = () => setIsMenuOpen(false);
 
   const handlePublishSubmit = async (postData: any) => {
-    // El PublishPostModal ya maneja la creación del post
     toast.success("¡Publicación creada con éxito!");
     setShowPublishModal(false);
-    // Recargar la página para mostrar el nuevo post
     window.location.reload();
   };
 
   return (
     <>
-      <nav className="bg-green-900 text-white px-6 py-3 shadow-md flex justify-between items-center relative">
+      {/* 🔷 Navbar principal */}
+      <nav className="bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white px-6 py-3 shadow-xl flex justify-between items-center relative backdrop-blur-md">
         {/* Logo + Nombre */}
         <div className="flex items-center space-x-3">
-          <div className="bg-white p-1 rounded-full">
+          <div className="bg-white p-1 rounded-full shadow-md">
             <img
               src="/logoSin.png"
               alt="Logo Agro Mercado"
-              className="w-10 h-10 rounded-full shadow-md"
+              className="w-10 h-10 rounded-full"
             />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-bold text-1xl md:text-4xl">
-              Mercado Agro Inteligente
+            <span className="text-xl md:text-3xl font-bold tracking-wider">
+              MAI
             </span>
-            {user && (
-              <span className="text-xs text-yellow-300 hidden md:block">
-                Hola, {user.name}
-              </span>
-            )}
           </div>
         </div>
 
-        {/* Mobile menu button */}
+        {/* Botón menú móvil */}
         <div className="md:hidden">
           <button
             onClick={toggleMenu}
             className="text-white focus:outline-none"
             aria-label="Toggle menu"
           >
-            {isMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
+            {isMenuOpen ? <FiX size={26} /> : <FiMenu size={26} />}
           </button>
         </div>
 
-        {/* Links principales con íconos - Desktop */}
-        <div className="hidden md:flex space-x-6">
+        {/* 🔹 Links escritorio */}
+        <div className="hidden md:flex space-x-6 text-lg font-medium">
           <Link
             to="/wall"
-            className="flex items-center space-x-1 hover:text-yellow-300"
+            className="flex items-center space-x-1 hover:text-yellow-300 transition"
           >
             <FiHome /> <span>Inicio</span>
           </Link>
           <Link
             to="/sales"
-            className="flex items-center space-x-1 hover:text-yellow-300"
+            className="flex items-center space-x-1 hover:text-yellow-300 transition"
           >
-            <FaDollarSign /> <span>Quiero Vender</span>
+            <FaDollarSign /> <span>Vender</span>
           </Link>
           <Link
             to="/shopping"
-            className="flex items-center space-x-1 hover:text-yellow-300"
+            className="flex items-center space-x-1 hover:text-yellow-300 transition"
           >
-            <FiSearch /> <span>Quiero Comprar</span>
-          </Link>
-          <Link
-            to="/profile"
-            className="flex items-center space-x-1 hover:text-yellow-300"
-          >
-            <FaUser /> <span>Mi Perfil</span>
+            <FiSearch /> <span>Comprar</span>
           </Link>
           <Link
             to="/charts"
-            className="flex items-center space-x-1 hover:text-yellow-300"
+            className="flex items-center space-x-1 hover:text-yellow-300 transition"
           >
             <FaChartLine /> <span>Gráficas</span>
           </Link>
-          {/* <Link
-            to="/"
-            className="flex items-center space-x-1 hover:text-yellow-300"
-          >
-            <FaHistory /> <span>Historico</span>
-          </Link> */}
         </div>
 
-        {/* Acciones - Desktop */}
-        <div className="hidden md:flex space-x-3">
+        {/* 🔹 Acciones escritorio */}
+        <div className="hidden md:flex items-center space-x-4">
+          {/* ✅ Nuevo botón “Publicar” moderno */}
           <button
             onClick={() => setShowPublishModal(true)}
-            className="flex items-center bg-yellow-300 text-green-900 px-4 py-2 rounded-lg font-semibold hover:bg-yellow-300 transition"
+            className="relative flex items-center justify-center px-5 py-2.5 rounded-lg font-semibold text-white 
+              bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-500 shadow-lg 
+              transition-all duration-300 hover:scale-105 hover:shadow-blue-400/50
+              before:absolute before:inset-0 before:bg-gradient-to-r before:from-cyan-300 before:via-blue-400 before:to-indigo-400 
+              before:opacity-0 hover:before:opacity-20 before:rounded-lg before:blur-md overflow-hidden"
           >
             <FiPlus className="mr-1" /> Publicar
           </button>
-          <button
-            onClick={handleLogout}
-            className="flex items-center bg-red-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-600 transition"
-          >
-            <FiLogOut className="mr-1" /> Cerrar Sesión
-          </button>
+
+          {/* 🔽 Menú de perfil con foto */}
+          <div className="relative">
+            <button
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="flex items-center space-x-2 focus:outline-none"
+            >
+              <img
+                src={user?.profile_image || "/default-avatar.png"}
+                alt="Perfil"
+                className="w-10 h-10 rounded-full border-2 border-white hover:scale-105 transition-transform"
+              />
+              <span className="font-medium hidden md:block">
+                {user?.name || "Usuario"}
+              </span>
+            </button>
+
+            {showProfileMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-lg overflow-hidden z-50 animate-fadeIn">
+                <Link
+                  to="/profile"
+                  className="block px-4 py-3 hover:bg-blue-100 transition"
+                  onClick={() => setShowProfileMenu(false)}
+                >
+                  ✏️ Editar perfil
+                </Link>
+                <button
+                  onClick={() => {
+                    setShowProfileMenu(false);
+                    handleLogout();
+                  }}
+                  className="w-full text-left px-4 py-3 hover:bg-red-100 transition text-red-600"
+                >
+                  🚪 Cerrar sesión
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Mobile menu */}
+        {/* 🔹 Menú móvil */}
         {isMenuOpen && (
-          <div className="absolute top-full left-0 w-full bg-green-900 shadow-lg md:hidden z-50">
-            <div className="flex flex-col py-4">
+          <div className="absolute top-full left-0 w-full bg-blue-900/95 shadow-lg md:hidden z-50 animate-fadeIn backdrop-blur-lg">
+            <div className="flex flex-col py-4 space-y-1">
               <Link
                 to="/wall"
-                className="flex items-center space-x-2 px-6 py-3 hover:bg-green-800"
+                className="flex items-center space-x-2 px-6 py-3 hover:bg-blue-800 transition"
                 onClick={closeMenu}
               >
                 <FiHome /> <span>Inicio</span>
               </Link>
               <Link
                 to="/sales"
-                className="flex items-center space-x-2 px-6 py-3 hover:bg-green-800"
+                className="flex items-center space-x-2 px-6 py-3 hover:bg-blue-800 transition"
                 onClick={closeMenu}
               >
-                <FaDollarSign /> <span>Quiero Vender</span>
+                <FaDollarSign /> <span>Vender</span>
               </Link>
               <Link
                 to="/shopping"
-                className="flex items-center space-x-2 px-6 py-3 hover:bg-green-800"
+                className="flex items-center space-x-2 px-6 py-3 hover:bg-blue-800 transition"
                 onClick={closeMenu}
               >
-                <FiSearch /> <span>Quiero Comprar</span>
-              </Link>
-              <Link
-                to="/profile"
-                className="flex items-center space-x-2 px-6 py-3 hover:bg-green-800"
-                onClick={closeMenu}
-              >
-                <FaUser /> <span>Mi Perfil</span>
+                <FiSearch /> <span>Comprar</span>
               </Link>
               <Link
                 to="/charts"
-                className="flex items-center space-x-2 px-6 py-3 hover:bg-green-800"
+                className="flex items-center space-x-2 px-6 py-3 hover:bg-blue-800 transition"
                 onClick={closeMenu}
               >
                 <FaChartLine /> <span>Gráficas</span>
               </Link>
-              {/* <Link
-                to="/"
-                className="flex items-center space-x-2 px-6 py-3 hover:bg-green-800"
-                onClick={closeMenu}
-              >
-                <FaHistory /> <span>Historico</span>
-              </Link> */}
 
               <button
                 onClick={() => {
                   closeMenu();
                   setShowPublishModal(true);
                 }}
-                className="flex items-center space-x-2 px-6 py-3 bg-yellow-500 text-green-900"
+                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-semibold rounded-md hover:scale-105 transition"
               >
                 <FiPlus className="mr-1" /> Publicar
               </button>
@@ -206,7 +200,7 @@ function Navbar() {
                   closeMenu();
                   handleLogout();
                 }}
-                className="flex items-center space-x-2 px-6 py-3 bg-red-500 text-white"
+                className="flex items-center space-x-2 px-6 py-3 bg-red-500 text-white font-semibold hover:bg-red-600 transition"
               >
                 <FiLogOut className="mr-1" /> Cerrar Sesión
               </button>
@@ -215,6 +209,7 @@ function Navbar() {
         )}
       </nav>
 
+      {/* Modal de publicación */}
       <PublishPostModal
         isOpen={showPublishModal}
         onClose={() => setShowPublishModal(false)}

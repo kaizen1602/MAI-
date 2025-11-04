@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../data/context/AuthContext";
-import {
-  FaUser,
-  FaEnvelope,
-  FaLock,
-  FaPhone,
-  FaHome,
-  FaUserTag,
-} from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
 
 interface UserFormData {
   name: string;
@@ -25,7 +18,7 @@ const RegisterForm: React.FC = () => {
     text: string;
     type: "error" | "success";
   } | null>(null);
-  
+
   const [formData, setFormData] = useState<UserFormData>({
     name: "",
     email: "",
@@ -37,8 +30,7 @@ const RegisterForm: React.FC = () => {
 
   const validate = () => {
     const newErrors: Partial<UserFormData> = {};
-    if (!formData.name.trim())
-      newErrors.name = "El nombre es requerido";
+    if (!formData.name.trim()) newErrors.name = "El nombre es requerido";
     if (!formData.email.trim()) newErrors.email = "El email es requerido";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Email inválido";
@@ -55,11 +47,7 @@ const RegisterForm: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-    >
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -69,29 +57,26 @@ const RegisterForm: React.FC = () => {
       try {
         setIsLoading(true);
         setMessage(null);
-        
-        // Preparar datos con campos requeridos por el backend
+
         const registerData = {
           ...formData,
-          phone_number: "+502 0000 0000", // Valor por defecto
-          address_details: "Por definir", // Valor por defecto
-          role_id: 2 // Rol de comprador por defecto
+          phone_number: "+502 0000 0000",
+          address_details: "Por definir",
+          role_id: 1,
         };
-        
+
         await register(registerData);
-        
         setMessage({
           text: "¡Registro exitoso! 🎉 Redirigiendo...",
           type: "success",
         });
-        
-        setTimeout(() => {
-          navigate("/wall");
-        }, 1000);
+        setTimeout(() => navigate("/wall"), 1000);
       } catch (error: any) {
-        console.error('Error en registro:', error);
+        console.error("Error en registro:", error);
         setMessage({
-          text: error.response?.data?.message || "Error al registrarse. Inténtalo de nuevo.",
+          text:
+            error.response?.data?.message ||
+            "Error al registrarse. Inténtalo de nuevo.",
           type: "error",
         });
       } finally {
@@ -101,10 +86,11 @@ const RegisterForm: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br ">
+    // ❗ No se modifica el fondo del componente
+    <div className="min-h-screen flex items-center justify-center">
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8 space-y-6"
+        className="w-full max-w-md bg-white/95 backdrop-blur-md shadow-2xl rounded-2xl p-8 space-y-6"
       >
         <h2 className="text-4xl font-bold text-center text-green-700">
           Registro de Usuario
@@ -138,9 +124,7 @@ const RegisterForm: React.FC = () => {
               placeholder="Ej: Juan Pérez"
             />
           </div>
-          {errors.name && (
-            <p className="text-red-500 text-sm">{errors.name}</p>
-          )}
+          {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
         </div>
 
         {/* Email */}
@@ -181,7 +165,7 @@ const RegisterForm: React.FC = () => {
           )}
         </div>
 
-        {/* Confirmación de Contraseña */}
+        {/* Confirmación */}
         <div>
           <label className="block font-medium mb-1">Confirmar contraseña</label>
           <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-green-500">
@@ -196,19 +180,21 @@ const RegisterForm: React.FC = () => {
             />
           </div>
           {errors.password_confirmation && (
-            <p className="text-red-500 text-sm">{errors.password_confirmation}</p>
+            <p className="text-red-500 text-sm">
+              {errors.password_confirmation}
+            </p>
           )}
         </div>
-        
+
         {/* Botón */}
         <button
           type="submit"
           disabled={isLoading}
           className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold text-lg disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? 'Registrando...' : 'Registrarse'}
+          {isLoading ? "Registrando..." : "Registrarse"}
         </button>
-        
+
         <p className="text-center text-gray-600 mt-4">
           ¿Ya tienes cuenta?{" "}
           <a

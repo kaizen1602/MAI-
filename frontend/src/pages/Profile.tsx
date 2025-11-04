@@ -19,12 +19,13 @@ import type { Post } from "../data/types/post.types";
 export default function ProfilePage() {
   const { user, updateProfile, isLoading } = useAuth();
   const { purchases } = usePurchases();
-  
+
   // Debug: ver qué datos de compras tenemos
-  console.log('ProfilePage - Datos de compras del contexto:', purchases);
+  console.log("ProfilePage - Datos de compras del contexto:", purchases);
   const [showModal, setShowModal] = useState(false);
   const [showEditPostModal, setShowEditPostModal] = useState(false);
-  const [showCompleteProfileModal, setShowCompleteProfileModal] = useState(false);
+  const [showCompleteProfileModal, setShowCompleteProfileModal] =
+    useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [userPosts, setUserPosts] = useState<any[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
@@ -40,29 +41,29 @@ export default function ProfilePage() {
 
   const loadUserPosts = async () => {
     if (!user) return;
-    
+
     try {
       setIsLoadingPosts(true);
       const response = await postService.getPosts({
         user_id: user.id,
-        per_page: 10
+        per_page: 10,
       });
-      
+
       // Convertir posts al formato que espera el componente
       const formattedPosts = response.data.map((post: Post) => ({
         id: post.id,
         title: post.title,
         description: post.description,
-        imageUrl: post.images[0]?.url || '/default-post.jpg',
+        imageUrl: post.images[0]?.url || "/default-post.jpg",
         likes: post.favorites_count,
         comments: 0,
-        status: post.status?.toLowerCase() || 'active'
+        status: post.status?.toLowerCase() || "active",
       }));
-      
+
       setUserPosts(formattedPosts);
     } catch (error) {
-      console.error('Error cargando publicaciones:', error);
-      toast.error('Error al cargar tus publicaciones');
+      console.error("Error cargando publicaciones:", error);
+      toast.error("Error al cargar tus publicaciones");
     } finally {
       setIsLoadingPosts(false);
     }
@@ -70,54 +71,70 @@ export default function ProfilePage() {
 
   const handleSave = async (updatedUser: any) => {
     try {
-      console.log('Iniciando actualización de perfil:', updatedUser);
-      console.log('authService methods:', Object.getOwnPropertyNames(authService));
-      console.log('authService.changePassword:', typeof authService.changePassword);
-      console.log('authService.testMethod:', typeof authService.testMethod);
-      console.log('authService.testMethod result:', authService.testMethod ? authService.testMethod() : 'No disponible');
-      
+      console.log("Iniciando actualización de perfil:", updatedUser);
+      console.log(
+        "authService methods:",
+        Object.getOwnPropertyNames(authService)
+      );
+      console.log(
+        "authService.changePassword:",
+        typeof authService.changePassword
+      );
+      console.log("authService.testMethod:", typeof authService.testMethod);
+      console.log(
+        "authService.testMethod result:",
+        authService.testMethod ? authService.testMethod() : "No disponible"
+      );
+
       const formData = new FormData();
-      formData.append('name', updatedUser.name);
-      formData.append('email', updatedUser.email);
-      
+      formData.append("name", updatedUser.name);
+      formData.append("email", updatedUser.email);
+
       // Si hay una nueva imagen, agregarla al FormData
       if (updatedUser.profileImage) {
-        formData.append('profile_image', updatedUser.profileImage);
+        formData.append("profile_image", updatedUser.profileImage);
       }
-      
+
       // Actualizar perfil básico
-      console.log('Actualizando perfil básico...');
+      console.log("Actualizando perfil básico...");
       await updateProfile(formData);
-      console.log('Perfil básico actualizado exitosamente');
-      
+      console.log("Perfil básico actualizado exitosamente");
+
       // Si se está cambiando la contraseña, hacerlo por separado
-      if (updatedUser.currentPassword && updatedUser.newPassword && updatedUser.confirmPassword) {
-        console.log('Cambiando contraseña...');
+      if (
+        updatedUser.currentPassword &&
+        updatedUser.newPassword &&
+        updatedUser.confirmPassword
+      ) {
+        console.log("Cambiando contraseña...");
         try {
           await authService.changePassword(
             updatedUser.currentPassword,
             updatedUser.newPassword,
             updatedUser.confirmPassword
           );
-          console.log('Contraseña cambiada exitosamente');
-          toast.success('Perfil y contraseña actualizados correctamente');
+          console.log("Contraseña cambiada exitosamente");
+          toast.success("Perfil y contraseña actualizados correctamente");
         } catch (passwordError: any) {
-          console.error('Error cambiando contraseña:', passwordError);
-          console.error('Response data:', passwordError.response?.data);
-          console.error('Response status:', passwordError.response?.status);
-          toast.error(passwordError.response?.data?.message || 'Error al cambiar la contraseña');
+          console.error("Error cambiando contraseña:", passwordError);
+          console.error("Response data:", passwordError.response?.data);
+          console.error("Response status:", passwordError.response?.status);
+          toast.error(
+            passwordError.response?.data?.message ||
+              "Error al cambiar la contraseña"
+          );
           return; // No cerrar el modal si falla el cambio de contraseña
         }
       } else {
-        console.log('No se está cambiando la contraseña');
-        toast.success('Perfil actualizado correctamente');
+        console.log("No se está cambiando la contraseña");
+        toast.success("Perfil actualizado correctamente");
       }
-      
-      console.log('Cerrando modal...');
+
+      console.log("Cerrando modal...");
       setShowModal(false);
     } catch (error) {
-      console.error('Error actualizando perfil:', error);
-      toast.error('Error al actualizar el perfil');
+      console.error("Error actualizando perfil:", error);
+      toast.error("Error al actualizar el perfil");
     }
   };
 
@@ -131,7 +148,7 @@ export default function ProfilePage() {
 
   const handleProfileUpdated = (updatedUser: any) => {
     // El contexto ya maneja la actualización del usuario
-    toast.success('¡Perfil completado con éxito!');
+    toast.success("¡Perfil completado con éxito!");
   };
 
   const handleEditPost = async (postId: number) => {
@@ -150,7 +167,7 @@ export default function ProfilePage() {
     try {
       await postService.deletePost(postId);
       // Remove the deleted post from the list
-      setUserPosts(prev => prev.filter(post => post.id !== postId));
+      setUserPosts((prev) => prev.filter((post) => post.id !== postId));
       toast.success("Publicación eliminada con éxito");
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -158,31 +175,34 @@ export default function ProfilePage() {
     }
   };
 
-  const handlePostStatusUpdate = async (postId: number, status: 'ACTIVE' | 'CLOSED' | 'EXPIRED') => {
+  const handlePostStatusUpdate = async (
+    postId: number,
+    status: "ACTIVE" | "CLOSED" | "EXPIRED"
+  ) => {
     try {
       const updatedPost = await postService.updatePostStatus(postId, status);
-      
+
       // Update the posts in state
-      setUserPosts(prev => prev.map(p => 
-        p.id === postId 
-          ? { ...p, status: status.toLowerCase() }
-          : p
-      ));
-      
-      toast.success('Estado de publicación actualizado');
+      setUserPosts((prev) =>
+        prev.map((p) =>
+          p.id === postId ? { ...p, status: status.toLowerCase() } : p
+        )
+      );
+
+      toast.success("Estado de publicación actualizado");
     } catch (error) {
-      console.error('Error updating post status:', error);
-      toast.error('Error al actualizar el estado de la publicación');
+      console.error("Error updating post status:", error);
+      toast.error("Error al actualizar el estado de la publicación");
     }
   };
 
   const handleMarkAsSold = (postId: number, soldOnPlatform: boolean) => {
-    const status = soldOnPlatform ? 'CLOSED' : 'CLOSED';
+    const status = soldOnPlatform ? "CLOSED" : "CLOSED";
     handlePostStatusUpdate(postId, status);
   };
 
   const handleDeactivate = (postId: number) => {
-    handlePostStatusUpdate(postId, 'EXPIRED');
+    handlePostStatusUpdate(postId, "EXPIRED");
   };
 
   const handleUpdateSubmit = async (updatedPost: Post) => {
@@ -191,14 +211,16 @@ export default function ProfilePage() {
       id: updatedPost.id,
       title: updatedPost.title,
       description: updatedPost.description,
-      imageUrl: updatedPost.images[0]?.url || '/default-post.jpg',
+      imageUrl: updatedPost.images[0]?.url || "/default-post.jpg",
       likes: updatedPost.favorites_count,
-      comments: 0
+      comments: 0,
     };
-    
+
     // Update the posts in state
-    setUserPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPostData : p));
-    
+    setUserPosts((prev) =>
+      prev.map((p) => (p.id === updatedPost.id ? updatedPostData : p))
+    );
+
     setShowEditPostModal(false);
     setEditingPost(null);
     toast.success("Publicación actualizada con éxito");
@@ -239,14 +261,17 @@ export default function ProfilePage() {
 
             {/* Información personal */}
             <div className="mt-8">
-              <ProfileInfo 
-                email={user.email} 
-                city={user.address_details || 'No especificado'}
-                joinDate={new Date(user.created_at).toLocaleDateString('es-ES', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}
+              <ProfileInfo
+                email={user.email}
+                city={user.address_details || "No especificado"}
+                joinDate={new Date(user.created_at).toLocaleDateString(
+                  "es-ES",
+                  {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  }
+                )}
                 bio={`Miembro desde ${new Date(user.created_at).getFullYear()}`}
               />
             </div>
@@ -269,8 +294,8 @@ export default function ProfilePage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
               </div>
             ) : (
-              <UserPosts 
-                posts={userPosts} 
+              <UserPosts
+                posts={userPosts}
                 onEdit={handleEditPost}
                 onDelete={handleDeletePost}
                 onMarkAsSold={handleMarkAsSold}
@@ -287,25 +312,25 @@ export default function ProfilePage() {
               name: user.name,
               email: user.email,
               username: user.email,
-              imageUrl: userWithImage.profile_image || '/default-avatar.jpg',
-              city: user.address_details || '',
+              imageUrl: userWithImage.profile_image || "/default-avatar.jpg",
+              city: user.address_details || "",
               joinDate: user.created_at,
-              bio: '',
+              bio: "",
               posts: userPosts,
-              purchases: []
+              purchases: [],
             }}
             onSave={handleSave}
             onClose={() => setShowModal(false)}
           />
         )}
-        
+
         {/* Modal para completar perfil */}
         <CompleteProfileModal
           isOpen={showCompleteProfileModal}
           onClose={() => setShowCompleteProfileModal(false)}
           onProfileUpdated={handleProfileUpdated}
         />
-        
+
         {/* Modal para editar publicación */}
         {editingPost && (
           <EditPostModal

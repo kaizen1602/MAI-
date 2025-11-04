@@ -40,14 +40,16 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
     // For now, we'll use a placeholder URL
     const phoneNumber = "+573001234567"; // Placeholder phone number
     const message = `Hola, estoy interesado en tu publicación: ${post.title}`;
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-    
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+
     // Abrir WhatsApp inmediatamente
     window.open(whatsappUrl, "_blank");
-    
+
     // Cerrar modal de WhatsApp y mostrar confirmación de forma más suave
     setIsModalOpen(false);
-    
+
     // Usar requestAnimationFrame para evitar parpadeos
     requestAnimationFrame(() => {
       setIsConfirmationModalOpen(true);
@@ -60,7 +62,7 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
     } else {
       console.log("Purchase confirmed without rating");
     }
-    
+
     setIsConfirmationModalOpen(false);
   };
 
@@ -79,7 +81,7 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
         <h1 className="text-5xl font-bold text-green-800 dark:text-green-300 mb-4 text-center">
           {post.title}
         </h1>
-        
+
         {/* Fecha de publicación */}
         <div className="flex items-center justify-center mb-8 text-xl text-gray-600 dark:text-gray-400">
           <FaCalendarAlt className="mr-3" />
@@ -88,7 +90,9 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
 
         {/* Descripción */}
         <div className="mb-8">
-          <h2 className="text-3xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Descripción</h2>
+          <h2 className="text-3xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
+            Descripción
+          </h2>
           <p className="text-2xl text-gray-700 dark:text-gray-300">
             {post.description}
           </p>
@@ -98,48 +102,60 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {post.quantity_kg !== undefined && (
             <div className="p-5 bg-green-50 dark:bg-gray-700 rounded-xl">
-              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200">Cantidad</p>
-              <p className="text-2xl text-gray-700 dark:text-gray-300">{post.quantity_kg} kg</p>
+              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200">
+                Cantidad
+              </p>
+              <p className="text-2xl text-gray-700 dark:text-gray-300">
+                {post.quantity_kg} kg
+              </p>
             </div>
           )}
-          
+
           {post.price_per_kg !== undefined && (
             <div className="p-5 bg-green-50 dark:bg-gray-700 rounded-xl">
-              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200">Precio</p>
-              <p className="text-2xl text-gray-700 dark:text-gray-300">${post.price_per_kg} por kg</p>
+              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200">
+                Precio
+              </p>
+              <p className="text-2xl text-gray-700 dark:text-gray-300">
+                ${post.price_per_kg} por kg
+              </p>
             </div>
           )}
-          
+
           {post.municipality?.name && (
             <div className="p-5 bg-green-50 dark:bg-gray-700 rounded-xl">
-              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200">Ubicación</p>
+              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200">
+                Ubicación
+              </p>
               <p className="text-2xl text-gray-700 dark:text-gray-300 flex items-center">
                 <FaMapMarkerAlt className="mr-3 text-green-600 dark:text-green-400 text-2xl" />
                 {post.municipality.name}
               </p>
             </div>
           )}
-          
+
           {post.product?.name && (
             <div className="p-5 bg-green-50 dark:bg-gray-700 rounded-xl">
-              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200">Producto</p>
-              <p className="text-2xl text-gray-700 dark:text-gray-300">{post.product.name}</p>
+              <p className="font-bold text-2xl text-gray-800 dark:text-gray-200">
+                Producto
+              </p>
+              <p className="text-2xl text-gray-700 dark:text-gray-300">
+                {post.product.name}
+              </p>
             </div>
           )}
         </div>
 
         {/* Botón de acción */}
-        <button 
+        <button
           onClick={handleContactClick}
           className={`w-full py-5 rounded-2xl text-white font-bold text-2xl shadow-lg transition-all ${
             post.post_type?.type_name === "Venta"
-              ? "bg-blue-600 hover:bg-blue-700"
+              ? "bg-green-600 hover:bg-green-700"
               : "bg-green-600 hover:bg-green-700"
-          }`}>
-          {post.post_type?.type_name === "Venta" 
-            ? "🛒 Comprar" 
-            : "🤝 Ofrecer"
-          }
+          }`}
+        >
+          {post.post_type?.type_name === "Venta" ? "🛒 Comprar" : "🤝 Ofrecer"}
         </button>
       </div>
 
@@ -150,7 +166,7 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
         productName={post.title}
         onContact={handleWhatsAppContact}
       />
-      
+
       <PurchaseConfirmationModal
         isOpen={isConfirmationModalOpen}
         onClose={() => setIsConfirmationModalOpen(false)}

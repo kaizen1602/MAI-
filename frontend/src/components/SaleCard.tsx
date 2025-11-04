@@ -6,7 +6,13 @@ interface SaleCardProps {
   image: string;
 }
 
-export default function SaleCard({ name, price, city, date, image }: SaleCardProps) {
+export default function SaleCard({
+  name,
+  price,
+  city,
+  date,
+  image,
+}: SaleCardProps) {
   return (
     <div className="border rounded-xl shadow-md overflow-hidden bg-white hover:shadow-lg transition">
       <img src={image} alt={name} className="w-full h-40 object-cover" />

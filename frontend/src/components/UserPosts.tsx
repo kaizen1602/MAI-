@@ -36,18 +36,23 @@ interface ConfirmationModalProps {
   onCancel: () => void;
 }
 
-function ConfirmationModal({ title, message, onConfirm, onCancel }: ConfirmationModalProps) {
+function ConfirmationModal({
+  title,
+  message,
+  onConfirm,
+  onCancel,
+}: ConfirmationModalProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-md p-6 relative">
         <h3 className="text-xl font-bold text-green-700 dark:text-green-300 mb-4 text-center">
           {title}
         </h3>
-        
+
         <p className="text-gray-700 dark:text-gray-300 mb-6 text-center">
           {message}
         </p>
-        
+
         <div className="flex justify-center gap-3">
           <button
             onClick={onCancel}
@@ -73,22 +78,26 @@ interface SoldConfirmationModalProps {
   onCancel: () => void;
 }
 
-function SoldConfirmationModal({ post, onConfirm, onCancel }: SoldConfirmationModalProps) {
+function SoldConfirmationModal({
+  post,
+  onConfirm,
+  onCancel,
+}: SoldConfirmationModalProps) {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-md p-6 relative">
         <h3 className="text-xl font-bold text-green-700 dark:text-green-300 mb-4 text-center">
           Marcar como Vendido
         </h3>
-        
+
         <p className="text-gray-700 dark:text-gray-300 mb-2 text-center">
           <strong>Publicación:</strong> {post.title}
         </p>
-        
+
         <p className="text-gray-700 dark:text-gray-300 mb-6 text-center">
           ¿Dónde vendiste este producto?
         </p>
-        
+
         <div className="flex flex-col gap-3">
           <button
             onClick={() => onConfirm(true)}
@@ -98,7 +107,7 @@ function SoldConfirmationModal({ post, onConfirm, onCancel }: SoldConfirmationMo
           </button>
           <button
             onClick={() => onConfirm(false)}
-            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
+            className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center"
           >
             <FaCheck className="mr-2" /> Fuera de la plataforma
           </button>
@@ -114,7 +123,14 @@ function SoldConfirmationModal({ post, onConfirm, onCancel }: SoldConfirmationMo
   );
 }
 
-function PostModal({ post, onClose, onEdit, onDelete, onMarkAsSold, onDeactivate }: PostModalProps) {
+function PostModal({
+  post,
+  onClose,
+  onEdit,
+  onDelete,
+  onMarkAsSold,
+  onDeactivate,
+}: PostModalProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showSoldModal, setShowSoldModal] = useState(false);
   const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
@@ -219,39 +235,44 @@ function PostModal({ post, onClose, onEdit, onDelete, onMarkAsSold, onDeactivate
         <div className="flex flex-wrap gap-3 justify-center">
           <button
             onClick={handleEdit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center"
+            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center"
           >
             <FaEdit className="mr-2" /> Editar
           </button>
-          
+
           <button
             onClick={() => setShowSoldModal(true)}
             className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center"
           >
             <FaCheck className="mr-2" /> Marcar como Vendido
           </button>
-          
+
           <button
             onClick={() => setShowDeactivateConfirm(true)}
             className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition flex items-center"
           >
             <FaBan className="mr-2" /> Desactivar
           </button>
-          
+
           <button
             onClick={() => setShowDeleteConfirm(true)}
             className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center"
           >
             <FaTrash className="mr-2" /> Eliminar
           </button>
-          
         </div>
       </div>
     </div>
   );
 }
 
-export default function UserPosts({ posts, onEdit, onDelete, onMarkAsSold: onMarkAsSoldProp, onDeactivate: onDeactivateProp }: UserPostsProps) {
+export default function UserPosts({
+  posts,
+  onEdit,
+  onDelete,
+  onMarkAsSold: onMarkAsSoldProp,
+  onDeactivate: onDeactivateProp,
+}: UserPostsProps) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   const handleDelete = (postId: number) => {
@@ -265,7 +286,9 @@ export default function UserPosts({ posts, onEdit, onDelete, onMarkAsSold: onMar
       onMarkAsSoldProp(postId, soldOnPlatform);
     } else {
       // Fallback si no se pasa la función
-      const platform = soldOnPlatform ? "en la plataforma" : "fuera de la plataforma";
+      const platform = soldOnPlatform
+        ? "en la plataforma"
+        : "fuera de la plataforma";
       console.log(`Marcar publicación ${postId} como vendido ${platform}`);
       toast.success(`Publicación marcada como vendida ${platform}`);
     }
@@ -288,7 +311,9 @@ export default function UserPosts({ posts, onEdit, onDelete, onMarkAsSold: onMar
       </h3>
 
       {posts.length === 0 ? (
-        <p className="text-center text-gray-500">No tienes publicaciones aún.</p>
+        <p className="text-center text-gray-500">
+          No tienes publicaciones aún.
+        </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {posts.map((post) => (

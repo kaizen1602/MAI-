@@ -30,22 +30,23 @@ function Login() {
     try {
       setIsLoading(true);
       setMessage(null);
-      
+
       await login({ email, password });
-      
+
       setMessage({
-        text: "¡Inicio de sesión exitoso! 🎉 Bienvenido 🌱",
+        text: "¡Inicio de sesión exitoso! 🎉 Bienvenido 💙",
         type: "success",
       });
 
-      // Redirige después de un breve delay
       setTimeout(() => {
         navigate("/wall");
       }, 1000);
     } catch (error: any) {
-      console.error('Error en login:', error);
+      console.error("Error en login:", error);
       setMessage({
-        text: error.response?.data?.message || "Credenciales incorrectas ❌ Inténtalo de nuevo.",
+        text:
+          error.response?.data?.message ||
+          "Credenciales incorrectas ❌ Inténtalo de nuevo.",
         type: "error",
       });
     } finally {
@@ -59,33 +60,32 @@ function Login() {
       console.log("Token de restablecimiento:", response.reset_token);
       console.log("Mensaje:", response.message);
     } catch (error: any) {
-      console.error('Error en restablecimiento de contraseña:', error);
+      console.error("Error en restablecimiento de contraseña:", error);
     }
   };
 
   return (
     <>
       <div className="relative flex items-center justify-center min-h-screen">
-        {/* Imagen de fondo */}
+        {/* Fondo */}
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('/fondo-agro.jpg')" }}
         ></div>
 
-        {/* Capa oscura */}
-        <div className="absolute inset-0 bg-green-900/40"></div>
+        {/* Capa azul translúcida */}
+        <div className="absolute inset-0 bg-green-900/50"></div>
 
-        {/* Contenedor */}
-        <div className="relative z-10 bg-white p-10 rounded-xl shadow-xl w-full max-w-md">
-          <h1 className="text-5xl font-bold text-green-700 mb-6 text-center">
+        {/* Contenedor principal */}
+        <div className="relative z-10 bg-white/95 p-10 rounded-2xl shadow-2xl w-full max-w-md backdrop-blur-md">
+          <h1 className="text-5xl font-extrabold text-green-700 mb-6 text-center drop-shadow-sm">
             Iniciar Sesión
           </h1>
 
           {/* Mensaje dinámico */}
           {message && (
             <div
-              className={`mb-4 p-4 rounded-lg text-center font-semibold transition-all duration-500 transform
-              ${
+              className={`mb-4 p-4 rounded-lg text-center font-semibold transition-all duration-500 transform ${
                 message.type === "error"
                   ? "bg-red-100 text-red-700 border border-red-300 animate-shake"
                   : "bg-green-100 text-green-700 border border-green-300 animate-fadeIn"
@@ -95,6 +95,7 @@ function Login() {
             </div>
           )}
 
+          {/* Formulario */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <input
@@ -102,7 +103,7 @@ function Login() {
                 placeholder="Correo"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
               />
             </div>
             <div>
@@ -111,10 +112,11 @@ function Login() {
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-green-500"
+                className="w-full p-3 border border-green-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:outline-none"
               />
             </div>
 
+            {/* Olvidó contraseña */}
             <div className="text-right">
               <button
                 type="button"
@@ -125,15 +127,17 @@ function Login() {
               </button>
             </div>
 
+            {/* Botón de login */}
             <button
               type="submit"
               disabled={isLoading}
               className="w-full bg-green-700 text-white py-3 rounded-lg hover:bg-green-800 transition text-2xl shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isLoading ? 'Cargando...' : 'Entrar'}
+              {isLoading ? "Cargando..." : "Entrar"}
             </button>
           </form>
 
+          {/* Registro */}
           <p className="text-center text-gray-600 mt-6">
             ¿No tienes cuenta?{" "}
             <a

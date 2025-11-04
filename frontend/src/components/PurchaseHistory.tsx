@@ -5,15 +5,17 @@ interface ProfilePurchasesProps {
   purchases?: any[];
 }
 
-export default function ProfilePurchases({ purchases: propPurchases }: ProfilePurchasesProps) {
+export default function ProfilePurchases({
+  purchases: propPurchases,
+}: ProfilePurchasesProps) {
   // Usar datos del contexto si están disponibles, sino usar datos de ejemplo
   const [purchases] = useState(() => {
     if (propPurchases && propPurchases.length > 0) {
-      console.log('Usando datos reales de compras:', propPurchases);
+      console.log("Usando datos reales de compras:", propPurchases);
       return propPurchases;
     }
-    
-    console.log('No hay datos reales, usando datos de ejemplo');
+
+    console.log("No hay datos reales, usando datos de ejemplo");
     // Datos de ejemplo solo si no hay datos reales
     return [
       {
@@ -23,7 +25,7 @@ export default function ProfilePurchases({ purchases: propPurchases }: ProfilePu
         date: "2025-10-20",
         price: 15000,
         imageUrl: "/tomates1.jpg",
-        rating: 0
+        rating: 0,
       },
       {
         id: 2,
@@ -32,7 +34,7 @@ export default function ProfilePurchases({ purchases: propPurchases }: ProfilePu
         date: "2025-10-19",
         price: 8000,
         imageUrl: "/tomates2.jpg",
-        rating: 5
+        rating: 5,
       },
       {
         id: 3,
@@ -41,8 +43,8 @@ export default function ProfilePurchases({ purchases: propPurchases }: ProfilePu
         date: "2025-10-18",
         price: 12000,
         imageUrl: "/tomates1.jpg",
-        rating: 0
-      }
+        rating: 0,
+      },
     ];
   });
 
@@ -62,25 +64,27 @@ export default function ProfilePurchases({ purchases: propPurchases }: ProfilePu
     if (selectedId !== null && selectedRating > 0) {
       // Simular calificación exitosa
       setRatings((prev) => ({ ...prev, [selectedId]: selectedRating }));
-      console.log(`Calificación ${selectedRating} enviada para compra ${selectedId}`);
+      console.log(
+        `Calificación ${selectedRating} enviada para compra ${selectedId}`
+      );
     }
     setShowRatingModal(false);
     setShowConfirmModal(true);
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return new Date(dateString).toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0
+    return new Intl.NumberFormat("es-CO", {
+      style: "currency",
+      currency: "COP",
+      minimumFractionDigits: 0,
     }).format(price);
   };
 
@@ -102,7 +106,8 @@ export default function ProfilePurchases({ purchases: propPurchases }: ProfilePu
             Aún no tienes compras registradas
           </h4>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            Cuando realices una compra desde la plataforma, aparecerá aquí tu historial.
+            Cuando realices una compra desde la plataforma, aparecerá aquí tu
+            historial.
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-500">
             ¡Explora las publicaciones disponibles y haz tu primera compra!
@@ -128,10 +133,12 @@ export default function ProfilePurchases({ purchases: propPurchases }: ProfilePu
                     {purchase.title}
                   </h4>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    <span className="font-medium">Vendedor:</span> {purchase.sellerName}
+                    <span className="font-medium">Vendedor:</span>{" "}
+                    {purchase.sellerName}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
-                    <span className="font-medium">Fecha:</span> {formatDate(purchase.date)}
+                    <span className="font-medium">Fecha:</span>{" "}
+                    {formatDate(purchase.date)}
                   </p>
                   <p className="text-green-700 dark:text-green-300 font-bold text-lg mt-2">
                     {formatPrice(purchase.price)}

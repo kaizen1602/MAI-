@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Heart, MapPin, Calendar } from 'lucide-react';
-import { Post } from '../data/types/post.types';
-import favoriteService from '../data/services/FavoriteService';
-import { toast } from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import { Heart, MapPin, Calendar } from "lucide-react";
+import { Post } from "../data/types/post.types";
+import favoriteService from "../data/services/FavoriteService";
+import { toast } from "react-hot-toast";
 
 interface UserFavoritesProps {
   userId: number;
@@ -22,8 +22,8 @@ const UserFavorites: React.FC<UserFavoritesProps> = ({ userId }) => {
       const favoritePosts = await favoriteService.getFavorites();
       setFavorites(favoritePosts);
     } catch (error) {
-      console.error('Error loading favorites:', error);
-      toast.error('Error al cargar favoritos');
+      console.error("Error loading favorites:", error);
+      toast.error("Error al cargar favoritos");
     } finally {
       setIsLoading(false);
     }
@@ -32,44 +32,44 @@ const UserFavorites: React.FC<UserFavoritesProps> = ({ userId }) => {
   const handleRemoveFavorite = async (postId: number) => {
     try {
       await favoriteService.removeFavorite(postId);
-      setFavorites(prev => prev.filter(post => post.id !== postId));
-      toast.success('Removido de favoritos');
+      setFavorites((prev) => prev.filter((post) => post.id !== postId));
+      toast.success("Removido de favoritos");
     } catch (error) {
-      console.error('Error removing favorite:', error);
-      toast.error('Error al remover de favoritos');
+      console.error("Error removing favorite:", error);
+      toast.error("Error al remover de favoritos");
     }
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+    return date.toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'text-green-600 bg-green-100';
-      case 'CLOSED':
-        return 'text-blue-600 bg-blue-100';
-      case 'EXPIRED':
-        return 'text-gray-600 bg-gray-100';
+      case "ACTIVE":
+        return "text-green-600 bg-green-100";
+      case "CLOSED":
+        return "text-green-600 bg-green-100";
+      case "EXPIRED":
+        return "text-gray-600 bg-gray-100";
       default:
-        return 'text-gray-600 bg-gray-100';
+        return "text-gray-600 bg-gray-100";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'Activa';
-      case 'CLOSED':
-        return 'Vendida';
-      case 'EXPIRED':
-        return 'Desactivada';
+      case "ACTIVE":
+        return "Activa";
+      case "CLOSED":
+        return "Vendida";
+      case "EXPIRED":
+        return "Desactivada";
       default:
         return status;
     }
@@ -100,7 +100,9 @@ const UserFavorites: React.FC<UserFavoritesProps> = ({ userId }) => {
         <div className="text-center py-8">
           <Heart className="mx-auto text-gray-400 mb-4" size={48} />
           <p className="text-gray-500 text-lg">No tienes favoritos aún</p>
-          <p className="text-gray-400 text-sm">Las publicaciones que marques con ❤️ aparecerán aquí</p>
+          <p className="text-gray-400 text-sm">
+            Las publicaciones que marques con ❤️ aparecerán aquí
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -135,11 +137,14 @@ const UserFavorites: React.FC<UserFavoritesProps> = ({ userId }) => {
                       <p className="text-gray-600 text-sm mt-1 line-clamp-2">
                         {post.description}
                       </p>
-                      
+
                       <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
                         <div className="flex items-center gap-1">
                           <MapPin size={14} />
-                          <span>{post.municipality?.name || 'Ubicación no especificada'}</span>
+                          <span>
+                            {post.municipality?.name ||
+                              "Ubicación no especificada"}
+                          </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar size={14} />
@@ -156,8 +161,12 @@ const UserFavorites: React.FC<UserFavoritesProps> = ({ userId }) => {
                             ({post.quantity_kg} kg)
                           </span>
                         </div>
-                        
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(post.status)}`}>
+
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                            post.status
+                          )}`}
+                        >
                           {getStatusText(post.status)}
                         </span>
                       </div>

@@ -19,7 +19,7 @@ function Home() {
           <img
             src="/logoSin.png"
             alt="Logo Agro Mercado"
-            className="w-32 h-32 md:w-60 md:h-60 rounded-full shadow-lg border-4 border-green-500"
+            className="w-48 h-32 md:w-80 md:h-60 object-contain mix-blend-multiply drop-shadow-md"
           />
         </div>
 
