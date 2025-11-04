@@ -11,7 +11,15 @@ interface PurchaseConfirmationModalProps {
   onRateLater: () => void;
 }
 
-function PurchaseConfirmationModal({ isOpen, onClose, productName, sellerName, isPurchase, onConfirm, onRateLater }: PurchaseConfirmationModalProps) {
+function PurchaseConfirmationModal({
+  isOpen,
+  onClose,
+  productName,
+  sellerName,
+  isPurchase,
+  onConfirm,
+  onRateLater,
+}: PurchaseConfirmationModalProps) {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
@@ -66,7 +74,7 @@ function PurchaseConfirmationModal({ isOpen, onClose, productName, sellerName, i
             <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
               ¡Calificación Guardada!
             </h3>
-            
+
             <p className="text-gray-700 dark:text-gray-300">
               Gracias por calificar tu experiencia con {sellerName}.
             </p>
@@ -96,9 +104,9 @@ function PurchaseConfirmationModal({ isOpen, onClose, productName, sellerName, i
           <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
             ¡Felicidades!
           </h3>
-          
+
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            {isPurchase 
+            {isPurchase
               ? `Tu compra de ${productName} con ${sellerName} ha sido confirmada.`
               : `Tu oferta de ${productName} a ${sellerName} ha sido enviada.`}
           </p>
@@ -106,7 +114,8 @@ function PurchaseConfirmationModal({ isOpen, onClose, productName, sellerName, i
           {isPurchase && (
             <div className="bg-green-50 dark:bg-gray-700 rounded-xl p-4 mb-6">
               <p className="text-green-800 dark:text-green-200 font-semibold">
-                ¿Te gustaría calificar tu experiencia con el vendedor {sellerName}?
+                ¿Te gustaría calificar tu experiencia con el vendedor{" "}
+                {sellerName}?
               </p>
             </div>
           )}

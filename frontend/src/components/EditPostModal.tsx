@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { FaTimes, FaImage, FaDollarSign, FaMapMarkerAlt, FaTag } from "react-icons/fa";
+import {
+  FaTimes,
+  FaImage,
+  FaDollarSign,
+  FaMapMarkerAlt,
+  FaTag,
+} from "react-icons/fa";
 import { postService, supportDataService } from "../data/services";
-import type { Department, Municipality, ProductType } from "../data/types/product.types";
+import type {
+  Department,
+  Municipality,
+  ProductType,
+} from "../data/types/product.types";
 import type { PostType } from "../data/types/post.types";
 import type { Post, UpdatePostRequest } from "../data/types/post.types";
 import { toast } from "react-hot-toast";
@@ -13,7 +23,12 @@ interface EditPostModalProps {
   onSubmit: (updatedPost: Post) => void;
 }
 
-export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditPostModalProps) {
+export default function EditPostModal({
+  isOpen,
+  onClose,
+  post,
+  onSubmit,
+}: EditPostModalProps) {
   const [formData, setFormData] = useState({
     title: post.title,
     description: post.description,
@@ -28,7 +43,7 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   const [existingImages, setExistingImages] = useState(post.images || []);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Support data
   const [departments, setDepartments] = useState<Department[]>([]);
   const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
@@ -59,18 +74,23 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
       if (formData.municipality_id) {
         try {
           // We need to find the department ID from the municipality
-          const allMunicipalities = await supportDataService.getMunicipalities();
-          const selectedMunicipality = allMunicipalities.find(m => m.id === Number(formData.municipality_id));
+          const allMunicipalities =
+            await supportDataService.getMunicipalities();
+          const selectedMunicipality = allMunicipalities.find(
+            (m) => m.id === Number(formData.municipality_id)
+          );
           if (selectedMunicipality && selectedMunicipality.department) {
-            const muns = await supportDataService.getMunicipalitiesByDepartment(selectedMunicipality.department.id);
+            const muns = await supportDataService.getMunicipalitiesByDepartment(
+              selectedMunicipality.department.id
+            );
             setMunicipalities(muns);
           }
         } catch (error) {
-          console.error('Error cargando municipios:', error);
+          console.error("Error cargando municipios:", error);
         }
       }
     };
-    
+
     loadMunicipalitiesForDepartment();
   }, [formData.municipality_id]);
 
@@ -81,17 +101,21 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
       setDepartments(data.departments);
       setPostTypes(data.postTypes);
       setProductTypes(data.productTypes);
-      
+
       // Load municipalities for the current department
       const allMunicipalities = await supportDataService.getMunicipalities();
-      const selectedMunicipality = allMunicipalities.find(m => m.id === post.municipality.id);
+      const selectedMunicipality = allMunicipalities.find(
+        (m) => m.id === post.municipality.id
+      );
       if (selectedMunicipality && selectedMunicipality.department) {
-        const muns = await supportDataService.getMunicipalitiesByDepartment(selectedMunicipality.department.id);
+        const muns = await supportDataService.getMunicipalitiesByDepartment(
+          selectedMunicipality.department.id
+        );
         setMunicipalities(muns);
       }
     } catch (error) {
-      console.error('Error cargando datos:', error);
-      toast.error('Error al cargar datos del formulario');
+      console.error("Error cargando datos:", error);
+      toast.error("Error al cargar datos del formulario");
     } finally {
       setIsLoading(false);
     }
@@ -99,11 +123,15 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
 
   if (!isOpen) return null;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -111,22 +139,22 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
     if (e.target.files && e.target.files.length > 0) {
       const files = Array.from(e.target.files);
       setImages(files);
-      
-      const previews = files.map(file => URL.createObjectURL(file));
+
+      const previews = files.map((file) => URL.createObjectURL(file));
       setImagePreviews(previews);
     }
   };
 
   const removeExistingImage = (imageId: number) => {
-    setExistingImages(prev => prev.filter(img => img.id !== imageId));
+    setExistingImages((prev) => prev.filter((img) => img.id !== imageId));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Update the post
       const updateData: UpdatePostRequest = {
         title: formData.title,
@@ -140,16 +168,18 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
 
       const updatedPost = await postService.updatePost(post.id, {
         ...updateData,
-        images: images.length > 0 ? images : undefined
+        images: images.length > 0 ? images : undefined,
       });
 
-      toast.success('¡Publicación actualizada con éxito!');
-      
+      toast.success("¡Publicación actualizada con éxito!");
+
       onSubmit(updatedPost);
       onClose();
     } catch (error: any) {
-      console.error('Error actualizando publicación:', error);
-      toast.error(error.response?.data?.message || 'Error al actualizar publicación');
+      console.error("Error actualizando publicación:", error);
+      toast.error(
+        error.response?.data?.message || "Error al actualizar publicación"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -160,7 +190,7 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-bold text-green-800 dark:text-green-300">
+          <h2 className="text-2xl font-bold text-blue-800 dark:text-blue-300">
             Editar Publicación
           </h2>
           <button
@@ -179,13 +209,13 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
               Tipo de Publicación
             </label>
             <div className="grid grid-cols-2 gap-4">
-              {postTypes.map(type => (
-                <label 
+              {postTypes.map((type) => (
+                <label
                   key={type.id}
                   className={`flex items-center justify-center p-4 border-2 rounded-lg cursor-pointer transition ${
-                    formData.post_type_id === type.id 
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/20' 
-                      : 'border-gray-300 dark:border-gray-600 hover:border-green-300'
+                    formData.post_type_id === type.id
+                      ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20"
+                      : "border-gray-300 dark:border-gray-600 hover:border-blue-300"
                   }`}
                 >
                   <input
@@ -196,7 +226,9 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
                     onChange={handleInputChange}
                     className="sr-only"
                   />
-                  <span className="text-gray-700 dark:text-gray-300 font-medium">{type.name}</span>
+                  <span className="text-gray-700 dark:text-gray-300 font-medium">
+                    {type.name}
+                  </span>
                 </label>
               ))}
             </div>
@@ -213,7 +245,7 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
               value={formData.title}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Ej: Venta de tomates orgánicos"
             />
           </div>
@@ -229,7 +261,7 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
               onChange={handleInputChange}
               required
               rows={4}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Describe tu producto en detalle..."
             />
           </div>
@@ -244,9 +276,9 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
               value={formData.product_id}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             >
-              {productTypes.map(product => (
+              {productTypes.map((product) => (
                 <option key={product.id} value={product.id}>
                   {product.name}
                 </option>
@@ -267,7 +299,7 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
                 onChange={handleInputChange}
                 min="0"
                 step="0.1"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Ej: 100"
               />
             </div>
@@ -282,7 +314,7 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
                 onChange={handleInputChange}
                 min="0"
                 step="100"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Ej: 2500"
               />
             </div>
@@ -298,10 +330,10 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
               value={formData.municipality_id}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             >
               <option value="">Selecciona un municipio</option>
-              {municipalities.map(mun => (
+              {municipalities.map((mun) => (
                 <option key={mun.id} value={mun.id}>
                   {mun.name}
                 </option>
@@ -346,7 +378,8 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
                   <FaImage className="w-8 h-8 mb-2 text-gray-500 dark:text-gray-400" />
                   <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-semibold">Haz clic para subir</span> o arrastra
+                    <span className="font-semibold">Haz clic para subir</span> o
+                    arrastra
                   </p>
                   <p className="text-xs text-gray-500 dark:text-gray-400">
                     PNG, JPG (Máx. 5MB)
@@ -361,7 +394,7 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
                 />
               </label>
             </div>
-            
+
             {/* Image previews */}
             {imagePreviews.length > 0 && (
               <div className="mt-4 grid grid-cols-3 gap-2">
@@ -389,9 +422,9 @@ export default function EditPostModal({ isOpen, onClose, post, onSubmit }: EditP
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center disabled:opacity-50"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center disabled:opacity-50"
             >
-              {isSubmitting ? 'Actualizando...' : 'Actualizar'}
+              {isSubmitting ? "Actualizando..." : "Actualizar"}
             </button>
           </div>
         </form>

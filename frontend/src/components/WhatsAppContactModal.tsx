@@ -9,7 +9,13 @@ interface WhatsAppContactModalProps {
   onContact: () => void;
 }
 
-function WhatsAppContactModal({ isOpen, onClose, sellerName, productName, onContact }: WhatsAppContactModalProps) {
+function WhatsAppContactModal({
+  isOpen,
+  onClose,
+  sellerName,
+  productName,
+  onContact,
+}: WhatsAppContactModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -40,15 +46,14 @@ function WhatsAppContactModal({ isOpen, onClose, sellerName, productName, onCont
             {productName}
           </p>
 
-          <p className="text-gray-700 dark:text-gray-300 mb-2">
-            Vendedor:
-          </p>
+          <p className="text-gray-700 dark:text-gray-300 mb-2">Vendedor:</p>
           <p className="font-bold text-xl text-gray-800 dark:text-gray-200 mb-6">
             {sellerName}
           </p>
 
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            Al presionar el botón, serás redirigido a WhatsApp para contactar al vendedor.
+            Al presionar el botón, serás redirigido a WhatsApp para contactar al
+            vendedor.
           </p>
 
           <div className="flex flex-col gap-3">

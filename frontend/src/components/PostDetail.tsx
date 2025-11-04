@@ -26,15 +26,21 @@ interface PostDetailProps {
       image_url: string;
     };
   } | null;
-  onClose?: () => void; 
-  formatDate?: (dateString: string) => string; 
+  onClose?: () => void;
+  formatDate?: (dateString: string) => string;
   onEdit?: (post: any) => void;
   onDelete?: (postId: number) => void;
 }
 
-export default function PostDetail({ post, onClose, formatDate, onEdit, onDelete }: PostDetailProps) {
+export default function PostDetail({
+  post,
+  onClose,
+  formatDate,
+  onEdit,
+  onDelete,
+}: PostDetailProps) {
   const { user } = useAuth();
-  
+
   if (!post) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-6 text-center text-gray-500 dark:text-gray-300">
@@ -49,13 +55,13 @@ export default function PostDetail({ post, onClose, formatDate, onEdit, onDelete
   const userName = post.user?.name || "Usuario desconocido";
   const postType = post.post_type?.type_name || "Tipo desconocido";
   const photos = post.images?.map((img) => img.url) || [];
-  
+
   // Check if current user is the owner of the post
   const isOwner = user && user.id === post.user.user_id;
 
   const handleDelete = async () => {
     if (!isOwner) return;
-    
+
     try {
       await postService.deletePost(post.post_id);
       toast.success("Publicación eliminada con éxito");
@@ -85,8 +91,8 @@ export default function PostDetail({ post, onClose, formatDate, onEdit, onDelete
 
       {/* Header */}
       <div className="flex items-center mb-4">
-        <div className="bg-green-200 dark:bg-green-600 rounded-full w-12 h-12 flex items-center justify-center mr-4">
-          <span className="font-bold text-green-800 dark:text-white text-lg">
+        <div className="bg-blue-200 dark:bg-blue-600 rounded-full w-12 h-12 flex items-center justify-center mr-4">
+          <span className="font-bold text-blue-800 dark:text-white text-lg">
             {userName.charAt(0)}
           </span>
         </div>
@@ -142,10 +148,10 @@ export default function PostDetail({ post, onClose, formatDate, onEdit, onDelete
             >
               {photos.map((photo, index) => (
                 <div key={index} className="aspect-[16/9]">
-                  <img 
-                    src={photo} 
-                    alt={`Imagen ${index + 1}`} 
-                    className="w-full h-full object-cover rounded-lg" 
+                  <img
+                    src={photo}
+                    alt={`Imagen ${index + 1}`}
+                    className="w-full h-full object-cover rounded-lg"
                   />
                 </div>
               ))}
@@ -170,12 +176,14 @@ export default function PostDetail({ post, onClose, formatDate, onEdit, onDelete
           )}
           {post.price_per_kg !== undefined && (
             <p>
-              <span className="font-bold">Precio:</span> ${post.price_per_kg?.toLocaleString()} por kg
+              <span className="font-bold">Precio:</span> $
+              {post.price_per_kg?.toLocaleString()} por kg
             </p>
           )}
           {post.municipality?.name && (
             <p>
-              <span className="font-bold">Municipio:</span> {post.municipality.name}
+              <span className="font-bold">Municipio:</span>{" "}
+              {post.municipality.name}
             </p>
           )}
           {post.product?.name && (
@@ -192,7 +200,7 @@ export default function PostDetail({ post, onClose, formatDate, onEdit, onDelete
           className={`px-3 py-1 rounded-full text-xs font-semibold ${
             postType === "Oferta"
               ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
-              : "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+              : "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
           }`}
         >
           {postType}
@@ -204,7 +212,7 @@ export default function PostDetail({ post, onClose, formatDate, onEdit, onDelete
           className={`flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-white font-semibold shadow ${
             postType === "Oferta"
               ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-green-600 hover:bg-green-700"
+              : "bg-blue-600 hover:bg-blue-700"
           }`}
         >
           {postType === "Oferta" ? "🛒 Comprar" : "🤝 Ofrecer"}

@@ -1,7 +1,13 @@
-import React, { useState, useRef } from 'react';
-import { FaTimes, FaImage, FaUser, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
-import { useAuth } from '../data/context/AuthContext';
-import { toast } from 'react-hot-toast';
+import React, { useState, useRef } from "react";
+import {
+  FaTimes,
+  FaImage,
+  FaUser,
+  FaPhone,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
+import { useAuth } from "../data/context/AuthContext";
+import { toast } from "react-hot-toast";
 
 interface CompleteProfileModalProps {
   isOpen: boolean;
@@ -9,12 +15,16 @@ interface CompleteProfileModalProps {
   onProfileUpdated: (updatedUser: any) => void;
 }
 
-export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated }: CompleteProfileModalProps) {
+export default function CompleteProfileModal({
+  isOpen,
+  onClose,
+  onProfileUpdated,
+}: CompleteProfileModalProps) {
   const { user, updateProfile } = useAuth();
   const [formData, setFormData] = useState({
-    name: '',
-    phone_number: '',
-    address_details: '',
+    name: "",
+    phone_number: "",
+    address_details: "",
   });
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -23,11 +33,13 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
 
   if (!isOpen) return null;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -35,7 +47,7 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setProfileImage(file);
-      
+
       // Crear preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -47,28 +59,30 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     try {
       setIsSubmitting(true);
-      
+
       // Crear FormData para enviar archivos
       const submitData = new FormData();
-      submitData.append('name', formData.name);
-      submitData.append('phone_number', formData.phone_number);
-      submitData.append('address_details', formData.address_details);
-      
+      submitData.append("name", formData.name);
+      submitData.append("phone_number", formData.phone_number);
+      submitData.append("address_details", formData.address_details);
+
       if (profileImage) {
-        submitData.append('profile_image', profileImage);
+        submitData.append("profile_image", profileImage);
       }
 
       await updateProfile(submitData);
-      
-      toast.success('¡Perfil actualizado con éxito!');
+
+      toast.success("¡Perfil actualizado con éxito!");
       onProfileUpdated({ ...user, ...formData, profile_image: imagePreview });
       onClose();
     } catch (error: any) {
-      console.error('Error updating profile:', error);
-      toast.error(error.response?.data?.message || 'Error al actualizar perfil');
+      console.error("Error updating profile:", error);
+      toast.error(
+        error.response?.data?.message || "Error al actualizar perfil"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -83,7 +97,7 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-bold text-green-800 dark:text-green-300">
+          <h2 className="text-2xl font-bold text-blue-800 dark:text-blue-300">
             Completa tu perfil
           </h2>
           <button
@@ -102,14 +116,14 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
               <FaImage className="inline mr-2" /> Foto de perfil
             </label>
             <div className="flex flex-col items-center">
-              <div 
-                className="w-32 h-32 rounded-full overflow-hidden border-4 border-green-500 cursor-pointer hover:border-green-600 transition-colors"
+              <div
+                className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 cursor-pointer hover:border-blue-600 transition-colors"
                 onClick={triggerFileInput}
               >
                 {imagePreview ? (
-                  <img 
-                    src={imagePreview} 
-                    alt="Preview" 
+                  <img
+                    src={imagePreview}
+                    alt="Preview"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -121,7 +135,7 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
               <button
                 type="button"
                 onClick={triggerFileInput}
-                className="mt-3 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+                className="mt-3 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
                 Seleccionar imagen
               </button>
@@ -146,7 +160,7 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
               value={formData.name}
               onChange={handleInputChange}
               required
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Tu nombre completo"
             />
           </div>
@@ -161,7 +175,7 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
               name="phone_number"
               value={formData.phone_number}
               onChange={handleInputChange}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="+57 300 123 4567"
             />
           </div>
@@ -176,7 +190,7 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
               value={formData.address_details}
               onChange={handleInputChange}
               rows={3}
-              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 dark:bg-gray-700 dark:text-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               placeholder="Calle 10 #20-30, Ciudad"
             />
           </div>
@@ -193,9 +207,9 @@ export default function CompleteProfileModal({ isOpen, onClose, onProfileUpdated
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center disabled:opacity-50"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center disabled:opacity-50"
             >
-              {isSubmitting ? 'Guardando...' : 'Guardar perfil'}
+              {isSubmitting ? "Guardando..." : "Guardar perfil"}
             </button>
           </div>
         </form>

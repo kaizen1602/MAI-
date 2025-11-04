@@ -48,14 +48,14 @@ export default function Sales() {
       // Filtrar por tipo "Demanda" (ID 2) para mostrar solicitudes de compra
       const response = await postService.getPosts({
         post_type_id: 2, // DEMANDA
-        per_page: 50
+        per_page: 50,
       });
 
       setPosts(response.data);
       setFilteredPosts(response.data);
     } catch (error) {
-      console.error('Error cargando solicitudes:', error);
-      toast.error('Error al cargar solicitudes de compra');
+      console.error("Error cargando solicitudes:", error);
+      toast.error("Error al cargar solicitudes de compra");
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +66,7 @@ export default function Sales() {
     if (filterTimeout.current) {
       clearTimeout(filterTimeout.current);
     }
-    
+
     // Set new timeout to debounce filter requests
     filterTimeout.current = setTimeout(() => {
       applyFilters(filters);
@@ -79,58 +79,59 @@ export default function Sales() {
       isFirstFilter.current = false;
       return;
     }
-    
+
     // Convertir los filtros del frontend a los parámetros que espera la API
     const apiFilters: any = {
-      post_type_id: 2 // DEMANDA
+      post_type_id: 2, // DEMANDA
     };
-    
+
     if (filters.name) {
       apiFilters.search = filters.name;
     }
-    
+
     if (filters.productType) {
       // This would require a product type filter on the backend
       // For now, we'll do client-side filtering for product type
     }
-    
+
     if (filters.city) {
       // Primero necesitamos obtener el ID del municipio
       try {
         const municipalities = await supportDataService.getMunicipalities();
-        const matchingMunicipality = municipalities.find((m: any) => 
+        const matchingMunicipality = municipalities.find((m: any) =>
           m.name.toLowerCase().includes(filters.city.toLowerCase())
         );
         if (matchingMunicipality) {
           apiFilters.municipality_id = matchingMunicipality.id;
         }
       } catch (error) {
-        console.warn('No se pudo obtener el ID del municipio:', error);
+        console.warn("No se pudo obtener el ID del municipio:", error);
       }
     }
-    
+
     if (filters.minPrice) {
       apiFilters.min_price = Number(filters.minPrice);
     }
-    
+
     if (filters.maxPrice) {
       apiFilters.max_price = Number(filters.maxPrice);
     }
-    
+
     // Don't filter if no actual filters are applied (except the post_type_id)
-    const hasAdditionalFilters = Object.keys(apiFilters).some(key => 
-      key !== 'post_type_id' && 
-      apiFilters[key] !== undefined && 
-      apiFilters[key] !== null && 
-      apiFilters[key] !== ''
+    const hasAdditionalFilters = Object.keys(apiFilters).some(
+      (key) =>
+        key !== "post_type_id" &&
+        apiFilters[key] !== undefined &&
+        apiFilters[key] !== null &&
+        apiFilters[key] !== ""
     );
-    
+
     if (!hasAdditionalFilters) {
       // If no additional filters, show all posts
       loadFilteredPosts({ post_type_id: 2 });
       return;
     }
-    
+
     // Aplicar filtros directamente llamando a la API
     loadFilteredPosts(apiFilters);
   }, []);
@@ -138,16 +139,16 @@ export default function Sales() {
   const loadFilteredPosts = async (filters: any) => {
     try {
       setIsLoading(true);
-      
+
       const response = await postService.getPosts({
         ...filters,
-        per_page: 50
+        per_page: 50,
       });
 
       setFilteredPosts(response.data);
     } catch (error: any) {
-      console.error('Error cargando publicaciones filtradas:', error);
-      toast.error('Error al cargar publicaciones filtradas');
+      console.error("Error cargando publicaciones filtradas:", error);
+      toast.error("Error al cargar publicaciones filtradas");
       // On error, show all posts
       setFilteredPosts(posts);
     } finally {
@@ -179,9 +180,9 @@ export default function Sales() {
 
   const handleDelete = (postId: number) => {
     // Remove the deleted post from the lists
-    setPosts(prev => prev.filter(p => p.id !== postId));
-    setFilteredPosts(prev => prev.filter(p => p.id !== postId));
-    
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+    setFilteredPosts((prev) => prev.filter((p) => p.id !== postId));
+
     // If the deleted post was selected, close the detail view
     if (selectedPost && selectedPost.id === postId) {
       setSelectedPost(null);
@@ -190,14 +191,18 @@ export default function Sales() {
 
   const handleUpdateSubmit = async (updatedPost: Post) => {
     // Update the posts in state
-    setPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPost : p));
-    setFilteredPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPost : p));
-    
+    setPosts((prev) =>
+      prev.map((p) => (p.id === updatedPost.id ? updatedPost : p))
+    );
+    setFilteredPosts((prev) =>
+      prev.map((p) => (p.id === updatedPost.id ? updatedPost : p))
+    );
+
     // If this post is currently selected, update the selection
     if (selectedPost && selectedPost.id === updatedPost.id) {
       setSelectedPost(updatedPost);
     }
-    
+
     setShowEditModal(false);
     setEditingPost(null);
     toast.success("Publicación actualizada con éxito");
@@ -214,7 +219,7 @@ export default function Sales() {
 
   return (
     <MainLayout onFilter={handleFilter}>
-      <h1 className="text-3xl font-extrabold text-green-900 dark:text-green-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
+      <h1 className="text-3xl font-extrabold text-blue-900 dark:text-blue-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
         Solicitudes de Compra
       </h1>
 
@@ -236,47 +241,52 @@ export default function Sales() {
           {/* Detalle */}
           <div className="hidden lg:w-1/2 lg:block w-full">
             <PostDetail
-              post={selectedPost ? {
-                post_id: selectedPost.id,
-                title: selectedPost.title,
-                user: {
-                  user_id: selectedPost.user.id,
-                  name: selectedPost.user.name
-                },
-                description: selectedPost.description,
-                created_at: selectedPost.created_at,
-                post_type: {
-                  type_id: selectedPost.post_type.id,
-                  type_name: selectedPost.post_type.name
-                },
-                images: selectedPost.images?.map(img => ({
-                  image_id: img.id,
-                  url: img.url
-                })) || [],
-                quantity_kg: selectedPost.quantity_kg,
-                price_per_kg: selectedPost.price_per_kg,
-                municipality: {
-                  municipality_id: selectedPost.municipality.id,
-                  name: selectedPost.municipality.name
-                },
-                product: {
-                  product_id: selectedPost.product.id,
-                  name: selectedPost.product.name,
-                  description: selectedPost.product.description,
-                  image_url: selectedPost.product.image_url
-                }
-              } : null}
+              post={
+                selectedPost
+                  ? {
+                      post_id: selectedPost.id,
+                      title: selectedPost.title,
+                      user: {
+                        user_id: selectedPost.user.id,
+                        name: selectedPost.user.name,
+                      },
+                      description: selectedPost.description,
+                      created_at: selectedPost.created_at,
+                      post_type: {
+                        type_id: selectedPost.post_type.id,
+                        type_name: selectedPost.post_type.name,
+                      },
+                      images:
+                        selectedPost.images?.map((img) => ({
+                          image_id: img.id,
+                          url: img.url,
+                        })) || [],
+                      quantity_kg: selectedPost.quantity_kg,
+                      price_per_kg: selectedPost.price_per_kg,
+                      municipality: {
+                        municipality_id: selectedPost.municipality.id,
+                        name: selectedPost.municipality.name,
+                      },
+                      product: {
+                        product_id: selectedPost.product.id,
+                        name: selectedPost.product.name,
+                        description: selectedPost.product.description,
+                        image_url: selectedPost.product.image_url,
+                      },
+                    }
+                  : null
+              }
               onClose={() => setSelectedPost(null)}
               formatDate={formatDate}
               onEdit={handleEdit}
               onDelete={handleDelete}
             />
           </div>
-          
+
           {/* Mobile modal overlay for post details */}
           {selectedPost && (
             <div className="lg:hidden fixed inset-0 z-50">
-              <div 
+              <div
                 className="absolute inset-0 bg-black bg-opacity-50"
                 onClick={() => setSelectedPost(null)}
               ></div>
@@ -288,30 +298,31 @@ export default function Sales() {
                       title: selectedPost.title,
                       user: {
                         user_id: selectedPost.user.id,
-                        name: selectedPost.user.name
+                        name: selectedPost.user.name,
                       },
                       description: selectedPost.description,
                       created_at: selectedPost.created_at,
                       post_type: {
                         type_id: selectedPost.post_type.id,
-                        type_name: selectedPost.post_type.name
+                        type_name: selectedPost.post_type.name,
                       },
-                      images: selectedPost.images?.map(img => ({
-                        image_id: img.id,
-                        url: img.url
-                      })) || [],
+                      images:
+                        selectedPost.images?.map((img) => ({
+                          image_id: img.id,
+                          url: img.url,
+                        })) || [],
                       quantity_kg: selectedPost.quantity_kg,
                       price_per_kg: selectedPost.price_per_kg,
                       municipality: {
                         municipality_id: selectedPost.municipality.id,
-                        name: selectedPost.municipality.name
+                        name: selectedPost.municipality.name,
                       },
                       product: {
                         product_id: selectedPost.product.id,
                         name: selectedPost.product.name,
                         description: selectedPost.product.description,
-                        image_url: selectedPost.product.image_url
-                      }
+                        image_url: selectedPost.product.image_url,
+                      },
                     }}
                     onClose={() => setSelectedPost(null)}
                     formatDate={formatDate}
@@ -322,7 +333,7 @@ export default function Sales() {
               </div>
             </div>
           )}
-          
+
           {/* Edit Post Modal */}
           {editingPost && (
             <EditPostModal

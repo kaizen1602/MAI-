@@ -16,9 +16,7 @@ function SellerInfo({ user, rating }: SellerInfoProps) {
     const hasHalfStar = averageRating % 1 !== 0;
 
     for (let i = 0; i < fullStars; i++) {
-      stars.push(
-        <FaStar key={i} className="text-yellow-400 text-sm" />
-      );
+      stars.push(<FaStar key={i} className="text-yellow-400 text-sm" />);
     }
 
     if (hasHalfStar) {
@@ -41,7 +39,9 @@ function SellerInfo({ user, rating }: SellerInfoProps) {
     <div className="p-6 bg-yellow-50 dark:bg-yellow-900/30 rounded-2xl border border-yellow-200 dark:border-yellow-800 shadow-sm">
       <div className="flex items-center mb-3">
         <FaStar className="text-yellow-500 mr-2 text-xl" />
-        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">Información del vendedor</h3>
+        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+          Información del vendedor
+        </h3>
       </div>
       <div className="flex flex-col items-center p-4 bg-white dark:bg-gray-700 rounded-lg">
         <div className="bg-green-200 dark:bg-green-600 rounded-full w-20 h-20 flex items-center justify-center mb-3">
@@ -53,7 +53,7 @@ function SellerInfo({ user, rating }: SellerInfoProps) {
           <h4 className="font-bold text-xl text-gray-800 dark:text-gray-200 mb-2">
             {user?.name || "Usuario desconocido"}
           </h4>
-          
+
           {/* Calificación promedio */}
           {rating && rating.total_reviews > 0 ? (
             <div className="mt-3">
@@ -61,8 +61,13 @@ function SellerInfo({ user, rating }: SellerInfoProps) {
                 {renderStars(rating.average_rating)}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
-                <span className="font-semibold">{rating.average_rating.toFixed(1)}</span>
-                <span className="ml-1">({rating.total_reviews} {rating.total_reviews === 1 ? 'reseña' : 'reseñas'})</span>
+                <span className="font-semibold">
+                  {rating.average_rating.toFixed(1)}
+                </span>
+                <span className="ml-1">
+                  ({rating.total_reviews}{" "}
+                  {rating.total_reviews === 1 ? "reseña" : "reseñas"})
+                </span>
               </div>
             </div>
           ) : (

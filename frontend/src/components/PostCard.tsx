@@ -15,22 +15,28 @@ interface PostCardProps {
 }
 
 const typeStyles: Record<string, string> = {
-  Oferta: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
-  Demanda: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200",
+  Venta: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
+  Compra: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
 };
 
-function PostCard({ post, onSelectPost, formatDate, onPostUpdated, onPostDeleted }: PostCardProps) {
+function PostCard({
+  post,
+  onSelectPost,
+  formatDate,
+  onPostUpdated,
+  onPostDeleted,
+}: PostCardProps) {
   const { user } = useAuth();
   const [showActionsModal, setShowActionsModal] = useState(false);
-  
+
   // Extraemos el nombre del usuario correctamente
   const userName = post.user?.name || "Usuario desconocido";
-  
+
   // Extraemos el tipo de post correctamente
   const postType = post.post_type?.name || "Tipo desconocido";
-  
+
   // Extraemos las imágenes correctamente
-  const photos = post.images?.map(img => img.url) || [];
+  const photos = post.images?.map((img) => img.url) || [];
 
   // Verificar si el usuario es el dueño del post
   const isOwner = user && post.user?.id === user.id;
@@ -57,9 +63,11 @@ function PostCard({ post, onSelectPost, formatDate, onPostUpdated, onPostDeleted
     >
       {/* Header usuario */}
       <div className="flex items-center mb-3">
-        <div className="bg-green-200 dark:bg-green-600 rounded-full w-12 h-12 flex items-center justify-center mr-4">
-          <span className="font-bold text-green-800 dark:text-white text-lg">
-            {typeof userName === "string" && userName ? userName.charAt(0) : "?"}
+        <div className="bg-blue-200 dark:bg-blue-600 rounded-full w-12 h-12 flex items-center justify-center mr-4">
+          <span className="font-bold text-blue-800 dark:text-white text-lg">
+            {typeof userName === "string" && userName
+              ? userName.charAt(0)
+              : "?"}
           </span>
         </div>
         <div className="min-w-0">
@@ -73,7 +81,7 @@ function PostCard({ post, onSelectPost, formatDate, onPostUpdated, onPostDeleted
       </div>
 
       {/* Título */}
-      <h4 className="font-bold text-xl mb-2 text-green-800 dark:text-green-300">
+      <h4 className="font-bold text-xl mb-2 text-blue-800 dark:text-blue-300">
         {post.title}
       </h4>
 
@@ -89,7 +97,10 @@ function PostCard({ post, onSelectPost, formatDate, onPostUpdated, onPostDeleted
             // Si es la última visible y hay más imágenes, mostramos el overlay +n
             if (index === 1 && photos.length > 2) {
               return (
-                <div key={index} className="relative w-32 h-24 rounded-lg overflow-hidden">
+                <div
+                  key={index}
+                  className="relative w-32 h-24 rounded-lg overflow-hidden"
+                >
                   <img
                     src={photo}
                     alt={`miniatura ${index + 1}`}
@@ -117,14 +128,14 @@ function PostCard({ post, onSelectPost, formatDate, onPostUpdated, onPostDeleted
       {/* Footer */}
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
-          <FavoriteButton 
-            post={post} 
+          <FavoriteButton
+            post={post}
             onFavoriteChange={(isFavorite) => {
               // Actualizar el post localmente
               const updatedPost = {
                 ...post,
                 is_favorited: isFavorite,
-                favorites_count: post.favorites_count + (isFavorite ? 1 : -1)
+                favorites_count: post.favorites_count + (isFavorite ? 1 : -1),
               };
               onSelectPost(updatedPost);
             }}
@@ -140,7 +151,7 @@ function PostCard({ post, onSelectPost, formatDate, onPostUpdated, onPostDeleted
           >
             {postType}
           </span>
-          
+
           {isOwner && (
             <button
               onClick={handleActionsClick}

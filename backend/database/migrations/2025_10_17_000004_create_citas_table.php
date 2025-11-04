@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\greenprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('citas', function (Blueprint $table) {
+        Schema::create('citas', function (greenprint $table) {
             $table->id();
             $table->foreignId('paciente_id')->constrained('pacientes')->onDelete('cascade');
             $table->foreignId('entidad_medica_id')->constrained('entidades_medicas')->onDelete('cascade');

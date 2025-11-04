@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\greenprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('price_alerts', function (Blueprint $table) {
+        Schema::create('price_alerts', function (greenprint $table) {
             $table->id();
             $table->enum('condition', ['ABOVE', 'BELOW']);
             $table->decimal('threshold_price', 10, 2);

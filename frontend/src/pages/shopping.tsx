@@ -31,7 +31,8 @@ interface PostDetailData {
 export default function Shopping() {
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [selectedPostDetail, setSelectedPostDetail] = useState<PostDetailData | null>(null);
+  const [selectedPostDetail, setSelectedPostDetail] =
+    useState<PostDetailData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
@@ -51,30 +52,31 @@ export default function Shopping() {
       title: post.title,
       user: {
         user_id: post.user.id,
-        name: post.user.name
+        name: post.user.name,
       },
       description: post.description,
       created_at: post.created_at,
       post_type: {
         type_id: post.post_type.id,
-        type_name: post.post_type.name
+        type_name: post.post_type.name,
       },
-      images: post.images?.map(img => ({
-        image_id: img.id,
-        url: img.url
-      })) || [],
+      images:
+        post.images?.map((img) => ({
+          image_id: img.id,
+          url: img.url,
+        })) || [],
       quantity_kg: post.quantity_kg,
       price_per_kg: post.price_per_kg,
       municipality: {
         municipality_id: post.municipality.id,
-        name: post.municipality.name
+        name: post.municipality.name,
       },
       product: {
         product_id: post.product.id,
         name: post.product.name,
         description: post.product.description,
-        image_url: post.product.image_url
-      }
+        image_url: post.product.image_url,
+      },
     };
   };
 
@@ -89,72 +91,73 @@ export default function Shopping() {
   const loadPosts = async (filters: any = {}, cursor: string | null = null) => {
     try {
       setIsLoading(true);
-      
+
       // Prepare filter parameters
       const filterParams: any = {
         post_type_id: 1, // OFERTA
-        per_page: 20
+        per_page: 20,
       };
-      
+
       // Add cursor for pagination
       if (cursor) {
         filterParams.cursor = cursor;
       }
-      
+
       // Map filters to API parameters
       if (filters.productType) {
         // We need to get the product ID from the name
         // For now, we'll just search by name
         filterParams.search = filters.productType;
       }
-      
+
       if (filters.city) {
-        filterParams.search = filterParams.search 
-          ? `${filterParams.search} ${filters.city}` 
+        filterParams.search = filterParams.search
+          ? `${filterParams.search} ${filters.city}`
           : filters.city;
       }
-      
+
       if (filters.minPrice) {
         filterParams.min_price = Number(filters.minPrice);
       }
-      
+
       if (filters.maxPrice) {
         filterParams.max_price = Number(filters.maxPrice);
       }
-      
+
       if (filters.name) {
-        filterParams.search = filterParams.search 
-          ? `${filterParams.search} ${filters.name}` 
+        filterParams.search = filterParams.search
+          ? `${filterParams.search} ${filters.name}`
           : filters.name;
       }
-      
+
       // Add sorting
       if (filters.sortBy) {
         switch (filters.sortBy) {
-          case 'priceAsc':
-            filterParams.sort_by = 'price_per_kg';
-            filterParams.sort_order = 'asc';
+          case "priceAsc":
+            filterParams.sort_by = "price_per_kg";
+            filterParams.sort_order = "asc";
             break;
-          case 'priceDesc':
-            filterParams.sort_by = 'price_per_kg';
-            filterParams.sort_order = 'desc';
+          case "priceDesc":
+            filterParams.sort_by = "price_per_kg";
+            filterParams.sort_order = "desc";
             break;
-          case 'dateDesc':
-            filterParams.sort_by = 'created_at';
-            filterParams.sort_order = 'desc';
+          case "dateDesc":
+            filterParams.sort_by = "created_at";
+            filterParams.sort_order = "desc";
             break;
-          case 'dateAsc':
-            filterParams.sort_by = 'created_at';
-            filterParams.sort_order = 'asc';
+          case "dateAsc":
+            filterParams.sort_by = "created_at";
+            filterParams.sort_order = "asc";
             break;
         }
       }
 
-      const response: CursorPaginatedResponse<Post> = await postService.getPosts(filterParams);
+      const response: CursorPaginatedResponse<Post> =
+        await postService.getPosts(filterParams);
 
       // If it's pagination, append to existing posts
       if (cursor) {
-        setPosts(prev => [...prev, ...response.data]);
+        setPosts((prev) => [...prev, ...response.data]);
       } else {
         setPosts(response.data);
       }
@@ -163,8 +166,8 @@ export default function Shopping() {
       setHasMore(!!response.pagination.next_cursor);
       setNextCursor(response.pagination.next_cursor || null);
     } catch (error) {
-      console.error('Error cargando productos:', error);
-      toast.error('Error al cargar productos en venta');
+      console.error("Error cargando productos:", error);
+      toast.error("Error al cargar productos en venta");
     } finally {
       setIsLoading(false);
     }
@@ -175,13 +178,13 @@ export default function Shopping() {
     if (filterTimeout.current) {
       clearTimeout(filterTimeout.current);
     }
-    
+
     // Skip first filter to prevent immediate API calls
     if (isFirstFilter.current) {
       isFirstFilter.current = false;
       return;
     }
-    
+
     // Set new timeout to debounce filter requests
     filterTimeout.current = setTimeout(() => {
       loadPosts(filters);
@@ -212,8 +215,8 @@ export default function Shopping() {
 
   const handleDelete = (postId: number) => {
     // Remove the deleted post from the lists
-    setPosts(prev => prev.filter(p => p.id !== postId));
-    
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+
     // If the deleted post was selected, close the detail view
     if (selectedPost && selectedPost.id === postId) {
       setSelectedPost(null);
@@ -222,13 +225,15 @@ export default function Shopping() {
 
   const handleUpdateSubmit = async (updatedPost: Post) => {
     // Update the posts in state
-    setPosts(prev => prev.map(p => p.id === updatedPost.id ? updatedPost : p));
-    
+    setPosts((prev) =>
+      prev.map((p) => (p.id === updatedPost.id ? updatedPost : p))
+    );
+
     // If this post is currently selected, update the selection
     if (selectedPost && selectedPost.id === updatedPost.id) {
       setSelectedPost(updatedPost);
     }
-    
+
     setShowEditModal(false);
     setEditingPost(null);
     toast.success("Publicación actualizada con éxito");
@@ -236,7 +241,7 @@ export default function Shopping() {
 
   return (
     <MainLayout onFilter={handleFilter}>
-      <h1 className="text-3xl font-extrabold text-green-900 dark:text-green-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
+      <h1 className="text-3xl font-extrabold text-blue-900 dark:text-blue-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
         Productos en Venta
       </h1>
 
@@ -265,11 +270,11 @@ export default function Shopping() {
               onDelete={handleDelete}
             />
           </div>
-          
+
           {/* Mobile modal overlay for post details */}
           {selectedPostDetail && (
             <div className="lg:hidden fixed inset-0 z-50">
-              <div 
+              <div
                 className="absolute inset-0 bg-black bg-opacity-50"
                 onClick={() => setSelectedPost(null)}
               ></div>
@@ -286,7 +291,7 @@ export default function Shopping() {
               </div>
             </div>
           )}
-          
+
           {/* Edit Post Modal */}
           {editingPost && (
             <EditPostModal

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { X, Edit, CheckCircle, XCircle, Trash2 } from 'lucide-react';
-import { Post } from '../data/types/post.types';
-import postService from '../data/services/PostService';
-import { toast } from 'react-hot-toast';
+import React, { useState } from "react";
+import { X, Edit, CheckCircle, XCircle, Trash2 } from "lucide-react";
+import { Post } from "../data/types/post.types";
+import postService from "../data/services/PostService";
+import { toast } from "react-hot-toast";
 
 interface PostActionsModalProps {
   isOpen: boolean;
@@ -22,11 +22,13 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showStatusConfirm, setShowStatusConfirm] = useState(false);
-  const [pendingStatus, setPendingStatus] = useState<'ACTIVE' | 'CLOSED' | 'EXPIRED' | null>(null);
+  const [pendingStatus, setPendingStatus] = useState<
+    "ACTIVE" | "CLOSED" | "EXPIRED" | null
+  >(null);
 
   if (!isOpen || !post) return null;
 
-  const handleStatusUpdateClick = (status: 'ACTIVE' | 'CLOSED' | 'EXPIRED') => {
+  const handleStatusUpdateClick = (status: "ACTIVE" | "CLOSED" | "EXPIRED") => {
     setPendingStatus(status);
     setShowStatusConfirm(true);
   };
@@ -36,22 +38,27 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
 
     setIsLoading(true);
     try {
-      const updatedPost = await postService.updatePostStatus(post.id, pendingStatus);
+      const updatedPost = await postService.updatePostStatus(
+        post.id,
+        pendingStatus
+      );
       onPostUpdated?.(updatedPost);
-      
+
       const statusMessages = {
-        'ACTIVE': 'Publicación activada exitosamente',
-        'CLOSED': 'Publicación marcada como vendida',
-        'EXPIRED': 'Publicación desactivada'
+        ACTIVE: "Publicación activada exitosamente",
+        CLOSED: "Publicación marcada como vendida",
+        EXPIRED: "Publicación desactivada",
       };
-      
+
       toast.success(statusMessages[pendingStatus]);
       setShowStatusConfirm(false);
       setPendingStatus(null);
       onClose();
     } catch (error: any) {
-      console.error('Error updating post status:', error);
-      toast.error(error.response?.data?.message || 'Error al actualizar el estado');
+      console.error("Error updating post status:", error);
+      toast.error(
+        error.response?.data?.message || "Error al actualizar el estado"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -73,12 +80,14 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
     try {
       await postService.deletePost(post.id);
       onPostDeleted?.(post.id);
-      toast.success('Publicación eliminada exitosamente');
+      toast.success("Publicación eliminada exitosamente");
       setShowDeleteConfirm(false);
       onClose();
     } catch (error: any) {
-      console.error('Error deleting post:', error);
-      toast.error(error.response?.data?.message || 'Error al eliminar la publicación');
+      console.error("Error deleting post:", error);
+      toast.error(
+        error.response?.data?.message || "Error al eliminar la publicación"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -90,25 +99,25 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'text-green-600 bg-green-100';
-      case 'CLOSED':
-        return 'text-blue-600 bg-blue-100';
-      case 'EXPIRED':
-        return 'text-gray-600 bg-gray-100';
+      case "ACTIVE":
+        return "text-green-600 bg-green-100";
+      case "CLOSED":
+        return "text-green-600 bg-green-100";
+      case "EXPIRED":
+        return "text-gray-600 bg-gray-100";
       default:
-        return 'text-gray-600 bg-gray-100';
+        return "text-gray-600 bg-gray-100";
     }
   };
 
   const getStatusText = (status: string) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'Activa';
-      case 'CLOSED':
-        return 'Vendida';
-      case 'EXPIRED':
-        return 'Desactivada';
+      case "ACTIVE":
+        return "Activa";
+      case "CLOSED":
+        return "Vendida";
+      case "EXPIRED":
+        return "Desactivada";
       default:
         return status;
     }
@@ -126,12 +135,20 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
         </button>
 
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Acciones de Publicación</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Acciones de Publicación
+          </h2>
           <p className="text-gray-600 mb-4">{post.title}</p>
-          
+
           <div className="flex items-center gap-2 mb-4">
-            <span className="text-sm font-medium text-gray-700">Estado actual:</span>
-            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(post.status)}`}>
+            <span className="text-sm font-medium text-gray-700">
+              Estado actual:
+            </span>
+            <span
+              className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(
+                post.status
+              )}`}
+            >
               {getStatusText(post.status)}
             </span>
           </div>
@@ -143,9 +160,9 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
             onClick={() => {
               onClose();
               // Aquí podrías abrir un modal de edición
-              toast.info('Funcionalidad de edición próximamente');
+              toast.info("Funcionalidad de edición próximamente");
             }}
-            className="w-full flex items-center gap-3 p-3 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+            className="w-full flex items-center gap-3 p-3 text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
             disabled={isLoading}
           >
             <Edit size={20} />
@@ -153,9 +170,9 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
           </button>
 
           {/* Marcar como Vendido */}
-          {post.status !== 'CLOSED' && (
+          {post.status !== "CLOSED" && (
             <button
-              onClick={() => handleStatusUpdateClick('CLOSED')}
+              onClick={() => handleStatusUpdateClick("CLOSED")}
               className="w-full flex items-center gap-3 p-3 text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
               disabled={isLoading}
             >
@@ -165,9 +182,9 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
           )}
 
           {/* Desactivar */}
-          {post.status !== 'EXPIRED' && (
+          {post.status !== "EXPIRED" && (
             <button
-              onClick={() => handleStatusUpdateClick('EXPIRED')}
+              onClick={() => handleStatusUpdateClick("EXPIRED")}
               className="w-full flex items-center gap-3 p-3 text-yellow-600 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
               disabled={isLoading}
             >
@@ -177,9 +194,9 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
           )}
 
           {/* Reactivar */}
-          {post.status !== 'ACTIVE' && (
+          {post.status !== "ACTIVE" && (
             <button
-              onClick={() => handleStatusUpdateClick('ACTIVE')}
+              onClick={() => handleStatusUpdateClick("ACTIVE")}
               className="w-full flex items-center gap-3 p-3 text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
               disabled={isLoading}
             >
@@ -201,7 +218,7 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
 
         {isLoading && (
           <div className="mt-4 text-center">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
             <p className="text-sm text-gray-600 mt-2">Procesando...</p>
           </div>
         )}
@@ -211,9 +228,12 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Eliminar Publicación</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">
+              Eliminar Publicación
+            </h3>
             <p className="text-gray-600 mb-6">
-              ¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer.
+              ¿Estás seguro de que quieres eliminar esta publicación? Esta
+              acción no se puede deshacer.
             </p>
             <div className="flex gap-3">
               <button
@@ -228,7 +248,7 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
                 className="flex-1 px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors"
                 disabled={isLoading}
               >
-                {isLoading ? 'Eliminando...' : 'Eliminar'}
+                {isLoading ? "Eliminando..." : "Eliminar"}
               </button>
             </div>
           </div>
@@ -240,14 +260,17 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
             <h3 className="text-xl font-bold text-gray-800 mb-4">
-              {pendingStatus === 'CLOSED' && 'Marcar como Vendido'}
-              {pendingStatus === 'EXPIRED' && 'Desactivar Publicación'}
-              {pendingStatus === 'ACTIVE' && 'Reactivar Publicación'}
+              {pendingStatus === "CLOSED" && "Marcar como Vendido"}
+              {pendingStatus === "EXPIRED" && "Desactivar Publicación"}
+              {pendingStatus === "ACTIVE" && "Reactivar Publicación"}
             </h3>
             <p className="text-gray-600 mb-6">
-              {pendingStatus === 'CLOSED' && '¿Estás seguro de que quieres marcar esta publicación como vendida?'}
-              {pendingStatus === 'EXPIRED' && '¿Estás seguro de que quieres desactivar esta publicación? Podrás reactivarla más tarde.'}
-              {pendingStatus === 'ACTIVE' && '¿Estás seguro de que quieres reactivar esta publicación?'}
+              {pendingStatus === "CLOSED" &&
+                "¿Estás seguro de que quieres marcar esta publicación como vendida?"}
+              {pendingStatus === "EXPIRED" &&
+                "¿Estás seguro de que quieres desactivar esta publicación? Podrás reactivarla más tarde."}
+              {pendingStatus === "ACTIVE" &&
+                "¿Estás seguro de que quieres reactivar esta publicación?"}
             </p>
             <div className="flex gap-3">
               <button
@@ -260,13 +283,15 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
               <button
                 onClick={handleStatusUpdateConfirm}
                 className={`flex-1 px-4 py-2 text-white rounded-lg transition-colors ${
-                  pendingStatus === 'CLOSED' ? 'bg-green-600 hover:bg-green-700' :
-                  pendingStatus === 'EXPIRED' ? 'bg-yellow-600 hover:bg-yellow-700' :
-                  'bg-blue-600 hover:bg-blue-700'
+                  pendingStatus === "CLOSED"
+                    ? "bg-green-600 hover:bg-green-700"
+                    : pendingStatus === "EXPIRED"
+                    ? "bg-yellow-600 hover:bg-yellow-700"
+                    : "bg-green-600 hover:bg-green-700"
                 }`}
                 disabled={isLoading}
               >
-                {isLoading ? 'Procesando...' : 'Confirmar'}
+                {isLoading ? "Procesando..." : "Confirmar"}
               </button>
             </div>
           </div>
