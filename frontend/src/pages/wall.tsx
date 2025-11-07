@@ -137,7 +137,7 @@ export default function Wall() {
       }
 
       if (filters.city) {
-        // Primero necesitamos obtener el ID del municipio
+
         try {
           const municipalities = await supportDataService.getMunicipalities();
           const matchingMunicipality = municipalities.find((m: any) =>

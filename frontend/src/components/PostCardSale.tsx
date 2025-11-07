@@ -157,10 +157,10 @@ function PostCardSale({ post, onSelectPost, formatDate }: PostCardSaleProps) {
           <img
             src={firstImage}
             alt="Imagen principal"
-            className="rounded-lg object-cover border border-gray-200 dark:border-gray-700 w-full h-40"
+            className="rounded-md object-cover border border-gray-200 dark:border-gray-700 w-full h-32"
           />
         ) : (
-          <div className="rounded-lg border border-gray-200 dark:border-gray-700 w-full h-40 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+          <div className="rounded-md border border-gray-200 dark:border-gray-700 w-full h-20 flex items-center justify-center bg-gray-100 dark:bg-gray-700 opacity-60">
             <div className="text-center">
               {getProductIcon(productName)}
               <span className="text-gray-500 dark:text-gray-400 text-sm">

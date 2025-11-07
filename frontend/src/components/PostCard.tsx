@@ -14,9 +14,16 @@ interface PostCardProps {
   onPostDeleted?: (postId: number) => void;
 }
 
+// Estilos por tipo de publicación
 const typeStyles: Record<string, string> = {
-  Venta: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
-  Compra: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200",
+  Venta: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  Compra: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+};
+
+// Fondo / borde de la tarjeta según tipo
+const cardBackgrounds: Record<string, string> = {
+  Venta: "border-blue-200 hover:border-blue-400",
+  Compra: "border-green-200 hover:border-green-400",
 };
 
 function PostCard({
@@ -29,18 +36,14 @@ function PostCard({
   const { user } = useAuth();
   const [showActionsModal, setShowActionsModal] = useState(false);
 
-  // Extraemos el nombre del usuario correctamente
   const userName = post.user?.name || "Usuario desconocido";
-
-  // Extraemos el tipo de post correctamente
   const postType = post.post_type?.name || "Tipo desconocido";
 
-  // Extraemos las imágenes correctamente o usamos la imagen por defecto
+  // Imágenes: si hay varias, se toma sólo la primera
   const photos = post.images?.map((img) => img.url) || [];
-  const displayPhotos = photos.length > 0 ? photos : ["/metodo-de-pago.png"];
-
-  // Verificar si el usuario es el dueño del post
-  const isOwner = user && post.user?.id === user.id;
+  const firstPhoto = photos.length > 0 ? photos[0] : "/metodo-de-pago.png";
+  // Si quieres conservar displayPhotos en el futuro, puedes mantener esta línea:
+  // const displayPhotos = photos.length > 0 ? photos : ["/metodo-de-pago.png"];
 
   const handleActionsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -59,12 +62,14 @@ function PostCard({
 
   return (
     <div
-      className="bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-md p-5 cursor-pointer hover:shadow-lg hover:-translate-y-1 transform transition-all overflow-hidden"
+      className={`bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-md p-5 cursor-pointer border-2 transition-all transform hover:-translate-y-1 overflow-hidden flex flex-col h-full ${
+        cardBackgrounds[postType] || "border-gray-200"
+      }`}
       onClick={() => onSelectPost(post)}
     >
       {/* Header usuario */}
       <div className="flex items-center mb-3">
-        <div className="bg-blue-200 dark:bg-blue-600 rounded-full w-12 h-12 flex items-center justify-center mr-4">
+        <div className="bg-blue-200 dark:bg-blue-600 rounded-full w-12 h-12 flex items-center justify-center mr-4 flex-shrink-0">
           <span className="font-bold text-blue-800 dark:text-white text-lg">
             {typeof userName === "string" && userName
               ? userName.charAt(0)
@@ -86,103 +91,51 @@ function PostCard({
         {post.title}
       </h4>
 
-      {/* Imagen principal destacada */}
-      <div className="mb-4 rounded-md overflow-hidden">
+      {/* Imagen principal - SOLO la primera imagen (si hay varias, se ignoran las demás) */}
+      <div className="mb-4 rounded-md overflow-hidden flex-grow flex items-center justify-center bg-gray-50 dark:bg-gray-700">
         <img
-          src={displayPhotos[0]}
+          src={firstPhoto}
           alt={`Imagen principal de ${post.title}`}
-          className={`w-full object-cover ${photos.length > 0 ? 'h-24' : 'h-16 opacity-60'}`}
+          className={`w-full h-36 rounded-md ${
+            photos.length === 0
+              ? "object-contain bg-gray-100 opacity-70"
+              : "object-cover"
+          }`}
         />
       </div>
 
-      {/* Contenido */}
-      <p className="mb-4 text-gray-700 dark:text-gray-300 line-clamp-2">
-        {post.description}
-      </p>
-
-      {/* Miniaturas adicionales en fila centradas */}
-      {displayPhotos.length > 1 && (
-        <div className="mb-4 flex gap-2 justify-start overflow-x-auto pb-2">
-          {displayPhotos.slice(1, 4).map((photo, index) => {
-            // Si es la última visible y hay más imágenes, mostramos el overlay +n
-            if (index === 2 && displayPhotos.length > 4) {
-              return (
-                <div
-                  key={index}
-                  className="relative w-16 h-16 rounded-lg overflow-hidden flex-shrink-0"
-                >
-                  <img
-                    src={photo}
-                    alt={`miniatura ${index + 2}`}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                    <span className="text-white font-semibold text-xs">
-                      +{displayPhotos.length - 4}
-                    </span>
-                  </div>
-                </div>
-              );
-            }
-            return (
-              <img
-                key={index}
-                src={photo}
-                alt={`miniatura ${index + 2}`}
-                className="w-16 h-16 rounded-lg object-cover border border-gray-200 dark:border-gray-700 flex-shrink-0"
-              />
-            );
-          })}
-        </div>
-      )}
+      {/* NOTA: NO se muestran miniaturas en esta versión — así garantizamos que aunque haya muchas imágenes,
+          solo se muestre la primera. */}
 
       {/* Footer */}
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <FavoriteButton
-            post={post}
-            onFavoriteChange={(isFavorite) => {
-              // Actualizar el post localmente
-              const updatedPost = {
-                ...post,
-                is_favorited: isFavorite,
-                favorites_count: post.favorites_count + (isFavorite ? 1 : -1),
-              };
-              onSelectPost(updatedPost);
-            }}
-            size="sm"
-          />
-        </div>
+      <div className="mt-auto">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <FavoriteButton
+              post={post}
+              onFavoriteChange={(isFavorite) => {
+                const updatedPost = {
+                  ...post,
+                  is_favorited: isFavorite,
+                  favorites_count: post.favorites_count + (isFavorite ? 1 : -1),
+                };
+                onSelectPost(updatedPost);
+              }}
+              size="sm"
+            />
+          </div>
 
-        <div className="flex items-center space-x-2">
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-              typeStyles[postType] || "bg-gray-200 text-gray-800"
-            }`}
-          >
-            {postType}
-          </span>
-
-          {isOwner && (
-            <button
-              onClick={handleActionsClick}
-              className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-              title="Acciones de publicación"
+          <div className="flex items-center space-x-2">
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                typeStyles[postType] || "bg-gray-200 text-gray-800"
+              }`}
             >
-              <MoreVertical size={16} />
-            </button>
-          )}
+              {postType}
+            </span>
+          </div>
         </div>
       </div>
-
-      {/* Modal de acciones */}
-      <PostActionsModal
-        isOpen={showActionsModal}
-        onClose={() => setShowActionsModal(false)}
-        post={post}
-        onPostUpdated={handlePostUpdated}
-        onPostDeleted={handlePostDeleted}
-      />
     </div>
   );
 }

@@ -177,7 +177,7 @@ export default function PostDetail({
           <h3 className="font-bold text-lg text-gray-800 dark:text-gray-200 mb-2">
             Descripción
           </h3>
-          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed break-words">
             {post.description}
           </p>
         </div>

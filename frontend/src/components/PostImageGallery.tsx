@@ -11,52 +11,21 @@ function PostImageGallery({
   onImageSelect,
   selectedImageIndex,
 }: PostImageGalleryProps) {
-  const [isZoomed, setIsZoomed] = useState(false);
-
-  const handleImageClick = () => {
-    // En móvil, hacer zoom al hacer clic
-    // En escritorio, hacer zoom al pasar el mouse
-    if (window.innerWidth < 768) {
-      setIsZoomed(!isZoomed);
-    }
-  };
-
-  const handleMouseEnter = () => {
-    // En escritorio, hacer zoom al pasar el mouse
-    if (window.innerWidth >= 768) {
-      setIsZoomed(true);
-    }
-  };
-
-  const handleMouseLeave = () => {
-    // En escritorio, quitar zoom al salir el mouse
-    if (window.innerWidth >= 768) {
-      setIsZoomed(false);
-    }
-  };
-
   const mainImage = images[selectedImageIndex] || "";
 
   return (
     <div>
       {/* Imagen principal */}
       <div className="mb-4">
-        <div
-          className={`relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg cursor-pointer ${
-            isZoomed ? "cursor-zoom-out" : "cursor-zoom-in"
-          }`}
-          onClick={handleImageClick}
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
+        <div className="relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg">
           {mainImage ? (
-            <img
-              src={mainImage}
-              alt="Imagen principal"
-              className={`w-full h-auto object-contain transition-transform duration-300 ${
-                isZoomed ? "scale-150" : "scale-100"
-              }`}
-            />
+            <div className="w-full h-96 flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+              <img
+                src={mainImage}
+                alt="Imagen principal"
+                className="object-contain w-full h-full"
+              />
+            </div>
           ) : (
             <div className="w-full h-96 flex items-center justify-center bg-gray-200 dark:bg-gray-700 rounded-xl">
               <span className="text-gray-500 dark:text-gray-400">
@@ -80,11 +49,13 @@ function PostImageGallery({
               }`}
               onClick={() => onImageSelect(index)}
             >
-              <img
-                src={photo}
-                alt={`Miniatura ${index + 1}`}
-                className="w-full h-full object-cover"
-              />
+              <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                <img
+                  src={photo}
+                  alt={`Miniatura ${index + 1}`}
+                  className="object-cover w-full h-full"
+                />
+              </div>
             </div>
           ))}
         </div>
