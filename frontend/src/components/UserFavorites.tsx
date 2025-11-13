@@ -52,9 +52,9 @@ const UserFavorites: React.FC<UserFavoritesProps> = ({ userId }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return "text-green-600 bg-green-100";
+        return "text-blue-600 bg-blue-100";
       case "CLOSED":
-        return "text-green-600 bg-green-100";
+        return "text-blue-600 bg-blue-100";
       case "EXPIRED":
         return "text-gray-600 bg-gray-100";
       default:
@@ -154,7 +154,7 @@ const UserFavorites: React.FC<UserFavoritesProps> = ({ userId }) => {
 
                       <div className="flex items-center justify-between mt-2">
                         <div className="flex items-center gap-2">
-                          <span className="text-lg font-bold text-green-600">
+                          <span className="text-lg font-bold text-blue-600">
                             ${post.price_per_kg.toLocaleString()}/kg
                           </span>
                           <span className="text-sm text-gray-500">

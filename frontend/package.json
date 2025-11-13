@@ -33,6 +33,7 @@
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
     "react-responsive-carousel": "^3.2.23",
-    "react-router-dom": "^6.30.1"
+    "react-router-dom": "^6.30.1",
+    "shadcn-ui": "^0.9.5"
   }
 }

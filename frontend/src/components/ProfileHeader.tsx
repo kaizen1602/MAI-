@@ -18,16 +18,16 @@ export default function ProfileHeader({
       <img
         src={imageUrl || "/default-avatar.png"}
         alt={name}
-        className="w-40 h-40 rounded-full object-cover border-4 border-green-600 shadow-lg mb-4"
+        className="w-40 h-40 rounded-full object-cover border-4 border-blue-600 shadow-lg mb-4"
       />
-      <h2 className="text-2xl font-bold text-green-800 dark:text-green-300">
+      <h2 className="text-2xl font-bold text-blue-800 dark:text-blue-300">
         {name}
       </h2>
       <p className="text-gray-600 dark:text-gray-400 mb-2">@{username}</p>
 
       <button
         onClick={onEdit}
-        className="absolute top-6 right-6 px-4 py-2 bg-green-700 text-white rounded-lg hover:bg-green-800 transition-all shadow"
+        className="absolute top-6 right-6 px-4 py-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-all shadow"
       >
         Editar Perfil
       </button>

@@ -100,9 +100,9 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
   const getStatusColor = (status: string) => {
     switch (status) {
       case "ACTIVE":
-        return "text-green-600 bg-green-100";
+        return "text-blue-600 bg-blue-100";
       case "CLOSED":
-        return "text-green-600 bg-green-100";
+        return "text-blue-600 bg-blue-100";
       case "EXPIRED":
         return "text-gray-600 bg-gray-100";
       default:
@@ -160,9 +160,9 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
             onClick={() => {
               onClose();
               // Aquí podrías abrir un modal de edición
-              toast.info("Funcionalidad de edición próximamente");
+              toast.success("Funcionalidad de edición próximamente");
             }}
-            className="w-full flex items-center gap-3 p-3 text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+            className="w-full flex items-center gap-3 p-3 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
             disabled={isLoading}
           >
             <Edit size={20} />
@@ -173,7 +173,7 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
           {post.status !== "CLOSED" && (
             <button
               onClick={() => handleStatusUpdateClick("CLOSED")}
-              className="w-full flex items-center gap-3 p-3 text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+              className="w-full flex items-center gap-3 p-3 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
               disabled={isLoading}
             >
               <CheckCircle size={20} />
@@ -197,7 +197,7 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
           {post.status !== "ACTIVE" && (
             <button
               onClick={() => handleStatusUpdateClick("ACTIVE")}
-              className="w-full flex items-center gap-3 p-3 text-green-600 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+              className="w-full flex items-center gap-3 p-3 text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
               disabled={isLoading}
             >
               <CheckCircle size={20} />
@@ -218,7 +218,7 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
 
         {isLoading && (
           <div className="mt-4 text-center">
-            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-green-600"></div>
+            <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
             <p className="text-sm text-gray-600 mt-2">Procesando...</p>
           </div>
         )}
@@ -284,10 +284,10 @@ const PostActionsModal: React.FC<PostActionsModalProps> = ({
                 onClick={handleStatusUpdateConfirm}
                 className={`flex-1 px-4 py-2 text-white rounded-lg transition-colors ${
                   pendingStatus === "CLOSED"
-                    ? "bg-green-600 hover:bg-green-700"
+                    ? "bg-blue-600 hover:bg-blue-700"
                     : pendingStatus === "EXPIRED"
                     ? "bg-yellow-600 hover:bg-yellow-700"
-                    : "bg-green-600 hover:bg-green-700"
+                    : "bg-blue-600 hover:bg-blue-700"
                 }`}
                 disabled={isLoading}
               >

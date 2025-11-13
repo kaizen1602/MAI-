@@ -1,12 +1,13 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import MainLayout from "../layouts/MainLayout";
-import PostListSale from "../components/PostListSale";
+import PostCard from "../components/PostCard"; // Importar PostCard directamente
 import PostDetail from "../components/PostDetail";
 import { postService } from "../data/services";
 import type { Post } from "../data/types/post.types";
 import { toast } from "react-hot-toast";
 import EditPostModal from "../components/EditPostModal";
 import type { CursorPaginatedResponse } from "../data/types/api.types";
+import Filters from "../components/filters";
 
 // Adapter interface for PostDetail component
 interface PostDetailData {
@@ -38,6 +39,8 @@ export default function Shopping() {
   const [editingPost, setEditingPost] = useState<Post | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const postsPerPage = 6; // Mostrar 6 posts por página (2 filas de 3)
   const filterTimeout = useRef<NodeJS.Timeout | null>(null);
   const isFirstFilter = useRef(true);
 
@@ -101,12 +104,13 @@ export default function Shopping() {
       // Add cursor for pagination
       if (cursor) {
         filterParams.cursor = cursor;
+      } else {
+        // Reset to first page when loading new filters
+        setCurrentPage(1);
       }
 
       // Map filters to API parameters
       if (filters.productType) {
-        // We need to get the product ID from the name
-        // For now, we'll just search by name
         filterParams.search = filters.productType;
       }
 
@@ -201,6 +205,28 @@ export default function Shopping() {
     });
   };
 
+  // Load more posts (next page)
+  const loadMore = async () => {
+    if (hasMore && nextCursor) {
+      await loadPosts({}, nextCursor);
+      setCurrentPage((prev) => prev + 1);
+    }
+  };
+
+  // Go to previous page (reload with previous data)
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage((prev) => prev - 1);
+    }
+  };
+
+  // Get current posts for pagination
+  const getCurrentPosts = () => {
+    const indexOfLastPost = currentPage * postsPerPage;
+    const indexOfFirstPost = indexOfLastPost - postsPerPage;
+    return posts.slice(indexOfFirstPost, indexOfLastPost);
+  };
+
   const handleEdit = async (postDetail: PostDetailData) => {
     try {
       // Fetch the full post data for editing
@@ -240,48 +266,124 @@ export default function Shopping() {
   };
 
   return (
-    <MainLayout onFilter={handleFilter}>
-      <h1 className="text-3xl font-extrabold text-blue-900 dark:text-blue-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
-        Productos en Venta
-      </h1>
-
-      {isLoading ? (
-        <div className="flex justify-center items-center py-20">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+    <MainLayout>
+      {/* Contenedor principal que agrupa todo el contenido - Aumentado el ancho */}
+      <div className="container mx-auto px-4 py-6 max-w-7xl w-full">
+        <div className="mb-6">
+          <Filters onFilter={handleFilter} />
         </div>
-      ) : (
-        <div className="flex flex-col lg:flex-row gap-6 flex-grow">
-          {/* Lista en dos columnas */}
-          <div className="lg:w-1/2 w-full">
-            <PostListSale
-              posts={posts}
-              onSelectPost={setSelectedPost}
-              formatDate={formatDate}
-            />
-          </div>
+        <h1 className="text-3xl font-extrabold text-blue-900 dark:text-blue-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
+          Productos en Venta
+        </h1>
 
-          {/* Detalle */}
-          <div className="hidden lg:w-1/2 lg:block w-full">
-            <PostDetail
-              post={selectedPostDetail}
-              onClose={() => setSelectedPost(null)}
-              formatDate={formatDate}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
+        ) : (
+          <div className="flex flex-col gap-6 flex-grow">
+            {/* Lista de publicaciones con paginación en filas de 3 */}
+            <div className="w-full">
+              {/* Grid de publicaciones - 2 filas de 3 columnas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                {getCurrentPosts()
+                  .slice(0, 3)
+                  .map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onSelectPost={setSelectedPost}
+                      formatDate={formatDate}
+                    />
+                  ))}
+              </div>
 
-          {/* Mobile modal overlay for post details */}
-          {selectedPostDetail && (
-            <div className="lg:hidden fixed inset-0 z-50">
-              <div
-                className="absolute inset-0 bg-black bg-opacity-50"
-                onClick={() => setSelectedPost(null)}
-              ></div>
-              <div className="absolute inset-0 flex items-center justify-center p-4">
-                <div className="bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+              {/* Segunda fila de publicaciones */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+                {getCurrentPosts()
+                  .slice(3, 6)
+                  .map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      onSelectPost={setSelectedPost}
+                      formatDate={formatDate}
+                    />
+                  ))}
+              </div>
+
+              {/* Paginación */}
+              <div className="flex justify-center mt-6 space-x-2">
+                <button
+                  onClick={goToPreviousPage}
+                  disabled={currentPage === 1}
+                  className={`px-4 py-2 rounded-lg ${
+                    currentPage === 1
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  }`}
+                >
+                  Anterior
+                </button>
+
+                <span className="px-4 py-2 text-gray-700 dark:text-gray-300">
+                  Página {currentPage}
+                </span>
+
+                <button
+                  onClick={loadMore}
+                  disabled={!hasMore}
+                  className={`px-4 py-2 rounded-lg ${
+                    !hasMore
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-500 text-white hover:bg-blue-600"
+                  }`}
+                >
+                  Siguiente
+                </button>
+              </div>
+            </div>
+
+            {/* Modal para detalle de publicación (en móvil y escritorio) */}
+            {selectedPost && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+                <div className="bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
                   <PostDetail
-                    post={selectedPostDetail}
+                    post={
+                      selectedPost
+                        ? {
+                            post_id: selectedPost.id,
+                            title: selectedPost.title,
+                            user: {
+                              user_id: selectedPost.user.id,
+                              name: selectedPost.user.name,
+                            },
+                            description: selectedPost.description,
+                            created_at: selectedPost.created_at,
+                            post_type: {
+                              type_id: selectedPost.post_type.id,
+                              type_name: selectedPost.post_type.name,
+                            },
+                            images:
+                              selectedPost.images?.map((img) => ({
+                                image_id: img.id,
+                                url: img.url,
+                              })) || [],
+                            quantity_kg: selectedPost.quantity_kg,
+                            price_per_kg: selectedPost.price_per_kg,
+                            municipality: {
+                              municipality_id: selectedPost.municipality.id,
+                              name: selectedPost.municipality.name,
+                            },
+                            product: {
+                              product_id: selectedPost.product.id,
+                              name: selectedPost.product.name,
+                              description: selectedPost.product.description,
+                              image_url: selectedPost.product.image_url,
+                            },
+                          }
+                        : null
+                    }
                     onClose={() => setSelectedPost(null)}
                     formatDate={formatDate}
                     onEdit={handleEdit}
@@ -289,23 +391,23 @@ export default function Shopping() {
                   />
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Edit Post Modal */}
-          {editingPost && (
-            <EditPostModal
-              isOpen={showEditModal}
-              onClose={() => {
-                setShowEditModal(false);
-                setEditingPost(null);
-              }}
-              post={editingPost}
-              onSubmit={handleUpdateSubmit}
-            />
-          )}
-        </div>
-      )}
+            {/* Edit Post Modal */}
+            {editingPost && (
+              <EditPostModal
+                isOpen={showEditModal}
+                onClose={() => {
+                  setShowEditModal(false);
+                  setEditingPost(null);
+                }}
+                post={editingPost}
+                onSubmit={handleUpdateSubmit}
+              />
+            )}
+          </div>
+        )}
+      </div>
     </MainLayout>
   );
 }

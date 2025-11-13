@@ -1,8 +1,12 @@
 import React from "react";
-import { FaStar } from "react-icons/fa";
+import { FaStar, FaUserCheck } from "react-icons/fa";
 
 interface SellerInfoProps {
-  user: { user_id: number; name: string };
+  user: {
+    user_id: number;
+    name: string;
+    profile_image?: string;
+  };
   rating?: {
     average_rating: number;
     total_reviews: number;
@@ -10,8 +14,8 @@ interface SellerInfoProps {
 }
 
 function SellerInfo({ user, rating }: SellerInfoProps) {
-  const renderStars = (averageRating: number) => {
-    const stars = [];
+  const renderStars = (averageRating: number): JSX.Element[] => {
+    const stars: JSX.Element[] = [];
     const fullStars = Math.floor(averageRating);
     const hasHalfStar = averageRating % 1 !== 0;
 
@@ -37,20 +41,28 @@ function SellerInfo({ user, rating }: SellerInfoProps) {
 
   return (
     <div className="p-6 bg-yellow-50 dark:bg-yellow-900/30 rounded-2xl border border-yellow-200 dark:border-yellow-800 shadow-sm">
-      <div className="flex items-center mb-3">
+      <div className="flex items-center justify-center mb-3">
         <FaStar className="text-yellow-500 mr-2 text-xl" />
-        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200">
+        <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 text-center">
           Información del vendedor
         </h3>
       </div>
       <div className="flex flex-col items-center p-4 bg-white dark:bg-gray-700 rounded-lg">
-        <div className="bg-green-200 dark:bg-green-600 rounded-full w-20 h-20 flex items-center justify-center mb-3">
-          <span className="font-bold text-green-800 dark:text-white text-2xl">
-            {user?.name?.charAt(0) || "?"}
-          </span>
+        <div className="bg-blue-200 dark:bg-blue-600 rounded-full w-20 h-20 flex items-center justify-center mb-3 overflow-hidden">
+          {user?.profile_image ? (
+            <img
+              src={user.profile_image}
+              alt={user.name}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <span className="font-bold text-blue-800 dark:text-white text-2xl">
+              {user?.name?.charAt(0) || "?"}
+            </span>
+          )}
         </div>
-        <div className="text-center">
-          <h4 className="font-bold text-xl text-gray-800 dark:text-gray-200 mb-2">
+        <div className="text-center w-full">
+          <h4 className="font-bold text-xl text-gray-800 dark:text-gray-200 mb-4">
             {user?.name || "Usuario desconocido"}
           </h4>
 
@@ -80,6 +92,12 @@ function SellerInfo({ user, rating }: SellerInfoProps) {
               </div>
             </div>
           )}
+
+          {/* Verified Badge */}
+          <div className="mt-4 flex items-center justify-center bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-xs font-medium">
+            <FaUserCheck className="mr-1" />
+            <span>Vendedor verificado</span>
+          </div>
         </div>
       </div>
     </div>

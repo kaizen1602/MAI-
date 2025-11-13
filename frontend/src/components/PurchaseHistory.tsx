@@ -90,7 +90,7 @@ export default function ProfilePurchases({
 
   return (
     <div className="bg-white/90 dark:bg-gray-800 rounded-3xl shadow-md p-8 animate-fadeIn">
-      <h3 className="text-2xl font-bold text-green-800 dark:text-green-300 mb-8 text-center">
+      <h3 className="text-2xl font-bold text-blue-800 dark:text-blue-300 mb-8 text-center">
         Compras Realizadas
       </h3>
 
@@ -98,11 +98,11 @@ export default function ProfilePurchases({
       {purchases.length === 0 ? (
         <div className="text-center py-10">
           <div className="mb-4">
-            <div className="w-16 h-16 mx-auto bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+            <div className="w-16 h-16 mx-auto bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
               <span className="text-2xl">🛒</span>
             </div>
           </div>
-          <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+          <h4 className="text-lg font-semibold text-blue-700 dark:text-blue-300 mb-2">
             Aún no tienes compras registradas
           </h4>
           <p className="text-gray-600 dark:text-gray-400 mb-4">
@@ -140,7 +140,7 @@ export default function ProfilePurchases({
                     <span className="font-medium">Fecha:</span>{" "}
                     {formatDate(purchase.date)}
                   </p>
-                  <p className="text-green-700 dark:text-green-300 font-bold text-lg mt-2">
+                  <p className="text-blue-700 dark:text-blue-300 font-bold text-lg mt-2">
                     {formatPrice(purchase.price)}
                   </p>
                 </div>
@@ -165,7 +165,7 @@ export default function ProfilePurchases({
                   ) : (
                     <button
                       onClick={() => handleRateClick(purchase.id)}
-                      className="w-full py-2 mt-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all shadow-md"
+                      className="w-full py-2 mt-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all shadow-md"
                     >
                       Calificar Vendedor
                     </button>
@@ -208,7 +208,7 @@ export default function ProfilePurchases({
                 className={`px-4 py-2 rounded-lg transition-all ${
                   selectedRating === 0
                     ? "bg-gray-300 cursor-not-allowed"
-                    : "bg-green-600 hover:bg-green-700 text-white shadow-md"
+                    : "bg-blue-600 hover:bg-blue-700 text-white shadow-md"
                 }`}
               >
                 Confirmar
@@ -227,7 +227,7 @@ export default function ProfilePurchases({
             </h4>
             <button
               onClick={() => setShowConfirmModal(false)}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all"
             >
               Cerrar
             </button>

@@ -66,12 +66,12 @@ function PurchaseConfirmationModal({
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-md p-6 relative">
           <div className="text-center">
             <div className="flex justify-center mb-4">
-              <div className="bg-green-100 dark:bg-green-900/30 rounded-full w-16 h-16 flex items-center justify-center">
-                <FaCheckCircle className="text-green-500 text-3xl" />
+              <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full w-16 h-16 flex items-center justify-center">
+                <FaCheckCircle className="text-blue-500 text-3xl" />
               </div>
             </div>
 
-            <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
+            <h3 className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-2">
               ¡Calificación Guardada!
             </h3>
 
@@ -96,12 +96,12 @@ function PurchaseConfirmationModal({
 
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-green-100 dark:bg-green-900/30 rounded-full w-16 h-16 flex items-center justify-center">
-              <FaCheckCircle className="text-green-500 text-3xl" />
+            <div className="bg-blue-100 dark:bg-blue-900/30 rounded-full w-16 h-16 flex items-center justify-center">
+              <FaCheckCircle className="text-blue-500 text-3xl" />
             </div>
           </div>
 
-          <h3 className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
+          <h3 className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-2">
             ¡Felicidades!
           </h3>
 
@@ -112,8 +112,8 @@ function PurchaseConfirmationModal({
           </p>
 
           {isPurchase && (
-            <div className="bg-green-50 dark:bg-gray-700 rounded-xl p-4 mb-6">
-              <p className="text-green-800 dark:text-green-200 font-semibold">
+            <div className="bg-blue-50 dark:bg-gray-700 rounded-xl p-4 mb-6">
+              <p className="text-blue-800 dark:text-blue-200 font-semibold">
                 ¿Te gustaría calificar tu experiencia con el vendedor{" "}
                 {sellerName}?
               </p>
@@ -149,7 +149,7 @@ function PurchaseConfirmationModal({
           <div className="flex flex-col gap-3">
             <button
               onClick={handleConfirm}
-              className="px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+              className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               {isPurchase ? "Confirmar y Calificar" : "Aceptar"}
             </button>

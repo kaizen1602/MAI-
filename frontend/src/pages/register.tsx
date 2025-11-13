@@ -10,7 +10,7 @@ function Register() {
         style={{ backgroundImage: "url('/fondo-agro.jpg')" }}
       ></div>
 
-      <div className="absolute inset-0 bg-green-900/40"></div>
+      <div className="absolute inset-0 bg-blue-900/40"></div>
 
       {/* Formulario */}
       <div className="relative z-10 w-full max-w-lg px-4">
