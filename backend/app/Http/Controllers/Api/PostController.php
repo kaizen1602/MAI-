@@ -45,7 +45,7 @@ class PostController extends Controller
                 'postType:id,type_name,type_desc',
                 'product:id,name,description,image_url,product_type_id',
                 'product.productType:id,type_name,description', // Nested eager loading
-                'user:id,name,email,phone_number,address_details,is_verified',
+                'user:id,name,email,phone_number,address_details,profile_image,is_verified',
                 'municipality:id,name',
                 'images:id,post_id,image_url', // Cargar solo campos necesarios|
             ])
@@ -147,7 +147,7 @@ class PostController extends Controller
                 'postType:id,type_name,type_desc',
                 'product:id,name,description,image_url,product_type_id',
                 'product.productType:id,type_name',
-                'user:id,name,email,phone_number,address_details,is_verified',
+                'user:id,name,email,phone_number,address_details,profile_image,is_verified',
                 'municipality:id,name',
                 'images:id,post_id,image_url',
             ]);
@@ -373,7 +373,7 @@ class PostController extends Controller
                 'postType:id,type_name,type_desc',
                 'product:id,name,description,image_url,product_type_id',
                 'product.productType:id,type_name',
-                'user:id,name,email,phone_number,address_details,is_verified',
+                'user:id,name,email,phone_number,address_details,profile_image,is_verified',
                 'municipality:id,name',
                 'images:id,post_id,image_url',
             ]);

@@ -57,6 +57,7 @@ class PostResource extends JsonResource
                     'email' => $this->user->email,
                     'phone_number' => $this->user->phone_number,
                     'address_details' => $this->user->address_details,
+                    'profile_image' => $this->user->profile_image ? (str_starts_with($this->user->profile_image, 'http') ? $this->user->profile_image : url($this->user->profile_image)) : null,
                     'is_verified' => $this->user->is_verified,
                     // NO incluir password, remember_token, etc.
                 ];
