@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\greenprint;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('products_type', function (greenprint $table) {
+        Schema::create('products_type', function (Blueprint $table) {
             $table->id();
             $table->string('type_name', 100)->unique();
             $table->string('description', 300)->nullable();

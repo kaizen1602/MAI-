@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\greenprint;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('post_images', function (greenprint $table) {
+        Schema::create('post_images', function (Blueprint $table) {
             $table->id();
             $table->string('image_url', 300);
             $table->foreignId('post_id')->constrained('posts')->onDelete('cascade');
