@@ -1,5 +1,6 @@
 import React from "react";
 import { FaStar, FaUserCheck } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 interface SellerInfoProps {
   user: {
@@ -14,6 +15,14 @@ interface SellerInfoProps {
 }
 
 function SellerInfo({ user, rating }: SellerInfoProps) {
+  const navigate = useNavigate();
+
+  const handleViewProfile = () => {
+    if (user?.user_id) {
+      navigate(`/profile/${user.user_id}`);
+    }
+  };
+
   const renderStars = (averageRating: number): JSX.Element[] => {
     const stars: JSX.Element[] = [];
     const fullStars = Math.floor(averageRating);
@@ -98,6 +107,14 @@ function SellerInfo({ user, rating }: SellerInfoProps) {
             <FaUserCheck className="mr-1" />
             <span>Vendedor verificado</span>
           </div>
+
+          {/* Ver Perfil Button */}
+          <button
+            onClick={handleViewProfile}
+            className="mt-4 w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+          >
+            Ver Perfil
+          </button>
         </div>
       </div>
     </div>

@@ -12,7 +12,7 @@ class PostTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        PostType::create(['type_name' => 'Oferta', 'type_desc' => 'Publicación de un producto para la venta.']);
-        PostType::create(['type_name' => 'Demanda', 'type_desc' => 'Publicación para buscar y comprar un producto.']);
+        PostType::create(['type_name' => 'Venta', 'type_desc' => 'Publicación de un producto para la venta.']);
+        PostType::create(['type_name' => 'Compra', 'type_desc' => 'Publicación para buscar y comprar un producto.']);
     }
 }

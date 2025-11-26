@@ -19,6 +19,7 @@ class Post extends Model
         'product_id',
         'user_id',
         'municipality_id',
+        'location', // Ubicación como texto (Ciudad, Departamento)
     ];
 
     public function postType()

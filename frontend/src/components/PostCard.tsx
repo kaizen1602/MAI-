@@ -110,7 +110,7 @@ function PostCard({
       {/* Footer */}
       <div className="mt-auto">
         <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             <FavoriteButton
               post={post}
               onFavoriteChange={(isFavorite) => {
@@ -123,6 +123,7 @@ function PostCard({
               }}
               size="sm"
             />
+            <span className="text-sm text-gray-500">{post.favorites_count || 0}</span>
           </div>
 
           <div className="flex items-center space-x-2">

@@ -28,12 +28,26 @@ class StorePostRequest extends FormRequest
             'price_per_kg' => 'required|numeric|min:0.01|max:999999.99',
             'post_type_id' => 'required|integer|exists:post_types,id',
             'product_id' => 'required|integer|exists:products,id',
-            'municipality_id' => 'required|integer|exists:municipalities,id',
-            
+            'municipality_id' => 'nullable|integer|exists:municipalities,id',
+            'location' => 'nullable|string|max:200', // Ubicación como texto (Ciudad, Departamento)
+
             // Opcional: Si permites subir imágenes en el mismo request
             'images' => 'nullable|array|max:5',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Aceptar archivos de imagen
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator)
+    {
+        $validator->after(function ($validator) {
+            // Validar que al menos uno de municipality_id o location esté presente
+            if (!$this->municipality_id && !$this->location) {
+                $validator->errors()->add('location', 'Debes seleccionar una ubicación (departamento y ciudad).');
+            }
+        });
     }
 
     /**
@@ -76,9 +90,12 @@ class StorePostRequest extends FormRequest
             'product_id.exists' => 'El producto seleccionado no existe.',
             
             // Municipality
-            'municipality_id.required' => 'El municipio es obligatorio.',
             'municipality_id.integer' => 'El ID del municipio debe ser un número entero.',
             'municipality_id.exists' => 'El municipio seleccionado no existe.',
+
+            // Location
+            'location.string' => 'La ubicación debe ser una cadena de texto.',
+            'location.max' => 'La ubicación no debe exceder los 200 caracteres.',
             
             // Images (opcional)
             'images.array' => 'Las imágenes deben enviarse como un array.',
@@ -97,8 +114,8 @@ class StorePostRequest extends FormRequest
     public function getPostData(): array
     {
         $validated = $this->validated();
-        
-        return [
+
+        $data = [
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'quantity_kg' => $validated['quantity_kg'],
@@ -106,9 +123,20 @@ class StorePostRequest extends FormRequest
             'status' => 'ACTIVE', // Siempre ACTIVE al crear
             'post_type_id' => $validated['post_type_id'],
             'product_id' => $validated['product_id'],
-            'municipality_id' => $validated['municipality_id'],
             'user_id' => $this->user()->id, // Usuario autenticado
         ];
+
+        // Agregar municipality_id si está presente
+        if (!empty($validated['municipality_id'])) {
+            $data['municipality_id'] = $validated['municipality_id'];
+        }
+
+        // Agregar location si está presente
+        if (!empty($validated['location'])) {
+            $data['location'] = $validated['location'];
+        }
+
+        return $data;
     }
 
     /**

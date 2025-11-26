@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import ProfileHeader from "../components/ProfileHeader";
 import ProfileInfo from "../components/ProfileInfo";
@@ -11,14 +12,22 @@ import ProfileProgressBar from "../components/ProfileProgressBar";
 import CompleteProfileModal from "../components/CompleteProfileModal";
 import { useAuth } from "../data/context/AuthContext";
 import { usePurchases } from "../data/context/PurchaseContext";
-import { postService } from "../data/services";
+import { postService, userService } from "../data/services";
 import authService from "../data/services/AuthService";
 import { toast } from "react-hot-toast";
 import type { Post } from "../data/types/post.types";
 
 export default function ProfilePage() {
+  const { userId } = useParams<{ userId: string }>();
   const { user, updateProfile, isLoading } = useAuth();
   const { purchases } = usePurchases();
+
+  // Determinar si estamos viendo nuestro propio perfil o el de otro usuario
+  const isOwnProfile = !userId || userId === user?.id.toString();
+
+  // Estado para el perfil que estamos viendo (puede ser otro usuario)
+  const [viewedProfile, setViewedProfile] = useState<any>(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
   // Debug: ver qué datos de compras tenemos
   console.log("ProfilePage - Datos de compras del contexto:", purchases);
@@ -30,22 +39,48 @@ export default function ProfilePage() {
   const [userPosts, setUserPosts] = useState<any[]>([]);
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
 
-  // Type assertion para acceder a profile_image
-  const userWithImage = user as any;
+  // Determinar el ID del perfil a cargar
+  const profileUserId = userId ? parseInt(userId) : user?.id;
+
+  // Cargar datos del perfil visitado (si no es el propio)
+  useEffect(() => {
+    if (!isOwnProfile && userId) {
+      loadViewedProfile(parseInt(userId));
+    } else {
+      setViewedProfile(null);
+    }
+  }, [userId, isOwnProfile]);
+
+  const loadViewedProfile = async (id: number) => {
+    try {
+      setIsLoadingProfile(true);
+      const profileData = await userService.getUserProfile(id);
+      setViewedProfile(profileData);
+    } catch (error) {
+      console.error("Error cargando perfil:", error);
+      toast.error("Error al cargar el perfil del usuario");
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
+
+  // El usuario a mostrar: el propio o el visitado
+  const displayUser = isOwnProfile ? user : viewedProfile;
+  const userWithImage = displayUser as any;
 
   useEffect(() => {
-    if (user) {
+    if (profileUserId) {
       loadUserPosts();
     }
-  }, [user]);
+  }, [profileUserId]);
 
   const loadUserPosts = async () => {
-    if (!user) return;
+    if (!profileUserId) return;
 
     try {
       setIsLoadingPosts(true);
       const response = await postService.getPosts({
-        user_id: user.id,
+        user_id: profileUserId,
         per_page: 10,
       });
 
@@ -221,7 +256,8 @@ export default function ProfilePage() {
     toast.success("Publicación actualizada con éxito");
   };
 
-  if (isLoading || !user) {
+  // Mostrar loading mientras se cargan datos
+  if (isLoading || !user || (isLoadingProfile && !isOwnProfile)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -229,6 +265,153 @@ export default function ProfilePage() {
     );
   }
 
+  // Si estamos viendo otro perfil pero no se ha cargado aún
+  if (!isOwnProfile && !displayUser) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  // Vista de perfil público (vendedor)
+  if (!isOwnProfile && displayUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Navbar />
+        <div className="max-w-6xl mx-auto px-4 py-6 sm:py-10">
+          {/* Header del vendedor - Diseño profesional */}
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden mb-6">
+            {/* Banner gradient */}
+            <div className="h-32 sm:h-40 bg-gradient-to-r from-blue-600 via-blue-500 to-green-500"></div>
+
+            {/* Info del vendedor */}
+            <div className="px-4 sm:px-8 pb-6 sm:pb-8 -mt-16 sm:-mt-20">
+              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4">
+                {/* Avatar */}
+                <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white dark:border-gray-800 shadow-lg overflow-hidden bg-gradient-to-br from-blue-400 to-green-400 flex items-center justify-center">
+                  {userWithImage?.profile_image ? (
+                    <img
+                      src={userWithImage.profile_image}
+                      alt={displayUser.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-4xl sm:text-5xl font-bold text-white">
+                      {displayUser.name?.charAt(0)?.toUpperCase() || "V"}
+                    </span>
+                  )}
+                </div>
+
+                {/* Nombre y verificación */}
+                <div className="text-center sm:text-left flex-1">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
+                    {displayUser.name}
+                  </h1>
+                  <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">
+                    {displayUser.is_verified && (
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-full text-sm font-medium">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Vendedor Verificado
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Stats y contacto */}
+              <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3 sm:p-4 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400">
+                    {userPosts.length}
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Publicaciones</div>
+                </div>
+                <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-3 sm:p-4 text-center">
+                  <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
+                    {userPosts.filter(p => p.status === 'active').length}
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Activas</div>
+                </div>
+                <div className="bg-yellow-50 dark:bg-yellow-900/30 rounded-xl p-3 sm:p-4 text-center">
+                  <div className="text-xl sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">
+                    {displayUser.address_details || "N/A"}
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Ubicación</div>
+                </div>
+                <div className="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3 sm:p-4 text-center">
+                  <div className="text-lg sm:text-xl font-bold text-purple-600 dark:text-purple-400">
+                    {displayUser.created_at ? new Date(displayUser.created_at).getFullYear() : "-"}
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Miembro desde</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Publicaciones del vendedor */}
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-4 sm:p-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
+              <span className="text-2xl">🛒</span> Publicaciones de {displayUser.name?.split(' ')[0]}
+            </h2>
+
+            {isLoadingPosts ? (
+              <div className="flex justify-center py-10">
+                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              </div>
+            ) : userPosts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                {userPosts.map((post) => (
+                  <div
+                    key={post.id}
+                    className="bg-gray-50 dark:bg-gray-700 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                    onClick={() => window.location.href = `/post/${post.id}`}
+                  >
+                    <div className="h-40 sm:h-48 overflow-hidden">
+                      <img
+                        src={post.imageUrl}
+                        alt={post.title}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/default-product.jpg';
+                        }}
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-gray-800 dark:text-white line-clamp-2 mb-2">
+                        {post.title}
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          post.status === 'active'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
+                            : 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
+                        }`}>
+                          {post.status === 'active' ? 'Activo' : 'Cerrado'}
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          ❤️ {post.likes || 0}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-10">
+                <div className="text-4xl mb-4">📦</div>
+                <p className="text-gray-500 dark:text-gray-400">Este vendedor aún no tiene publicaciones</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Vista de perfil propio (original)
   return (
     <div
       className="min-h-screen bg-fixed bg-center bg-cover"
@@ -236,53 +419,59 @@ export default function ProfilePage() {
     >
       <Navbar />
 
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col lg:flex-row gap-10">
-          {/* Columna izquierda - Información del perfil (más ancha) */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+          {/* Columna izquierda - Información del perfil */}
           <div className="lg:w-2/3 w-full">
             {/* Encabezado */}
             <ProfileHeader
-              name={user.name}
-              username={user.email}
-              imageUrl={userWithImage.profile_image || "/default-avatar.jpg"}
-              onEdit={handleEdit}
+              name={displayUser?.name || "Usuario"}
+              username={displayUser?.email || ""}
+              imageUrl={userWithImage?.profile_image || "/default-avatar.jpg"}
+              onEdit={isOwnProfile ? handleEdit : undefined}
             />
 
             {/* Barra de progreso del perfil */}
-            <ProfileProgressBar
-              user={userWithImage}
-              onCompleteProfile={handleCompleteProfile}
-            />
+            {isOwnProfile && (
+              <ProfileProgressBar
+                user={userWithImage}
+                onCompleteProfile={handleCompleteProfile}
+              />
+            )}
 
             {/* Información personal */}
-            <div className="mt-8">
+            <div className="mt-6 sm:mt-8">
               <ProfileInfo
-                email={user.email}
-                city={user.address_details || "No especificado"}
-                joinDate={new Date(user.created_at).toLocaleDateString(
+                email={displayUser?.email || ""}
+                city={displayUser?.address_details || "No especificado"}
+                joinDate={displayUser?.created_at ? new Date(displayUser.created_at).toLocaleDateString(
                   "es-ES",
                   {
                     year: "numeric",
                     month: "long",
                     day: "numeric",
                   }
-                )}
-                bio={`Miembro desde ${new Date(user.created_at).getFullYear()}`}
+                ) : ""}
+                bio={displayUser?.created_at ? `Miembro desde ${new Date(displayUser.created_at).getFullYear()}` : ""}
               />
             </div>
 
             {/* Historial de compras */}
-            <div className="mt-8">
-              <ProfilePurchases purchases={purchases} />
-            </div>
+            {isOwnProfile && (
+              <div className="mt-6 sm:mt-8">
+                <ProfilePurchases purchases={purchases} />
+              </div>
+            )}
 
             {/* Favoritos */}
-            <div className="mt-8">
-              <UserFavorites userId={user.id} />
-            </div>
+            {isOwnProfile && user && (
+              <div className="mt-6 sm:mt-8">
+                <UserFavorites userId={user.id} />
+              </div>
+            )}
           </div>
 
-          {/* Columna derecha - Publicaciones (más angstra) */}
+          {/* Columna derecha - Publicaciones */}
           <div className="lg:w-1/3 w-full">
             {isLoadingPosts ? (
               <div className="flex justify-center py-10">
@@ -291,10 +480,10 @@ export default function ProfilePage() {
             ) : (
               <UserPosts
                 posts={userPosts}
-                onEdit={handleEditPost}
-                onDelete={handleDeletePost}
-                onMarkAsSold={handleMarkAsSold}
-                onDeactivate={handleDeactivate}
+                onEdit={isOwnProfile ? handleEditPost : undefined}
+                onDelete={isOwnProfile ? handleDeletePost : undefined}
+                onMarkAsSold={isOwnProfile ? handleMarkAsSold : undefined}
+                onDeactivate={isOwnProfile ? handleDeactivate : undefined}
               />
             )}
           </div>

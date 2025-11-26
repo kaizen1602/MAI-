@@ -38,7 +38,6 @@ export default function Wall() {
   const [showPostDetailModal, setShowPostDetailModal] = useState(false);
   const postsPerPage = 6; // Aumentado a 6 para mostrar 2 filas de 3
   const filterTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isFirstFilter = useRef(true);
 
   useEffect(() => {
     loadPosts();
@@ -120,12 +119,6 @@ export default function Wall() {
 
   const applyFilters = useCallback(
     async (filters: any) => {
-      // Skip first filter application to prevent immediate API calls
-      if (isFirstFilter.current) {
-        isFirstFilter.current = false;
-        return;
-      }
-
       // Convertir los filtros del frontend a los parámetros que espera la API
       const apiFilters: any = {};
 
@@ -134,10 +127,10 @@ export default function Wall() {
       }
 
       if (filters.productType) {
+        apiFilters.product_type_id = filters.productType;
       }
 
       if (filters.city) {
-
         try {
           const municipalities = await supportDataService.getMunicipalities();
           const matchingMunicipality = municipalities.find((m: any) =>
@@ -159,23 +152,7 @@ export default function Wall() {
         apiFilters.max_price = Number(filters.maxPrice);
       }
 
-      // Don't filter if no actual filters are applied (except the post_type_id)
-      const hasAdditionalFilters = Object.keys(apiFilters).some(
-        (key) =>
-          key !== "post_type_id" &&
-          apiFilters[key] !== undefined &&
-          apiFilters[key] !== null &&
-          apiFilters[key] !== ""
-      );
-
-      if (!hasAdditionalFilters) {
-        // If no additional filters, show all posts
-        setFilteredPosts(posts);
-        setCurrentPage(1); // Reset to first page
-        return;
-      }
-
-      // Aplicar filtros directamente llamando a la API
+      // Aplicar filtros directamente llamando a la API (siempre, incluso sin filtros)
       loadFilteredPosts(apiFilters);
     },
     [posts]
@@ -233,7 +210,7 @@ export default function Wall() {
         <button
           key={1}
           onClick={() => paginate(1)}
-          className={`px-4 py-2 rounded-lg ${
+          className={`min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg font-medium transition-colors ${
             currentPage === 1
               ? "bg-blue-600 text-white"
               : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -251,7 +228,7 @@ export default function Wall() {
           <button
             key={i}
             onClick={() => paginate(i)}
-            className={`px-4 py-2 rounded-lg ${
+            className={`min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg font-medium transition-colors ${
               currentPage === i
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -269,7 +246,7 @@ export default function Wall() {
           <button
             key={i}
             onClick={() => paginate(i)}
-            className={`px-4 py-2 rounded-lg ${
+            className={`min-w-[44px] min-h-[44px] px-3 py-2 rounded-lg font-medium transition-colors ${
               currentPage === i
                 ? "bg-blue-600 text-white"
                 : "bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -354,38 +331,22 @@ export default function Wall() {
           </div>
         ) : (
           <div className="flex flex-col gap-6 flex-grow">
-            {/* Lista de publicaciones con paginación en filas de 3 */}
+            {/* Lista de publicaciones */}
             <div className="w-full">
-              {/* Grid de publicaciones - 2 filas de 3 columnas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {getCurrentPosts()
-                  .slice(0, 3)
-                  .map((post) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onSelectPost={setSelectedPost}
-                      formatDate={formatDate}
-                    />
-                  ))}
+              {/* Grid responsive: 1 col móvil, 2 cols tablet, 3 cols desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
+                {getCurrentPosts().map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onSelectPost={setSelectedPost}
+                    formatDate={formatDate}
+                  />
+                ))}
               </div>
 
-              {/* Segunda fila de publicaciones */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {getCurrentPosts()
-                  .slice(3, 6)
-                  .map((post) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onSelectPost={setSelectedPost}
-                      formatDate={formatDate}
-                    />
-                  ))}
-              </div>
-
-              {/* Paginación */}
-              <div className="flex justify-center mt-6 space-x-2 flex-wrap">
+              {/* Paginación con botones más grandes para móvil */}
+              <div className="flex justify-center mt-6 gap-2 flex-wrap">
                 {generatePaginationButtons()}
               </div>
             </div>

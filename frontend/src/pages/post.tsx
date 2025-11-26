@@ -12,7 +12,7 @@ import { toast } from "react-hot-toast";
 // Adapter interfaces to match component expectations
 interface AdaptedPost {
   title: string;
-  user: { user_id: number; name: string };
+  user: { user_id: number; name: string; phone_number?: string };
   description: string;
   created_at: string;
   post_type: { type_id: number; type_name: string };
@@ -59,6 +59,7 @@ function PostPage() {
       user: {
         user_id: post.user.id,
         name: post.user.name,
+        phone_number: post.user.phone_number,
       },
       description: post.description,
       created_at: post.created_at,
@@ -130,25 +131,30 @@ function PostPage() {
       setPost(adaptedPost);
 
       // Get user profile data
+      // First set fallback immediately from post data
+      console.log("📋 Datos de usuario del post:", postData.user);
+      const fallbackUser = adaptUser({
+        id: postData.user?.id,
+        name: postData.user?.name || "Usuario",
+        profile_image: undefined,
+      });
+      console.log("👤 Usuario fallback inicial:", fallbackUser);
+      setUser(fallbackUser);
+
+      // Then try to get more detailed profile
       try {
-        console.log("Obteniendo perfil de usuario con ID:", postData.user.id);
+        console.log("🔍 Obteniendo perfil de usuario con ID:", postData.user?.id);
         const userProfileData = await userService.getUserProfile(
           postData.user.id
         );
-        console.log("Datos de perfil de usuario recibidos:", userProfileData);
+        console.log("✅ Datos de perfil de usuario recibidos:", userProfileData);
         const adaptedUser = adaptUser(userProfileData);
-        console.log("Usuario adaptado:", adaptedUser);
+        console.log("👤 Usuario adaptado:", adaptedUser);
         setUser(adaptedUser);
       } catch (userError) {
-        console.error("Error al obtener perfil de usuario:", userError);
-        // Fallback to basic user data if profile fetch fails
-        const adaptedUser = adaptUser({
-          id: postData.user.id,
-          name: postData.user.name,
-          profile_image: undefined,
-        });
-        console.log("Usuario adaptado (fallback):", adaptedUser);
-        setUser(adaptedUser);
+        console.error("❌ Error al obtener perfil de usuario:", userError);
+        // Keep the fallback user that was already set
+        console.log("⚠️ Usando datos de usuario del post como fallback");
       }
 
       // Get user rating

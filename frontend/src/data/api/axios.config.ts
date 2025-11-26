@@ -8,16 +8,16 @@
 import axios, { AxiosInstance } from 'axios';
 
 /**
- * Create and configure Axios instance
+ * Configuracion de Axios
  */
 const apiClient: AxiosInstance = axios.create({
-  baseURL: '', // Vite proxy already adds /api prefix, so we use empty baseURL
+  baseURL: '', // Url de base
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  timeout: 30000, // 30 seconds timeout
-  withCredentials: false, // Not needed for token-based auth
+  timeout: 30000, // 30 segundos, la petición falla.
+  withCredentials: false, // Es falso porque se usa cookies
 });
 
 export default apiClient;

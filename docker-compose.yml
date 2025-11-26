@@ -99,12 +99,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: frontend_app
-    volumes:
-      - ./frontend:/app
-    environment:
-      - NODE_ENV=production
-
-    command: npm run dev
+    ports:
+      - "3000:80"
     networks:
       - my_network
     depends_on:

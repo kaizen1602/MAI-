@@ -23,8 +23,8 @@ class ImageService
         // Guardar en storage (disco public)
         $path = $file->storeAs($directory, $filename, 'public');
 
-        // Retornar la URL pública
-        return Storage::disk('public')->url($path);
+        // Retornar la URL relativa (sin dominio) para evitar problemas con localhost
+        return '/storage/' . $path;
     }
 
     /**

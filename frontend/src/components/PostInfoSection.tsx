@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import { FaMapMarkerAlt, FaCalendarAlt } from "react-icons/fa";
 import WhatsAppContactModal from "./WhatsAppContactModal";
 import PurchaseConfirmationModal from "./PurchaseConfirmationModal";
+import { useAuth } from "../data/context/AuthContext";
+import { toast } from "react-hot-toast";
 
 interface PostInfoSectionProps {
   post: {
     title: string;
-    user: { user_id: number; name: string };
+    user: { user_id: number; name: string; phone_number?: string };
     description: string;
     created_at: string;
     post_type: { type_id: number; type_name: string };
@@ -24,10 +26,26 @@ interface PostInfoSectionProps {
 }
 
 function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
+  const { user: currentUser } = useAuth();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState(false);
 
+  // Verificar si el usuario actual es el dueño del post
+  const isOwner = currentUser && Number(currentUser.id) === Number(post.user.user_id);
+
   const handleContactClick = () => {
+    // Validar que no sea el dueño del producto
+    if (isOwner) {
+      toast.error("No puedes comprar/ofrecer tu propio producto");
+      return;
+    }
+
+    // Validar que el vendedor tenga número de teléfono
+    if (!post.user.phone_number) {
+      toast.error("El vendedor no tiene número de contacto registrado");
+      return;
+    }
+
     setIsModalOpen(true);
   };
 
@@ -36,11 +54,27 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
   };
 
   const handleWhatsAppContact = () => {
-    // In a real application, you would have the seller's WhatsApp number
-    // For now, we'll use a placeholder URL
-    const phoneNumber = "+573001234567"; // Placeholder phone number
-    const message = `Hola, estoy interesado en tu publicación: ${post.title}`;
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+    // Usar el número de teléfono del vendedor
+    let phoneNumber = post.user.phone_number || "";
+
+    // Limpiar el número de teléfono (quitar espacios, guiones, etc.)
+    phoneNumber = phoneNumber.replace(/[\s\-\(\)]/g, "");
+
+    // Si no empieza con +, agregar código de país de Colombia
+    if (!phoneNumber.startsWith("+")) {
+      // Si empieza con 0, quitarlo
+      if (phoneNumber.startsWith("0")) {
+        phoneNumber = phoneNumber.substring(1);
+      }
+      // Si no tiene código de país, agregar +57 (Colombia)
+      if (!phoneNumber.startsWith("57")) {
+        phoneNumber = "57" + phoneNumber;
+      }
+      phoneNumber = "+" + phoneNumber;
+    }
+
+    const message = `Hola ${post.user.name}, estoy interesado en tu publicación: "${post.title}"`;
+    const whatsappUrl = `https://wa.me/${phoneNumber.replace("+", "")}?text=${encodeURIComponent(
       message
     )}`;
 
@@ -147,16 +181,22 @@ function PostInfoSection({ post, formatDate }: PostInfoSectionProps) {
         </div>
 
         {/* Botón de acción */}
-        <button
-          onClick={handleContactClick}
-          className={`w-full py-5 rounded-2xl text-white font-bold text-2xl shadow-lg transition-all ${
-            post.post_type?.type_name === "Venta"
-              ? "bg-blue-600 hover:bg-blue-700"
-              : "bg-blue-600 hover:bg-blue-700"
-          }`}
-        >
-          {post.post_type?.type_name === "Venta" ? "🛒 Comprar" : "🤝 Ofrecer"}
-        </button>
+        {isOwner ? (
+          <div className="w-full py-5 rounded-2xl bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 font-bold text-xl text-center">
+            📋 Esta es tu publicación
+          </div>
+        ) : (
+          <button
+            onClick={handleContactClick}
+            className={`w-full py-5 rounded-2xl text-white font-bold text-2xl shadow-lg transition-all ${
+              post.post_type?.type_name === "Venta"
+                ? "bg-blue-600 hover:bg-blue-700"
+                : "bg-green-600 hover:bg-green-700"
+            }`}
+          >
+            {post.post_type?.type_name === "Venta" ? "🛒 Comprar" : "🤝 Ofrecer"}
+          </button>
+        )}
       </div>
 
       <WhatsAppContactModal

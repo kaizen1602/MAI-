@@ -42,7 +42,6 @@ export default function Shopping() {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6; // Mostrar 6 posts por página (2 filas de 3)
   const filterTimeout = useRef<NodeJS.Timeout | null>(null);
-  const isFirstFilter = useRef(true);
 
   useEffect(() => {
     loadPosts();
@@ -97,7 +96,7 @@ export default function Shopping() {
 
       // Prepare filter parameters
       const filterParams: any = {
-        post_type_id: 1, // OFERTA
+        post_type_id: 2, // COMPRA - Solicitudes de compra
         per_page: 20,
       };
 
@@ -171,7 +170,7 @@ export default function Shopping() {
       setNextCursor(response.pagination.next_cursor || null);
     } catch (error) {
       console.error("Error cargando productos:", error);
-      toast.error("Error al cargar productos en venta");
+      toast.error("Error al cargar solicitudes de compra");
     } finally {
       setIsLoading(false);
     }
@@ -181,12 +180,6 @@ export default function Shopping() {
     // Clear previous timeout
     if (filterTimeout.current) {
       clearTimeout(filterTimeout.current);
-    }
-
-    // Skip first filter to prevent immediate API calls
-    if (isFirstFilter.current) {
-      isFirstFilter.current = false;
-      return;
     }
 
     // Set new timeout to debounce filter requests
@@ -273,7 +266,7 @@ export default function Shopping() {
           <Filters onFilter={handleFilter} />
         </div>
         <h1 className="text-3xl font-extrabold text-blue-900 dark:text-blue-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
-          Productos en Venta
+          Solicitudes de Compra
         </h1>
 
         {isLoading ? (
@@ -282,34 +275,18 @@ export default function Shopping() {
           </div>
         ) : (
           <div className="flex flex-col gap-6 flex-grow">
-            {/* Lista de publicaciones con paginación en filas de 3 */}
+            {/* Lista de publicaciones */}
             <div className="w-full">
-              {/* Grid de publicaciones - 2 filas de 3 columnas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {getCurrentPosts()
-                  .slice(0, 3)
-                  .map((post) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onSelectPost={setSelectedPost}
-                      formatDate={formatDate}
-                    />
-                  ))}
-              </div>
-
-              {/* Segunda fila de publicaciones */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {getCurrentPosts()
-                  .slice(3, 6)
-                  .map((post) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onSelectPost={setSelectedPost}
-                      formatDate={formatDate}
-                    />
-                  ))}
+              {/* Grid responsive: 1 col móvil, 2 cols tablet, 3 cols desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
+                {getCurrentPosts().map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onSelectPost={setSelectedPost}
+                    formatDate={formatDate}
+                  />
+                ))}
               </div>
 
               {/* Paginación */}

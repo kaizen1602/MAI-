@@ -172,10 +172,10 @@ class PostService extends BaseService {
   }
 
   /**
-   * Get posts by type (Oferta/Demanda)
+   * Get posts by type (Venta/Compra)
    * Convenience method for common filtering
-   * 
-   * @param postTypeId - Post type ID (1=Oferta, 2=Demanda)
+   *
+   * @param postTypeId - Post type ID (1=Venta, 2=Compra)
    * @param additionalFilters - Additional filters
    * @returns Filtered posts
    */

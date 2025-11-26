@@ -1,11 +1,4 @@
-/**
- * Axios Interceptors
- * 
- * Request interceptor: Automatically adds authentication token to requests
- * Response interceptor: Handles global error responses (401, 403, 500, etc.)
- * 
- * Following the Open/Closed Principle: Open for extension, closed for modification
- */
+
 
 import apiClient from './axios.config';
 import { AxiosError, InternalAxiosRequestConfig, AxiosResponse } from 'axios';

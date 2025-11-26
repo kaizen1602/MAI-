@@ -108,7 +108,7 @@ function PurchaseConfirmationModal({
           <p className="text-gray-700 dark:text-gray-300 mb-6">
             {isPurchase
               ? `Tu compra de ${productName} con ${sellerName} ha sido confirmada.`
-              : `Tu oferta de ${productName} a ${sellerName} ha sido enviada.`}
+              : `Tu propuesta de venta de ${productName} a ${sellerName} ha sido enviada.`}
           </p>
 
           {isPurchase && (

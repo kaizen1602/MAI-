@@ -24,7 +24,10 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
     setIsFavorite(post.is_favorited || false);
   }, [post.is_favorited]);
 
-  const handleToggle = async () => {
+  const handleToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Evitar que el click se propague al contenedor padre
+    e.preventDefault();
+
     if (isLoading) return;
 
     setIsLoading(true);

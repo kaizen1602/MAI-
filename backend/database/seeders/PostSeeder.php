@@ -26,10 +26,10 @@ class PostSeeder extends Seeder
 
         $products = Product::all();
         $municipalities = Municipality::all();
-        $ofertaType = PostType::where('type_name', 'Oferta')->first();
-        $demandaType = PostType::where('type_name', 'Demanda')->first();
+        $ventaType = PostType::where('type_name', 'Venta')->first();
+        $compraType = PostType::where('type_name', 'Compra')->first();
 
-        // Seed Ofertas
+        // Seed Ventas
         for ($i = 0; $i < 20; $i++) {
             Post::create([
                 'title' => 'Vendo ' . $products->random()->name,
@@ -37,14 +37,14 @@ class PostSeeder extends Seeder
                 'quantity_kg' => rand(50, 500),
                 'price_per_kg' => rand(10, 100),
                 'status' => 'ACTIVE',
-                'post_type_id' => $ofertaType->id,
+                'post_type_id' => $ventaType->id,
                 'product_id' => $products->random()->id,
                 'user_id' => $vendedores->random()->id,
                 'municipality_id' => $municipalities->random()->id,
             ]);
         }
 
-        // Seed Demandas
+        // Seed Compras
         for ($i = 0; $i < 15; $i++) {
             Post::create([
                 'title' => 'Compro ' . $products->random()->name,
@@ -52,7 +52,7 @@ class PostSeeder extends Seeder
                 'quantity_kg' => rand(100, 1000),
                 'price_per_kg' => rand(8, 90),
                 'status' => 'ACTIVE',
-                'post_type_id' => $demandaType->id,
+                'post_type_id' => $compraType->id,
                 'product_id' => $products->random()->id,
                 'user_id' => $compradores->random()->id,
                 'municipality_id' => $municipalities->random()->id,

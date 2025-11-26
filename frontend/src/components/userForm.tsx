@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../data/context/AuthContext";
-import { FaUser, FaEnvelope, FaLock } from "react-icons/fa";
+import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
 
 interface UserFormData {
   name: string;
   email: string;
+  phone_number: string;
   password: string;
   password_confirmation: string;
 }
@@ -22,6 +23,7 @@ const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState<UserFormData>({
     name: "",
     email: "",
+    phone_number: "",
     password: "",
     password_confirmation: "",
   });
@@ -34,6 +36,10 @@ const RegisterForm: React.FC = () => {
     if (!formData.email.trim()) newErrors.email = "El email es requerido";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Email inválido";
+    if (!formData.phone_number.trim())
+      newErrors.phone_number = "El número de teléfono es requerido";
+    else if (formData.phone_number.replace(/[\s\-\(\)]/g, "").length < 10)
+      newErrors.phone_number = "El teléfono debe tener al menos 10 dígitos";
     if (!formData.password.trim())
       newErrors.password = "La contraseña es requerida";
     else if (formData.password.length < 8)
@@ -60,7 +66,6 @@ const RegisterForm: React.FC = () => {
 
         const registerData = {
           ...formData,
-          phone_number: "+502 0000 0000",
           address_details: "Por definir",
           role_id: 1,
         };
@@ -143,6 +148,28 @@ const RegisterForm: React.FC = () => {
           </div>
           {errors.email && (
             <p className="text-red-500 text-sm">{errors.email}</p>
+          )}
+        </div>
+
+        {/* Teléfono */}
+        <div>
+          <label className="block font-medium mb-1">Número de teléfono (WhatsApp) *</label>
+          <div className="flex items-center border rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500">
+            <FaPhone className="text-gray-400 mr-2" />
+            <input
+              type="tel"
+              name="phone_number"
+              value={formData.phone_number}
+              onChange={handleChange}
+              className="w-full outline-none text-lg"
+              placeholder="Ej: 3001234567"
+            />
+          </div>
+          <p className="text-gray-500 text-xs mt-1">
+            Este número se usará para que los compradores te contacten por WhatsApp
+          </p>
+          {errors.phone_number && (
+            <p className="text-red-500 text-sm">{errors.phone_number}</p>
           )}
         </div>
 

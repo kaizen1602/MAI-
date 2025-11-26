@@ -47,14 +47,16 @@ class UserService extends BaseService {
 
   /**
    * Get public user profile
-   * 
+   *
    * @param userId - User ID
    * @returns Promise with user profile data
    */
   async getUserProfile(userId: number): Promise<any> {
-    return this.handleRequest(
+    const response = await this.handleRequest<{ user: any }>(
       this.client.get(ENDPOINTS.USERS.SHOW(userId))
     );
+    // Backend returns { user: {...} }, extract the user object
+    return response.user || response;
   }
 }
 

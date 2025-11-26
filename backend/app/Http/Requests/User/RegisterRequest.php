@@ -25,7 +25,7 @@ class RegisterRequest extends FormRequest
             'name' => 'required|string|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed', // Requiere password_confirmation
-            'phone_number' => 'nullable|string|max:100',
+            'phone_number' => 'required|string|min:10|max:15|regex:/^[0-9+\-\s\(\)]+$/',
             'address_details' => 'nullable|string|max:300',
             'role_id' => 'required|exists:roles,id',
         ];
@@ -45,8 +45,11 @@ class RegisterRequest extends FormRequest
             'password.string' => 'El campo contraseña debe ser una cadena de texto.',
             'password.min' => 'El campo contraseña debe tener al menos 8 caracteres.',
             'password.confirmed' => 'La confirmación de la contraseña no coincide.',
+            'phone_number.required' => 'El número de teléfono es obligatorio para poder contactarte.',
             'phone_number.string' => 'El campo número de teléfono debe ser una cadena de texto.',
-            'phone_number.max' => 'El campo número de teléfono no debe exceder los 100 caracteres.',
+            'phone_number.min' => 'El número de teléfono debe tener al menos 10 dígitos.',
+            'phone_number.max' => 'El número de teléfono no debe exceder los 15 caracteres.',
+            'phone_number.regex' => 'El número de teléfono solo puede contener números, +, -, espacios y paréntesis.',
             'address_details.string' => 'El campo detalles de dirección debe ser una cadena de texto.',
             'address_details.max' => 'El campo detalles de dirección no debe exceder los 300 caracteres.',
             'role_id.required' => 'El campo rol es obligatorio.',

@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { transactionService } from '../services';
+import { useAuth } from './AuthContext';
 
 export interface Purchase {
   id: number;
@@ -9,13 +11,15 @@ export interface Purchase {
   imageUrl: string;
   rating?: number;
   sellerId: number;
-  productId: number;
+  productId?: number;
 }
 
 interface PurchaseContextType {
   purchases: Purchase[];
+  isLoading: boolean;
   addPurchase: (purchase: Omit<Purchase, 'id' | 'date'>) => void;
   updatePurchaseRating: (purchaseId: number, rating: number) => void;
+  refreshPurchases: () => Promise<void>;
 }
 
 const PurchaseContext = createContext<PurchaseContextType | undefined>(undefined);
@@ -34,31 +38,63 @@ interface PurchaseProviderProps {
 
 export const PurchaseProvider: React.FC<PurchaseProviderProps> = ({ children }) => {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+
+  // Load purchases from backend when user is authenticated
+  const loadPurchases = async () => {
+    if (!user) {
+      setPurchases([]);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const data = await transactionService.getPurchaseHistory();
+      setPurchases(data);
+    } catch (error) {
+      console.error('Error loading purchases:', error);
+      // Keep purchases empty on error - no mock data
+      setPurchases([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPurchases();
+  }, [user?.id]);
 
   const addPurchase = (purchaseData: Omit<Purchase, 'id' | 'date'>) => {
     const newPurchase: Purchase = {
       ...purchaseData,
-      id: Date.now(), // Simple ID generation
-      date: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
+      id: Date.now(),
+      date: new Date().toISOString().split('T')[0],
     };
-    
+
     setPurchases(prev => [...prev, newPurchase]);
   };
 
   const updatePurchaseRating = (purchaseId: number, rating: number) => {
-    setPurchases(prev => 
-      prev.map(purchase => 
-        purchase.id === purchaseId 
+    setPurchases(prev =>
+      prev.map(purchase =>
+        purchase.id === purchaseId
           ? { ...purchase, rating }
           : purchase
       )
     );
   };
 
+  const refreshPurchases = async () => {
+    await loadPurchases();
+  };
+
   const value: PurchaseContextType = {
     purchases,
+    isLoading,
     addPurchase,
     updatePurchaseRating,
+    refreshPurchases,
   };
 
   return (

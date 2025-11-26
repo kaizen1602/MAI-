@@ -185,6 +185,14 @@ function Navbar() {
                 <FaChartLine /> <span>Gráficas</span>
               </Link>
 
+              <Link
+                to="/profile"
+                className="flex items-center space-x-2 px-6 py-3 hover:bg-blue-800 transition"
+                onClick={closeMenu}
+              >
+                <FaUser /> <span>Mi Perfil</span>
+              </Link>
+
               <button
                 onClick={() => {
                   closeMenu();

@@ -27,6 +27,7 @@ function App() {
             <Route path="/shopping" element={<Shopping />} />
             <Route path="/post/:id" element={<PostPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
             <Route path="/charts" element={<Charts />} />
           </Routes>
         </Router>

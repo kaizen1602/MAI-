@@ -72,6 +72,16 @@ export const ENDPOINTS = {
   },
 
   // ==========================================
+  // Transactions Endpoints
+  // ==========================================
+  TRANSACTIONS: {
+    BASE: `${API_BASE_URL}/transactions`,
+    DETAIL: (id: number) => `${API_BASE_URL}/transactions/${id}`,
+    PURCHASE_HISTORY: `${API_BASE_URL}/transactions/purchase-history`,
+    CREATE_REVIEW: (id: number) => `${API_BASE_URL}/transactions/${id}/review`,
+  },
+
+  // ==========================================
   // Support Data Endpoints (Public)
   // ==========================================
   SUPPORT: {

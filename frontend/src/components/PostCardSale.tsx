@@ -193,19 +193,20 @@ function PostCardSale({ post, onSelectPost, formatDate }: PostCardSaleProps) {
       <div className="flex justify-between items-center mt-3">
         <button
           onClick={handleFavoriteToggle}
-          className={`flex items-center ${
+          className={`flex items-center gap-1 ${
             post.is_favorited
               ? "text-red-500"
               : "text-gray-500 hover:text-red-400"
           }`}
         >
           <FaHeart className={post.is_favorited ? "fill-current" : ""} />
+          <span className="text-sm">{post.favorites_count || 0}</span>
         </button>
 
         <span
           className={`px-2 py-1 rounded-full text-xs font-semibold ${
-            postType === "Oferta"
-              ? "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+            postType === "Venta"
+              ? "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
               : "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
           }`}
         >

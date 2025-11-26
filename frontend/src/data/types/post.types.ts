@@ -83,7 +83,8 @@ export interface CreatePostRequest {
   price_per_kg: number;
   post_type_id: number;
   product_id: number;
-  municipality_id: number;
+  municipality_id?: number; // Optional - for backward compatibility
+  location?: string; // Ciudad, Departamento - from external API
   images?: File[]; // Files to upload
 }
 
@@ -119,7 +120,7 @@ export interface PostFilters {
 }
 
 /**
- * Post Type (Oferta/Demanda)
+ * Post Type (Venta/Compra)
  */
 export interface PostType {
   id: number;

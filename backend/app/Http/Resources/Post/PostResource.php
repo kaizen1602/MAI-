@@ -64,13 +64,15 @@ class PostResource extends JsonResource
             }),
 
             // Relación: Municipality
-            'municipality' => $this->when($this->relationLoaded('municipality'), function () {
+            'municipality' => $this->when($this->relationLoaded('municipality') && $this->municipality, function () {
                 return [
                     'id' => $this->municipality->id,
                     'name' => $this->municipality->name,
-                    // Agrega department si existe en tu modelo Municipality
                 ];
             }),
+
+            // Location (texto: "Ciudad, Departamento")
+            'location' => $this->location,
 
             // Relación: Images
             'images' => $this->when($this->relationLoaded('images'), function () {

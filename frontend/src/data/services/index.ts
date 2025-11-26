@@ -15,6 +15,8 @@ import priceAlertService from './PriceAlertService';
 import supportDataService from './SupportDataService';
 import statisticsService from './StatisticsService';
 import userService from './UserService';
+import transactionService from './TransactionService';
+import colombiaPlacesService from './ColombiaPlacesService';
 
 // Export singleton instances for direct use
 export {
@@ -27,6 +29,8 @@ export {
   supportDataService,
   statisticsService,
   userService,
+  transactionService,
+  colombiaPlacesService,
 };
 
 /**
@@ -43,4 +47,6 @@ export const services = {
   supportData: supportDataService,
   statistics: statisticsService,
   user: userService,
+  transaction: transactionService,
+  colombiaPlaces: colombiaPlacesService,
 } as const;

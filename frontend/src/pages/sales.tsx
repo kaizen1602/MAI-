@@ -39,7 +39,6 @@ export default function Sales() {
   const [currentPage, setCurrentPage] = useState(1);
   const postsPerPage = 6; // Mostrar 6 posts por página (2 filas de 3)
   const filterTimeout = useRef<NodeJS.Timeout | null>(null);
-  const isFirstFilter = useRef(true);
 
   useEffect(() => {
     loadPosts();
@@ -48,20 +47,32 @@ export default function Sales() {
   const loadPosts = async () => {
     try {
       setIsLoading(true);
-      // Filtrar por tipo "Demanda" (ID 2) para mostrar solicitudes de compra
+      console.log("🔄 Iniciando carga de posts tipo VENTA...");
+      // Filtrar por tipo "Venta" (ID 1) para mostrar productos en venta
       const response = await postService.getPosts({
-        post_type_id: 2, // DEMANDA
+        post_type_id: 1, // VENTA
         per_page: 50,
       });
 
-      setPosts(response.data);
-      setFilteredPosts(response.data);
+      console.log("✅ Respuesta de API:", response);
+      console.log("📦 Posts recibidos:", response.data?.length || 0, "posts");
+
+      if (response.data && response.data.length > 0) {
+        setPosts(response.data);
+        setFilteredPosts(response.data);
+        console.log("✅ Posts guardados en estado");
+      } else {
+        console.warn("⚠️ No se recibieron posts de la API");
+        setPosts([]);
+        setFilteredPosts([]);
+      }
       setCurrentPage(1); // Reset to first page when loading new posts
     } catch (error) {
-      console.error("Error cargando solicitudes:", error);
-      toast.error("Error al cargar solicitudes de compra");
+      console.error("❌ Error cargando productos:", error);
+      toast.error("Error al cargar productos en venta");
     } finally {
       setIsLoading(false);
+      console.log("🏁 Carga finalizada");
     }
   };
 
@@ -79,15 +90,9 @@ export default function Sales() {
 
   const applyFilters = useCallback(
     async (filters: any) => {
-      // Skip first filter application to prevent immediate API calls
-      if (isFirstFilter.current) {
-        isFirstFilter.current = false;
-        return;
-      }
-
       // Convertir los filtros del frontend a los parámetros que espera la API
       const apiFilters: any = {
-        post_type_id: 2, // DEMANDA
+        post_type_id: 1, // VENTA
       };
 
       if (filters.name) {
@@ -132,9 +137,9 @@ export default function Sales() {
       );
 
       if (!hasAdditionalFilters) {
-        // If no additional filters, show all posts
-        setFilteredPosts(posts);
-        setCurrentPage(1); // Reset to first page
+        // If no additional filters, just reload all posts from API
+        // Don't use local 'posts' state as it might be stale or empty
+        loadFilteredPosts(apiFilters);
         return;
       }
 
@@ -147,19 +152,23 @@ export default function Sales() {
   const loadFilteredPosts = async (filters: any) => {
     try {
       setIsLoading(true);
+      console.log("🔍 loadFilteredPosts llamado con filtros:", filters);
 
       const response = await postService.getPosts({
         ...filters,
         per_page: 50,
       });
 
-      setFilteredPosts(response.data);
+      console.log("✅ loadFilteredPosts respuesta:", response);
+      console.log("📦 Posts filtrados:", response.data?.length || 0);
+
+      setFilteredPosts(response.data || []);
       setCurrentPage(1); // Reset to first page when loading filtered posts
     } catch (error: any) {
-      console.error("Error cargando publicaciones filtradas:", error);
+      console.error("❌ Error cargando publicaciones filtradas:", error);
       toast.error("Error al cargar publicaciones filtradas");
-      // On error, show all posts
-      setFilteredPosts(posts);
+      // On error, keep current posts instead of potentially empty 'posts' state
+      // Don't setFilteredPosts(posts) as it might be empty
     } finally {
       setIsLoading(false);
     }
@@ -352,7 +361,7 @@ export default function Sales() {
           <Filters onFilter={handleFilter} />
         </div>
         <h1 className="text-3xl font-extrabold text-blue-900 dark:text-blue-300 mb-6 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-3 rounded-2xl shadow w-full">
-          Solicitudes de Compra
+          Productos en Venta
         </h1>
 
         {isLoading ? (
@@ -361,38 +370,20 @@ export default function Sales() {
           </div>
         ) : (
           <div className="flex flex-col gap-6 flex-grow">
-            {/* Lista de publicaciones con paginación en filas de 3 */}
+            {/* Lista de publicaciones */}
             <div className="w-full">
-              {/* Grid de publicaciones - 2 filas de 3 columnas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {getCurrentPosts()
-                  .slice(0, 3)
-                  .map((post) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onSelectPost={setSelectedPost}
-                      formatDate={formatDate}
-                      onPostUpdated={handleUpdateSubmit}
-                      onPostDeleted={handleDelete}
-                    />
-                  ))}
-              </div>
-
-              {/* Segunda fila de publicaciones */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                {getCurrentPosts()
-                  .slice(3, 6)
-                  .map((post) => (
-                    <PostCard
-                      key={post.id}
-                      post={post}
-                      onSelectPost={setSelectedPost}
-                      formatDate={formatDate}
-                      onPostUpdated={handleUpdateSubmit}
-                      onPostDeleted={handleDelete}
-                    />
-                  ))}
+              {/* Grid responsive: 1 col móvil, 2 cols tablet, 3 cols desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mb-6">
+                {getCurrentPosts().map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onSelectPost={setSelectedPost}
+                    formatDate={formatDate}
+                    onPostUpdated={handleUpdateSubmit}
+                    onPostDeleted={handleDelete}
+                  />
+                ))}
               </div>
 
               {/* Paginación */}

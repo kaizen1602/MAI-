@@ -114,6 +114,16 @@ export default function PostDetail({
                     day: "numeric",
                   })}
             </p>
+            {/* Botón Ver Perfil */}
+            {!isOwner && (
+              <Link
+                to={`/profile/${post.user.user_id}`}
+                className="inline-flex items-center text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium mt-1 transition-colors"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Ver perfil →
+              </Link>
+            )}
           </div>
           {/* Edit/Delete buttons for owner */}
           {isOwner && (
@@ -237,7 +247,7 @@ export default function PostDetail({
         <div className="flex justify-between items-center">
           <span
             className={`px-4 py-2 rounded-full text-sm font-semibold shadow-sm ${
-              postType === "Oferta"
+              postType === "Venta"
                 ? "bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200"
                 : "bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200"
             }`}
@@ -249,12 +259,12 @@ export default function PostDetail({
           <Link
             to={`/post/${post.post_id}`}
             className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-white font-bold shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl ${
-              postType === "Oferta"
+              postType === "Venta"
                 ? "bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
                 : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
             }`}
           >
-            {postType === "Oferta" ? "🛒 Comprar" : "🤝 Ofrecer"}
+            {postType === "Venta" ? "🛒 Comprar" : "🤝 Vender"}
           </Link>
         </div>
       </div>
