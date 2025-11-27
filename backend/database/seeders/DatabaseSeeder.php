@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             PostTypeSeeder::class,
             DepartmentMunicipalitySeeder::class,
             ProductTypeSeeder::class,
+            ProductCatalogSeeder::class, // Catálogo de productos para pricing inteligente
             ProductSeeder::class,
             UserSeeder::class,
             PostSeeder::class,

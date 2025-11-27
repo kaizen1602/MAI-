@@ -6,15 +6,19 @@ import {
   FaMapMarkerAlt,
   FaTag,
 } from "react-icons/fa";
-import { postService, supportDataService } from "../data/services";
-import type {
-  Department,
-  Municipality,
-  ProductType,
-} from "../data/types/product.types";
+import {
+  postService,
+  supportDataService,
+  colombiaPlacesService,
+} from "../data/services";
+import type { ProductType } from "../data/types/product.types";
 import type { PostType } from "../data/types/post.types";
 import type { Post, UpdatePostRequest } from "../data/types/post.types";
 import { toast } from "react-hot-toast";
+import type {
+  ColombiaDepartment,
+  ColombiaCity,
+} from "../data/services/ColombiaPlacesService";
 
 interface EditPostModalProps {
   isOpen: boolean;
@@ -29,15 +33,37 @@ export default function EditPostModal({
   post,
   onSubmit,
 }: EditPostModalProps) {
-  const [formData, setFormData] = useState({
-    title: post.title,
-    description: post.description,
-    post_type_id: post.post_type.id,
-    product_id: post.product.id,
-    quantity_kg: post.quantity_kg.toString(),
-    price_per_kg: post.price_per_kg.toString(),
-    municipality_id: post.municipality.id.toString(),
-  });
+  const getInitialFormData = () => {
+    let departmentName = "";
+    let cityName = "";
+    const rawLocation = (post as any)?.location;
+    if (rawLocation) {
+      const [cityPart, deptPart] = rawLocation.split(",").map((part: string) =>
+        part.trim()
+      );
+      cityName = cityPart || "";
+      departmentName = deptPart || "";
+    } else {
+      cityName = post?.municipality?.name || "";
+      departmentName =
+        (post?.municipality as any)?.department?.name || departmentName;
+    }
+
+    return {
+      title: post?.title || "",
+      description: post?.description || "",
+      post_type_id: post?.post_type?.id || 1,
+      product_id: post?.product?.id || 1,
+      quantity_kg:
+        post?.quantity_kg !== undefined ? post.quantity_kg.toString() : "",
+      price_per_kg:
+        post?.price_per_kg !== undefined ? post.price_per_kg.toString() : "",
+      department_name: departmentName,
+      city_name: cityName,
+    };
+  };
+
+  const [formData, setFormData] = useState(getInitialFormData());
 
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -45,79 +71,82 @@ export default function EditPostModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Support data
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
   const [postTypes, setPostTypes] = useState<PostType[]>([]);
   const [productTypes, setProductTypes] = useState<ProductType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Colombia locations
+  const [departments, setDepartments] = useState<ColombiaDepartment[]>([]);
+  const [cities, setCities] = useState<ColombiaCity[]>([]);
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
+
   useEffect(() => {
     if (isOpen) {
       loadSupportData();
-      // Initialize form with post data
-      setFormData({
-        title: post.title,
-        description: post.description,
-        post_type_id: post.post_type.id,
-        product_id: post.product.id,
-        quantity_kg: post.quantity_kg.toString(),
-        price_per_kg: post.price_per_kg.toString(),
-        municipality_id: post.municipality.id.toString(),
-      });
+      loadDepartments();
+      setFormData(getInitialFormData());
       setExistingImages(post.images || []);
     }
   }, [isOpen, post]);
 
   useEffect(() => {
-    // Load municipalities when we have the department ID
-    const loadMunicipalitiesForDepartment = async () => {
-      if (formData.municipality_id) {
-        try {
-          // We need to find the department ID from the municipality
-          const allMunicipalities =
-            await supportDataService.getMunicipalities();
-          const selectedMunicipality = allMunicipalities.find(
-            (m) => m.id === Number(formData.municipality_id)
-          );
-          if (selectedMunicipality && selectedMunicipality.department) {
-            const muns = await supportDataService.getMunicipalitiesByDepartment(
-              selectedMunicipality.department.id
-            );
-            setMunicipalities(muns);
-          }
-        } catch (error) {
-          console.error("Error cargando municipios:", error);
+    const loadCities = async () => {
+      if (!formData.department_name) {
+        setCities([]);
+        setFormData((prev) => ({ ...prev, city_name: "" }));
+        return;
+      }
+
+      const selectedDept = departments.find(
+        (dept) => dept.name === formData.department_name
+      );
+      if (!selectedDept) {
+        setCities([]);
+        setFormData((prev) => ({ ...prev, city_name: "" }));
+        return;
+      }
+
+      try {
+        setIsLoadingCities(true);
+        const citiesData = await colombiaPlacesService.getCitiesByDepartment(
+          selectedDept.id
+        );
+        setCities(citiesData);
+        if (!citiesData.some((city) => city.name === formData.city_name)) {
+          setFormData((prev) => ({ ...prev, city_name: "" }));
         }
+      } catch (error) {
+        console.error("Error cargando municipios:", error);
+        toast.error("Error al cargar ciudades del departamento seleccionado");
+      } finally {
+        setIsLoadingCities(false);
       }
     };
 
-    loadMunicipalitiesForDepartment();
-  }, [formData.municipality_id]);
+    loadCities();
+  }, [formData.department_name, departments]);
 
   const loadSupportData = async () => {
     try {
       setIsLoading(true);
       const data = await supportDataService.loadAllSupportData();
-      setDepartments(data.departments);
       setPostTypes(data.postTypes);
       setProductTypes(data.productTypes);
-
-      // Load municipalities for the current department
-      const allMunicipalities = await supportDataService.getMunicipalities();
-      const selectedMunicipality = allMunicipalities.find(
-        (m) => m.id === post.municipality.id
-      );
-      if (selectedMunicipality && selectedMunicipality.department) {
-        const muns = await supportDataService.getMunicipalitiesByDepartment(
-          selectedMunicipality.department.id
-        );
-        setMunicipalities(muns);
-      }
     } catch (error) {
       console.error("Error cargando datos:", error);
       toast.error("Error al cargar datos del formulario");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadDepartments = async () => {
+    try {
+      const deptData = await colombiaPlacesService.getDepartments();
+      setDepartments(deptData);
+    } catch (error) {
+      console.error("Error cargando departamentos:", error);
+      toast.error("Error al cargar departamentos de Colombia");
     }
   };
 
@@ -152,18 +181,22 @@ export default function EditPostModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (!formData.department_name || !formData.city_name) {
+      toast.error("Por favor selecciona departamento y ciudad");
+      return;
+    }
+
     try {
       setIsSubmitting(true);
 
-      // Update the post
       const updateData: UpdatePostRequest = {
         title: formData.title,
         description: formData.description,
         quantity_kg: Number(formData.quantity_kg) || 0,
         price_per_kg: Number(formData.price_per_kg) || 0,
-        post_type_id: formData.post_type_id,
-        product_id: formData.product_id,
-        municipality_id: Number(formData.municipality_id),
+        post_type_id: Number(formData.post_type_id),
+        product_id: Number(formData.product_id),
+        location: `${formData.city_name}, ${formData.department_name}`,
       };
 
       const updatedPost = await postService.updatePost(post.id, {
@@ -309,35 +342,65 @@ export default function EditPostModal({
               </label>
               <input
                 type="number"
-                name="price_per_kg"
+            name="price_per_kg"
                 value={formData.price_per_kg}
                 onChange={handleInputChange}
                 min="0"
-                step="100"
+            step="1"
                 className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
                 placeholder="Ej: 2500"
               />
             </div>
           </div>
 
-          {/* Municipio */}
+          {/* Departamento */}
           <div className="mb-6">
             <label className="block text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
-              <FaMapMarkerAlt className="inline mr-2" /> Municipio *
+              Departamento *
             </label>
             <select
-              name="municipality_id"
-              value={formData.municipality_id}
+              name="department_name"
+              value={formData.department_name}
               onChange={handleInputChange}
               required
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             >
-              <option value="">Selecciona un municipio</option>
-              {municipalities.map((mun) => (
-                <option key={mun.id} value={mun.id}>
-                  {mun.name}
+              <option value="">Selecciona un departamento</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.name}>
+                  {dept.name}
                 </option>
               ))}
+            </select>
+          </div>
+
+          {/* Ciudad */}
+          <div className="mb-6">
+            <label className="block text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2">
+              <FaMapMarkerAlt className="inline mr-2" /> Ciudad *
+            </label>
+            <select
+              name="city_name"
+              value={formData.city_name}
+              onChange={handleInputChange}
+              required
+              disabled={!formData.department_name || isLoadingCities}
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            >
+              {!formData.department_name ? (
+                <option value="">Primero selecciona un departamento</option>
+              ) : isLoadingCities ? (
+                <option value="">Cargando ciudades...</option>
+              ) : (
+                <>
+                  <option value="">Selecciona una ciudad</option>
+                  {cities.map((city) => (
+                    <option key={city.id} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
+                </>
+              )}
             </select>
           </div>
 

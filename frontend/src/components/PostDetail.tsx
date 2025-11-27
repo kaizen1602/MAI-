@@ -264,7 +264,7 @@ export default function PostDetail({
                 : "bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
             }`}
           >
-            {postType === "Venta" ? "🛒 Comprar" : "🤝 Vender"}
+            {postType === "Venta" ? "🛒 Comprar" : "🛒 Comprar"}
           </Link>
         </div>
       </div>

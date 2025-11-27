@@ -5,13 +5,11 @@ import ProfileHeader from "../components/ProfileHeader";
 import ProfileInfo from "../components/ProfileInfo";
 import UserPosts from "../components/UserPosts";
 import UserFavorites from "../components/UserFavorites";
-import ProfilePurchases from "../components/PurchaseHistory";
 import EditProfileModal from "../components/EditProfileModal";
 import EditPostModal from "../components/EditPostModal";
 import ProfileProgressBar from "../components/ProfileProgressBar";
 import CompleteProfileModal from "../components/CompleteProfileModal";
 import { useAuth } from "../data/context/AuthContext";
-import { usePurchases } from "../data/context/PurchaseContext";
 import { postService, userService } from "../data/services";
 import authService from "../data/services/AuthService";
 import { toast } from "react-hot-toast";
@@ -20,7 +18,6 @@ import type { Post } from "../data/types/post.types";
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
   const { user, updateProfile, isLoading } = useAuth();
-  const { purchases } = usePurchases();
 
   // Determinar si estamos viendo nuestro propio perfil o el de otro usuario
   const isOwnProfile = !userId || userId === user?.id.toString();
@@ -29,8 +26,6 @@ export default function ProfilePage() {
   const [viewedProfile, setViewedProfile] = useState<any>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
 
-  // Debug: ver qué datos de compras tenemos
-  console.log("ProfilePage - Datos de compras del contexto:", purchases);
   const [showModal, setShowModal] = useState(false);
   const [showEditPostModal, setShowEditPostModal] = useState(false);
   const [showCompleteProfileModal, setShowCompleteProfileModal] =
@@ -119,6 +114,9 @@ export default function ProfilePage() {
       const formData = new FormData();
       formData.append("name", updatedUser.name);
       formData.append("email", updatedUser.email);
+      if (updatedUser.city) {
+        formData.append("address_details", updatedUser.city);
+      }
 
       // Si hay una nueva imagen, agregarla al FormData
       if (updatedUser.profileImage) {
@@ -455,13 +453,6 @@ export default function ProfilePage() {
                 bio={displayUser?.created_at ? `Miembro desde ${new Date(displayUser.created_at).getFullYear()}` : ""}
               />
             </div>
-
-            {/* Historial de compras */}
-            {isOwnProfile && (
-              <div className="mt-6 sm:mt-8">
-                <ProfilePurchases purchases={purchases} />
-              </div>
-            )}
 
             {/* Favoritos */}
             {isOwnProfile && user && (

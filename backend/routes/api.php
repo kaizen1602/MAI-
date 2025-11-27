@@ -15,6 +15,10 @@ use App\Http\Controllers\Api\MunicipalityController;
 use App\Http\Controllers\Api\PostTypeController;
 use App\Http\Controllers\Api\ProductTypeController;
 use App\Http\Controllers\Api\TransactionController;
+use App\Http\Controllers\Api\MarketPriceController;
+use App\Http\Controllers\Api\RecommendationController;
+use App\Http\Controllers\Api\TrendController;
+use App\Http\Controllers\Api\ProductCatalogController;
 
 // ==========================================
 // RUTAS PÚBLICAS
@@ -36,6 +40,13 @@ Route::get('/municipalities', [MunicipalityController::class, 'index']);
 Route::get('/municipalities/department/{departmentId}', [MunicipalityController::class, 'byDepartment']);
 Route::get('/post-types', [PostTypeController::class, 'index']);
 Route::get('/product-types', [ProductTypeController::class, 'index']);
+
+// ==========================================
+// PRICING RECOMMENDATIONS (Público - no requiere autenticación)
+// ==========================================
+Route::prefix('recommendations')->group(function () {
+    Route::post('/check-price', [RecommendationController::class, 'checkPrice']);
+});
 
 // ==========================================
 // RUTAS PROTEGIDAS (requieren autenticación)
@@ -128,5 +139,76 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('/{transaction}', [TransactionController::class, 'update']);
         Route::delete('/{transaction}', [TransactionController::class, 'destroy']);
         Route::post('/{transaction}/review', [TransactionController::class, 'createReview']);
+    });
+
+    // ==========================================
+    // INTELLIGENT PRICING MODULE ROUTES
+    // ==========================================
+
+    // Product Catalog (Normalized Products)
+    Route::prefix('catalog')->group(function () {
+        // Public catalog access
+        Route::get('/products', [ProductCatalogController::class, 'index']);
+        Route::get('/categories', [ProductCatalogController::class, 'getCategories']);
+        Route::get('/products/{id}', [ProductCatalogController::class, 'show']);
+        Route::get('/search', [ProductCatalogController::class, 'search']);
+        Route::post('/normalize', [ProductCatalogController::class, 'normalize']);
+        Route::get('/category/{category}', [ProductCatalogController::class, 'getByCategory']);
+        Route::get('/products/{id}/variations', [ProductCatalogController::class, 'getVariations']);
+
+        // Admin-only catalog management
+        Route::middleware('admin')->group(function () {
+            Route::post('/products', [ProductCatalogController::class, 'store']);
+            Route::put('/products/{id}', [ProductCatalogController::class, 'update']);
+            Route::delete('/products/{id}', [ProductCatalogController::class, 'destroy']);
+            Route::post('/products/{id}/variations', [ProductCatalogController::class, 'storeVariation']);
+            Route::post('/products/{id}/aliases', [ProductCatalogController::class, 'addAliases']);
+        });
+    });
+
+    // Market Prices (Corabastos Data)
+    Route::prefix('market-prices')->group(function () {
+        // Public price data access
+        Route::get('/product/{productId}', [MarketPriceController::class, 'getByProduct']);
+        Route::get('/date/{date}', [MarketPriceController::class, 'getByDate']);
+        Route::get('/latest', [MarketPriceController::class, 'getLatest']);
+        Route::get('/history/{productId}', [MarketPriceController::class, 'getHistory']);
+
+        // n8n integration (protected with API token in production)
+        Route::post('/', [MarketPriceController::class, 'store']);
+        Route::post('/calculate-trends', [MarketPriceController::class, 'calculateTrends']);
+
+        // Admin-only management
+        Route::middleware('admin')->group(function () {
+            Route::put('/{id}', [MarketPriceController::class, 'update']);
+            Route::delete('/{id}', [MarketPriceController::class, 'destroy']);
+        });
+    });
+
+    // Price Recommendations (check-price es público, otros requieren auth)
+    Route::prefix('recommendations')->group(function () {
+        // Core recommendation endpoints
+        Route::get('/suggested-price', [RecommendationController::class, 'getSuggestedPrice']);
+        Route::get('/my-recommendations', [RecommendationController::class, 'getMyRecommendations']);
+        Route::get('/stats', [RecommendationController::class, 'getStats']);
+
+        // Recommendation management
+        Route::post('/save', [RecommendationController::class, 'saveRecommendation']);
+        Route::put('/{id}', [RecommendationController::class, 'update']);
+    });
+
+    // Market Trends & Analytics
+    Route::prefix('trends')->group(function () {
+        // Market overview and analytics
+        Route::get('/market-overview', [TrendController::class, 'getMarketOverview']);
+        Route::get('/product/{productId}', [TrendController::class, 'getProductTrend']);
+        Route::get('/category/{category}', [TrendController::class, 'getCategoryTrend']);
+
+        // Insights and discoveries
+        Route::get('/volatile-products', [TrendController::class, 'getVolatileProducts']);
+        Route::get('/stable-products', [TrendController::class, 'getStableProducts']);
+        Route::get('/increasing-prices', [TrendController::class, 'getIncreasingPrices']);
+        Route::get('/decreasing-prices', [TrendController::class, 'getDecreasingPrices']);
+        Route::get('/price-comparison', [TrendController::class, 'getPriceComparison']);
     });
 });

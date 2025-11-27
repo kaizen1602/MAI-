@@ -13,6 +13,7 @@ import type {
 import type { ColombiaDepartment, ColombiaCity } from "../data/services/ColombiaPlacesService";
 import type { PostType, CreatePostRequest } from "../data/types/post.types";
 import { toast } from "react-hot-toast";
+import PriceRecommendationWidget from "./PriceRecommendationWidget";
 
 interface PublishPostModalProps {
   isOpen: boolean;
@@ -367,12 +368,63 @@ export default function PublishPostModal({
                 value={formData.price_per_kg}
                 onChange={handleInputChange}
                 min="0"
-                step="100"
+                step="1"
                 className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 text-slate-900 dark:text-white transition"
                 placeholder="Ej: 2500"
               />
             </div>
           </div>
+
+          {/* Price Recommendation Widget */}
+          {(() => {
+            const shouldRenderWidget =
+              formData.price_per_kg && Number(formData.price_per_kg) > 0;
+
+            const selectedProduct = productTypes.find(
+              (p) => p.id === formData.product_id
+            );
+            const selectedPostType = postTypes.find(
+              (type) => type.id === formData.post_type_id
+            );
+
+            // Usar el título del formulario como nombre del producto (más específico)
+            const productName =
+              formData.title ||
+              selectedProduct?.name ||
+              (selectedProduct as any)?.type_name ||
+              "";
+
+            // Determinar intención (venta/compra) para personalizar el análisis
+            const rawTypeName =
+              selectedPostType?.name ||
+              (selectedPostType as any)?.type_name ||
+              "";
+            const intent: "sell" | "buy" = rawTypeName
+              .toLowerCase()
+              .includes("compra")
+              ? "buy"
+              : "sell";
+
+            return shouldRenderWidget && productName ? (
+              <PriceRecommendationWidget
+                productName={productName}
+                pricePerKg={Number(formData.price_per_kg)}
+                intent={intent}
+                onAccept={(recommendedPrice) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    price_per_kg: recommendedPrice.toString(),
+                  }));
+                  toast.success(
+                    `Precio ajustado a $${recommendedPrice.toLocaleString(
+                      "es-CO"
+                    )}/kg`
+                  );
+                }}
+                className="mt-4"
+              />
+            ) : null;
+          })()}
 
           {/* Departamento */}
           <div>

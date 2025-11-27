@@ -12,12 +12,17 @@ interface SellerInfoProps {
     average_rating: number;
     total_reviews: number;
   };
+  isOwner?: boolean;
 }
 
-function SellerInfo({ user, rating }: SellerInfoProps) {
+function SellerInfo({ user, rating, isOwner = false }: SellerInfoProps) {
   const navigate = useNavigate();
 
   const handleViewProfile = () => {
+    if (isOwner) {
+      return;
+    }
+
     if (user?.user_id) {
       navigate(`/profile/${user.user_id}`);
     }
@@ -109,12 +114,18 @@ function SellerInfo({ user, rating }: SellerInfoProps) {
           </div>
 
           {/* Ver Perfil Button */}
-          <button
-            onClick={handleViewProfile}
-            className="mt-4 w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
-          >
-            Ver Perfil
-          </button>
+          {isOwner ? (
+            <div className="mt-4 w-full py-2 px-4 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 font-medium rounded-lg text-center">
+              Este es tu perfil
+            </div>
+          ) : (
+            <button
+              onClick={handleViewProfile}
+              className="mt-4 w-full py-2 px-4 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg"
+            >
+              Ver Perfil
+            </button>
+          )}
         </div>
       </div>
     </div>

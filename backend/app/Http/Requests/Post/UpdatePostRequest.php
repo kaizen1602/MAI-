@@ -29,6 +29,7 @@ class UpdatePostRequest extends FormRequest
             'post_type_id' => 'sometimes|integer|exists:post_types,id',
             'product_id' => 'sometimes|integer|exists:products,id',
             'municipality_id' => 'sometimes|integer|exists:municipalities,id',
+            'location' => 'nullable|string|max:200',
 
             // Validación de imágenes como archivos (opcional)
             'images' => 'nullable|array|max:5',
@@ -66,6 +67,8 @@ class UpdatePostRequest extends FormRequest
 
             'municipality_id.integer' => 'El ID del municipio debe ser un número entero.',
             'municipality_id.exists' => 'El municipio seleccionado no existe.',
+            'location.string' => 'La ubicación debe ser una cadena de texto.',
+            'location.max' => 'La ubicación no debe exceder los 200 caracteres.',
 
             // Mensajes para imágenes
             'images.array' => 'Las imágenes deben enviarse como un array.',
@@ -93,6 +96,7 @@ class UpdatePostRequest extends FormRequest
             'post_type_id' => $validated['post_type_id'] ?? null,
             'product_id' => $validated['product_id'] ?? null,
             'municipality_id' => $validated['municipality_id'] ?? null,
+            'location' => $validated['location'] ?? null,
         ], function ($value) {
             return !is_null($value);
         });

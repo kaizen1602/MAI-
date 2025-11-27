@@ -65,10 +65,10 @@ export default function Wall() {
         })) || [],
       quantity_kg: post.quantity_kg,
       price_per_kg: post.price_per_kg,
-      municipality: {
+      municipality: post.municipality ? {
         municipality_id: post.municipality.id,
         name: post.municipality.name,
-      },
+      } : undefined,
       product: {
         product_id: post.product.id,
         name: post.product.name,
@@ -80,8 +80,14 @@ export default function Wall() {
 
   useEffect(() => {
     if (selectedPost) {
-      setSelectedPostDetail(adaptPostToDetail(selectedPost));
-      setShowPostDetailModal(true);
+      try {
+        setSelectedPostDetail(adaptPostToDetail(selectedPost));
+        setShowPostDetailModal(true);
+      } catch (error) {
+        console.error("Error adaptando post a detalle:", error);
+        toast.error("Error al mostrar detalles de la publicación");
+        setSelectedPost(null);
+      }
     } else {
       setSelectedPostDetail(null);
       setShowPostDetailModal(false);

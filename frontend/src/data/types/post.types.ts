@@ -100,6 +100,7 @@ export interface UpdatePostRequest {
   post_type_id?: number;
   product_id?: number;
   municipality_id?: number;
+  location?: string;
   images?: File[]; // New files to upload
 }
 

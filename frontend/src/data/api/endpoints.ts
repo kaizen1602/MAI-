@@ -92,6 +92,34 @@ export const ENDPOINTS = {
     POST_TYPES: `${API_BASE_URL}/post-types`,
     PRODUCT_TYPES: `${API_BASE_URL}/product-types`,
   },
+
+  // ==========================================
+  // Pricing & Recommendations Endpoints
+  // ==========================================
+  PRICING: {
+    CHECK_PRICE: `${API_BASE_URL}/recommendations/check-price`,
+    SUGGESTED_PRICE: `${API_BASE_URL}/recommendations/suggested-price`,
+    MY_RECOMMENDATIONS: `${API_BASE_URL}/recommendations/my-recommendations`,
+    RECOMMENDATION_STATS: `${API_BASE_URL}/recommendations/stats`,
+    UPDATE_RECOMMENDATION: (id: number) => `${API_BASE_URL}/recommendations/${id}`,
+    // Catalog endpoints
+    CATALOG_SEARCH: `${API_BASE_URL}/catalog/search`,
+    CATALOG_NORMALIZE: `${API_BASE_URL}/catalog/normalize`,
+    CATALOG_CATEGORIES: `${API_BASE_URL}/catalog/categories`,
+    CATALOG_CATEGORY: (category: string) => `${API_BASE_URL}/catalog/category/${encodeURIComponent(category)}`,
+    CATALOG_PRODUCTS: `${API_BASE_URL}/catalog/products`,
+    CATALOG_PRODUCT: (id: number) => `${API_BASE_URL}/catalog/products/${id}`,
+    // Market prices endpoints
+    MARKET_PRICES_LATEST: `${API_BASE_URL}/market-prices/latest`,
+    MARKET_PRICES_HISTORY: (productId: number) => `${API_BASE_URL}/market-prices/history/${productId}`,
+    MARKET_PRICES_BY_DATE: `${API_BASE_URL}/market-prices/date`,
+    MARKET_OVERVIEW: `${API_BASE_URL}/market-prices/overview`,
+    MARKET_PRICES_FILTERED: `${API_BASE_URL}/market-prices`,
+    // Trends endpoints
+    TRENDS: `${API_BASE_URL}/market-prices/trends`,
+    VOLATILE_PRODUCTS: `${API_BASE_URL}/market-prices/volatile`,
+    TRENDING_PRODUCTS: `${API_BASE_URL}/market-prices/trending`,
+  },
 } as const;
 
 /**

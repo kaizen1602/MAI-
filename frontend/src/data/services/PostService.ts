@@ -67,16 +67,27 @@ class PostService extends BaseService {
     // Add all the regular fields
     formData.append('title', data.title);
     formData.append('description', data.description);
-    formData.append('quantity_kg', data.quantity_kg.toString());
-    formData.append('price_per_kg', data.price_per_kg.toString());
-    formData.append('post_type_id', data.post_type_id.toString());
-    formData.append('product_id', data.product_id.toString());
-    formData.append('municipality_id', data.municipality_id.toString());
+    formData.append('quantity_kg', String(data.quantity_kg));
+    formData.append('price_per_kg', String(data.price_per_kg));
+    formData.append('post_type_id', String(data.post_type_id));
+    formData.append('product_id', String(data.product_id));
+    
+    // Add municipality_id only if it exists and is a valid number
+    if (data.municipality_id != null && typeof data.municipality_id === 'number' && !isNaN(data.municipality_id)) {
+      formData.append('municipality_id', String(data.municipality_id));
+    }
+    
+    // Add location if it exists (for external API cities)
+    if (data.location && typeof data.location === 'string') {
+      formData.append('location', data.location);
+    }
     
     // Add images if they exist
-    if (data.images && data.images.length > 0) {
+    if (data.images && Array.isArray(data.images) && data.images.length > 0) {
       data.images.forEach((image, index) => {
-        formData.append(`images[${index}]`, image);
+        if (image instanceof File) {
+          formData.append(`images[${index}]`, image);
+        }
       });
     }
 

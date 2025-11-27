@@ -8,6 +8,7 @@ import { postService } from "../data/services";
 import { userService } from "../data/services";
 import type { Post } from "../data/types/post.types";
 import { toast } from "react-hot-toast";
+import { useAuth } from "../data/context/AuthContext";
 
 // Adapter interfaces to match component expectations
 interface AdaptedPost {
@@ -51,6 +52,7 @@ function PostPage() {
   const [similarPosts, setSimilarPosts] = useState<SimilarPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { user: authUser } = useAuth();
 
   // Adapter function to convert Post to AdaptedPost
   const adaptPost = (post: Post): AdaptedPost => {
@@ -69,16 +71,16 @@ function PostPage() {
       },
       quantity_kg: post.quantity_kg,
       price_per_kg: post.price_per_kg,
-      municipality: {
+      municipality: post.municipality ? {
         municipality_id: post.municipality.id,
         name: post.municipality.name,
-      },
-      product: {
+      } : undefined,
+      product: post.product ? {
         product_id: post.product.id,
         name: post.product.name,
         description: post.product.description,
         image_url: post.product.image_url,
-      },
+      } : undefined,
       images:
         post.images?.map((img) => ({
           image_id: img.id,
@@ -90,7 +92,7 @@ function PostPage() {
   // Adapter function to convert User to AdaptedUser
   const adaptUser = (userData: any): AdaptedUser => {
     return {
-      user_id: userData.id,
+      user_id: userData.user_id ?? userData.id,
       name: userData.name,
       profile_image: userData.profile_image || undefined,
     };
@@ -172,23 +174,28 @@ function PostPage() {
 
       // Get similar posts (same product type)
       try {
-        console.log(
-          "Obteniendo posts similares para producto ID:",
-          postData.product.id
-        );
-        const similarResponse = await postService.getPosts({
-          product_id: postData.product.id,
-          per_page: 4,
-        });
-        console.log("Respuesta de posts similares:", similarResponse);
+        if (postData.product?.id) {
+          console.log(
+            "Obteniendo posts similares para producto ID:",
+            postData.product.id
+          );
+          const similarResponse = await postService.getPosts({
+            product_id: postData.product.id,
+            per_page: 4,
+          });
+          console.log("Respuesta de posts similares:", similarResponse);
 
-        // Filter out the current post from similar posts
-        const similarData = similarResponse.data
-          .filter((p) => p.id !== postId)
-          .slice(0, 4); // Limit to 4 posts
-        console.log("Posts similares filtrados:", similarData);
+          // Filter out the current post from similar posts
+          const similarData = similarResponse.data
+            .filter((p) => p.id !== postId)
+            .slice(0, 4); // Limit to 4 posts
+          console.log("Posts similares filtrados:", similarData);
 
-        setSimilarPosts(similarData);
+          setSimilarPosts(similarData);
+        } else {
+          console.log("No hay producto asociado, no se cargarán posts similares");
+          setSimilarPosts([]);
+        }
       } catch (similarError) {
         console.error("Error al obtener posts similares:", similarError);
         setSimilarPosts([]);
@@ -371,7 +378,13 @@ function PostPage() {
           <div className="lg:w-1/5 w-full">
             <div className="lg:sticky lg:top-4 space-y-6">
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6">
-                <SellerInfo user={user} rating={userRating} />
+                <SellerInfo
+                  user={user}
+                  rating={userRating}
+                  isOwner={
+                    !!(authUser && user && Number(authUser.id) === Number(user.user_id))
+                  }
+                />
               </div>
 
               {/* Additional info card */}

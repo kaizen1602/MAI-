@@ -1,0 +1,331 @@
+{
+  "name": "Real-Time Price Recommendation on Post Creation",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "mai-post-created",
+        "options": {},
+        "responseMode": "responseNode",
+        "authentication": "headerAuth"
+      },
+      "name": "Webhook - Post Created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "mai-post-created-hook",
+      "notes": "Triggered when user creates a new product post"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract post data from webhook\nconst postData = $input.first().json;\n\nreturn [{\n  json: {\n    post_id: postData.post_id,\n    user_id: postData.user_id,\n    product_name: postData.product_name,\n    price_per_kg: parseFloat(postData.price_per_kg),\n    category: postData.category || null,\n    user_email: postData.user_email,\n    user_name: postData.user_name\n  }\n}];"
+      },
+      "name": "Extract Post Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/recommendations/check-price",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer {{ $credentials.maiApiToken }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "product_name",
+              "value": "={{ $json.product_name }}"
+            },
+            {
+              "name": "price_per_kg",
+              "value": "={{ $json.price_per_kg }}"
+            },
+            {
+              "name": "user_id",
+              "value": "={{ $json.user_id }}"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json.category }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Get Price Recommendation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [650, 300],
+      "notes": "Call MAI API to get recommendation"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.success }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "name": "Check Success",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [850, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine post data with recommendation\nconst postData = $('Extract Post Data').first().json;\nconst recommendation = $json;\n\nreturn [{\n  json: {\n    post_id: postData.post_id,\n    user_id: postData.user_id,\n    user_email: postData.user_email,\n    user_name: postData.user_name,\n    product_name: recommendation.product.name,\n    user_price: recommendation.user_price,\n    market_avg_price: recommendation.market_avg_price,\n    recommendation_type: recommendation.recommendation_type,\n    suggestion_text: recommendation.suggestion_text,\n    difference_percentage: recommendation.difference_percentage,\n    color: recommendation.recommendation_color,\n    icon: recommendation.icon\n  }\n}];"
+      },
+      "name": "Prepare Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1050, 200],
+      "notes": "Prepare data for user notification"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.recommendation_type }}",
+              "operation": "notEquals",
+              "value2": "EN_RANGO"
+            }
+          ]
+        }
+      },
+      "name": "Should Send Alert?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1250, 200],
+      "notes": "Only send email if price is not optimal"
+    },
+    {
+      "parameters": {
+        "fromEmail": "noreply@mai.com",
+        "toEmail": "={{ $json.user_email }}",
+        "subject": "{{ $json.icon }} Recomendación de Precio - {{ $json.product_name }}",
+        "emailType": "html",
+        "text": "<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n    .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }\n    .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }\n    .price-card { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; border-left: 4px solid {{ $json.color }}; }\n    .price-row { display: flex; justify-content: space-between; margin: 10px 0; }\n    .price-label { font-weight: bold; }\n    .recommendation { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; border-radius: 5px; }\n    .cta-button { display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>{{ $json.icon }} Análisis de Precio</h1>\n      <p>Hola {{ $json.user_name }}, analizamos el precio de tu publicación</p>\n    </div>\n    <div class=\"content\">\n      <h2>{{ $json.product_name }}</h2>\n      \n      <div class=\"price-card\">\n        <div class=\"price-row\">\n          <span class=\"price-label\">Tu precio:</span>\n          <span>${{ $json.user_price.toLocaleString('es-CO') }}/kg</span>\n        </div>\n        <div class=\"price-row\">\n          <span class=\"price-label\">Promedio de mercado:</span>\n          <span>${{ $json.market_avg_price.toLocaleString('es-CO') }}/kg</span>\n        </div>\n        <div class=\"price-row\">\n          <span class=\"price-label\">Diferencia:</span>\n          <span style=\"color: {{ $json.color }}; font-weight: bold;\">{{ $json.difference_percentage }}%</span>\n        </div>\n      </div>\n\n      <div class=\"recommendation\">\n        <strong>Recomendación:</strong><br>\n        {{ $json.suggestion_text }}\n      </div>\n\n      <p>Estos datos se basan en los precios de Corabastos de los últimos 30 días.</p>\n\n      <center>\n        <a href=\"https://mai.com/my-posts/{{ $json.post_id }}\" class=\"cta-button\">Ver mi publicación</a>\n      </center>\n\n      <p style=\"font-size: 12px; color: #666; margin-top: 30px;\">\n        Este es un mensaje automático del sistema de precios inteligentes de MAI.\n      </p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "name": "Send Email Recommendation",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [1450, 100],
+      "notes": "Send beautiful HTML email with recommendation"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "http://backend:8000/api/posts/{{ $json.post_id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "price_recommendation_type",
+              "value": "={{ $json.recommendation_type }}"
+            },
+            {
+              "name": "market_comparison_performed",
+              "value": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Update Post with Recommendation",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1050, 400],
+      "notes": "Store recommendation type in post record"
+    },
+    {
+      "parameters": {
+        "channel": "#mai-recommendations",
+        "text": "*New Price Recommendation*\n\nUser: {{ $json.user_name }}\nProduct: {{ $json.product_name }}\nUser Price: ${{ $json.user_price }}\nMarket Avg: ${{ $json.market_avg_price }}\nType: {{ $json.recommendation_type }}\nDifference: {{ $json.difference_percentage }}%",
+        "otherOptions": {}
+      },
+      "name": "Log to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1250, 400],
+      "notes": "Optional: log to Slack for monitoring"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, recommendation: $json }) }}",
+        "options": {}
+      },
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1450, 300],
+      "notes": "Return success to webhook caller"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, error: 'Recommendation failed', details: $json }) }}",
+        "responseCode": 500,
+        "options": {}
+      },
+      "name": "Respond Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 500],
+      "notes": "Return error response"
+    }
+  ],
+  "connections": {
+    "Webhook - Post Created": {
+      "main": [
+        [
+          {
+            "node": "Extract Post Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Post Data": {
+      "main": [
+        [
+          {
+            "node": "Get Price Recommendation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Price Recommendation": {
+      "main": [
+        [
+          {
+            "node": "Check Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Success": {
+      "main": [
+        [
+          {
+            "node": "Prepare Notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Update Post with Recommendation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Notification": {
+      "main": [
+        [
+          {
+            "node": "Should Send Alert?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Send Alert?": {
+      "main": [
+        [
+          {
+            "node": "Send Email Recommendation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Post with Recommendation": {
+      "main": [
+        [
+          {
+            "node": "Log to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Slack": {
+      "main": [
+        [
+          {
+            "node": "Respond Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "MAI",
+      "id": "mai-intelligent-pricing"
+    },
+    {
+      "name": "Production",
+      "id": "production"
+    },
+    {
+      "name": "Real-Time",
+      "id": "realtime"
+    }
+  ],
+  "meta": {
+    "instanceId": "mai-production"
+  }
+}

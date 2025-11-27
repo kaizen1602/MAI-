@@ -1,0 +1,753 @@
+{
+	"info": {
+		"_postman_id": "mai-intelligent-pricing-2025",
+		"name": "MAI Intelligent Pricing Module",
+		"description": "Complete API collection for MAI's Intelligent Pricing Module - Corabastos price recommendations and market analytics",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{auth_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8000/api",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "product_id",
+			"value": "25",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "0. Authentication",
+			"item": [
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.collectionVariables.set(\"auth_token\", jsonData.token);",
+									"    pm.environment.set(\"auth_token\", jsonData.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "1. Product Catalog",
+			"item": [
+				{
+					"name": "List All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/catalog/products?limit=50&page=1",
+							"host": ["{{base_url}}"],
+							"path": ["catalog", "products"],
+							"query": [
+								{
+									"key": "category",
+									"value": "Frutas",
+									"disabled": true
+								},
+								{
+									"key": "is_active",
+									"value": "true",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "50"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/catalog/categories",
+							"host": ["{{base_url}}"],
+							"path": ["catalog", "categories"]
+						}
+					}
+				},
+				{
+					"name": "Search Products (Fuzzy)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/catalog/search?query=papa criolla&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["catalog", "search"],
+							"query": [
+								{
+									"key": "query",
+									"value": "papa criolla"
+								},
+								{
+									"key": "category",
+									"value": "Tubérculos",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Normalize Product Name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_name\": \"papa criolla lavada\",\n  \"category\": \"Tubérculos\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/catalog/normalize",
+							"host": ["{{base_url}}"],
+							"path": ["catalog", "normalize"]
+						}
+					}
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/catalog/products/{{product_id}}",
+							"host": ["{{base_url}}"],
+							"path": ["catalog", "products", "{{product_id}}"]
+						}
+					}
+				},
+				{
+					"name": "Get Products by Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/catalog/category/Frutas",
+							"host": ["{{base_url}}"],
+							"path": ["catalog", "category", "Frutas"]
+						}
+					}
+				},
+				{
+					"name": "Get Product Variations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/catalog/products/{{product_id}}/variations",
+							"host": ["{{base_url}}"],
+							"path": ["catalog", "products", "{{product_id}}", "variations"]
+						}
+					}
+				},
+				{
+					"name": "[ADMIN] Create Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"MANGO TOMMY\",\n  \"category\": \"Frutas\",\n  \"description\": \"Mango variedad Tommy Atkins\",\n  \"aliases\": [\"mango tommy atkins\", \"tommy\"],\n  \"is_active\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/catalog/products",
+							"host": ["{{base_url}}"],
+							"path": ["catalog", "products"]
+						}
+					}
+				},
+				{
+					"name": "[ADMIN] Add Aliases",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"aliases\": [\"papa criolla sucia\", \"criolla\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/catalog/products/{{product_id}}/aliases",
+							"host": ["{{base_url}}"],
+							"path": ["catalog", "products", "{{product_id}}", "aliases"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "2. Market Prices",
+			"item": [
+				{
+					"name": "Get Latest Prices",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/market-prices/latest?days=7",
+							"host": ["{{base_url}}"],
+							"path": ["market-prices", "latest"],
+							"query": [
+								{
+									"key": "days",
+									"value": "7"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Prices by Product",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/market-prices/product/{{product_id}}?days=30&limit=30",
+							"host": ["{{base_url}}"],
+							"path": ["market-prices", "product", "{{product_id}}"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								},
+								{
+									"key": "limit",
+									"value": "30"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Price History",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/market-prices/history/{{product_id}}?days=30",
+							"host": ["{{base_url}}"],
+							"path": ["market-prices", "history", "{{product_id}}"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Prices by Date",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/market-prices/date/2025-11-26",
+							"host": ["{{base_url}}"],
+							"path": ["market-prices", "date", "2025-11-26"]
+						}
+					}
+				},
+				{
+					"name": "[n8n] Create Market Price",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_name\": \"PAPA CRIOLLA LAVADA\",\n  \"category\": \"Tubérculos\",\n  \"measurement_unit_name\": \"KILO\",\n  \"quantity\": 1,\n  \"price_unit\": 4500,\n  \"price_variation\": \"Estable\",\n  \"date\": \"2025-11-26\",\n  \"price_extra\": null,\n  \"price_first\": null,\n  \"source\": \"Corabastos\",\n  \"raw_name\": \"Papa criolla (Lavada)\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/market-prices",
+							"host": ["{{base_url}}"],
+							"path": ["market-prices"]
+						}
+					}
+				},
+				{
+					"name": "[ADMIN] Calculate Trends",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/market-prices/calculate-trends?days=30",
+							"host": ["{{base_url}}"],
+							"path": ["market-prices", "calculate-trends"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "3. Recommendations",
+			"item": [
+				{
+					"name": "Check Price (Core)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_name\": \"papa criolla\",\n  \"price_per_kg\": 5500,\n  \"user_id\": 1,\n  \"category\": \"Tubérculos\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/recommendations/check-price",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "check-price"]
+						}
+					}
+				},
+				{
+					"name": "Get Suggested Price",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/suggested-price?product_name=papa criolla&category=Tubérculos",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "suggested-price"],
+							"query": [
+								{
+									"key": "product_name",
+									"value": "papa criolla"
+								},
+								{
+									"key": "category",
+									"value": "Tubérculos"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "My Recommendations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/my-recommendations?limit=20&page=1",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "my-recommendations"],
+							"query": [
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "page",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Recommendation Stats (Global)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/stats",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Recommendation Stats (User)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/recommendations/stats?user_id=1",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "stats"],
+							"query": [
+								{
+									"key": "user_id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Recommendation",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"was_accepted\": true,\n  \"final_price\": 4500\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/recommendations/567",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "567"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "4. Trends & Analytics",
+			"item": [
+				{
+					"name": "Market Overview",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/trends/market-overview?days=30",
+							"host": ["{{base_url}}"],
+							"path": ["trends", "market-overview"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Product Trend",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/trends/product/{{product_id}}?days=30",
+							"host": ["{{base_url}}"],
+							"path": ["trends", "product", "{{product_id}}"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Category Trend",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/trends/category/Frutas?days=30",
+							"host": ["{{base_url}}"],
+							"path": ["trends", "category", "Frutas"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Volatile Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/trends/volatile-products?days=30&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["trends", "volatile-products"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Stable Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/trends/stable-products?days=30&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["trends", "stable-products"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Increasing Prices",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/trends/increasing-prices?days=30&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["trends", "increasing-prices"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Decreasing Prices",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/trends/decreasing-prices?days=30&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["trends", "decreasing-prices"],
+							"query": [
+								{
+									"key": "days",
+									"value": "30"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Price Comparison",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/trends/price-comparison?product_id=25&date1=2025-10-26&date2=2025-11-26",
+							"host": ["{{base_url}}"],
+							"path": ["trends", "price-comparison"],
+							"query": [
+								{
+									"key": "product_id",
+									"value": "25"
+								},
+								{
+									"key": "date1",
+									"value": "2025-10-26"
+								},
+								{
+									"key": "date2",
+									"value": "2025-11-26"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "5. Test Scenarios",
+			"item": [
+				{
+					"name": "Scenario: Price Too High",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_name\": \"tomate\",\n  \"price_per_kg\": 8000,\n  \"category\": \"Hortalizas\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/recommendations/check-price",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "check-price"]
+						}
+					}
+				},
+				{
+					"name": "Scenario: Price Too Low",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_name\": \"aguacate hass\",\n  \"price_per_kg\": 3000,\n  \"category\": \"Frutas\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/recommendations/check-price",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "check-price"]
+						}
+					}
+				},
+				{
+					"name": "Scenario: Price Optimal",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_name\": \"papa criolla\",\n  \"price_per_kg\": 4400,\n  \"category\": \"Tubérculos\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/recommendations/check-price",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "check-price"]
+						}
+					}
+				},
+				{
+					"name": "Scenario: Product Not Found",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"product_name\": \"producto inexistente xyz\",\n  \"price_per_kg\": 5000\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/recommendations/check-price",
+							"host": ["{{base_url}}"],
+							"path": ["recommendations", "check-price"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

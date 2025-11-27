@@ -136,7 +136,7 @@ function Navbar() {
                   className="block px-4 py-3 hover:bg-blue-100 transition"
                   onClick={() => setShowProfileMenu(false)}
                 >
-                  ✏️ Editar perfil
+                  👤 Mi perfil
                 </Link>
                 <button
                   onClick={() => {

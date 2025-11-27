@@ -1,0 +1,343 @@
+{
+  "name": "Corabastos Daily Price Ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "name": "Schedule Trigger (Daily 8AM)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://www.corabastos.com.co/BoletinesDiarios/",
+        "options": {}
+      },
+      "name": "Download Latest PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [450, 300],
+      "notes": "Download today's bulletin from Corabastos website"
+    },
+    {
+      "parameters": {
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "text": "={{ $binary.data }}",
+        "options": {
+          "model": "claude-sonnet-4-5-20250929"
+        },
+        "promptType": "define",
+        "prompt": "Eres un experto extractor de datos de boletines de precios de Corabastos.\n\nINSTRUCCIONES ESTRICTAS:\n1. Extrae TODOS los productos con sus precios del PDF adjunto\n2. Identifica las 10 categorías: Pollo, Pescados, Granos, Plátanos, Tubérculos, Frutas, Hortalizas, Cárnicos, Huevos, Lácteos\n3. Para cada producto, extrae:\n   - Nombre exacto del producto\n   - Categoría\n   - Unidad de medida (KILO, BULTO, CAJA, etc.)\n   - Cantidad\n   - Precio EXTRA (si existe)\n   - Precio PRIMERA (si existe)\n   - Precio UNIDAD (precio por unidad base)\n   - Variación de precio: \"Estable\", \"Bajo\", \"Subio\"\n   - Fecha del boletín\n\n4. FORMATO DE SALIDA: Debes responder ÚNICAMENTE con un JSON válido, sin texto adicional. El formato debe ser:\n\n```json\n{\n  \"bulletin_date\": \"YYYY-MM-DD\",\n  \"source\": \"Corabastos\",\n  \"total_products\": 0,\n  \"products\": [\n    {\n      \"product_name\": \"NOMBRE DEL PRODUCTO\",\n      \"category\": \"Categoría\",\n      \"measurement_unit_name\": \"UNIDAD\",\n      \"quantity\": 0.0,\n      \"price_extra\": 0.0,\n      \"price_first\": 0.0,\n      \"price_unit\": 0.0,\n      \"price_variation\": \"Estable\",\n      \"raw_name\": \"Nombre original del PDF\"\n    }\n  ]\n}\n```\n\n5. REGLAS IMPORTANTES:\n   - NO incluyas explicaciones, solo el JSON\n   - Asegúrate de que el JSON sea válido\n   - Todos los precios son números sin puntos ni comas\n   - Las variaciones de precio deben ser exactamente: \"Estable\", \"Bajo\", o \"Subio\"\n   - Si un precio no existe, usa null\n   - Incluye TODOS los productos del boletín\n\nEXTRAE LOS DATOS AHORA:"
+      },
+      "name": "Claude - Extract Prices",
+      "type": "n8n-nodes-base.claudeModel",
+      "typeVersion": 1,
+      "position": [650, 300],
+      "notes": "Uses Claude Sonnet 4.5 to extract all product prices from PDF"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse Claude's JSON response\nconst claudeResponse = $input.first().json.message.content[0].text;\n\n// Try to extract JSON from response (in case Claude added explanation)\nlet jsonMatch = claudeResponse.match(/\\{[\\s\\S]*\\}/);\nlet extractedData;\n\nif (jsonMatch) {\n  extractedData = JSON.parse(jsonMatch[0]);\n} else {\n  throw new Error('Could not extract valid JSON from Claude response');\n}\n\n// Transform to array of products ready for database insertion\nconst products = extractedData.products.map(product => ({\n  product_name: product.product_name.trim(),\n  category: product.category || null,\n  measurement_unit_name: product.measurement_unit_name.toUpperCase(),\n  quantity: parseFloat(product.quantity) || 1,\n  price_extra: product.price_extra ? parseFloat(product.price_extra) : null,\n  price_first: product.price_first ? parseFloat(product.price_first) : null,\n  price_unit: parseFloat(product.price_unit),\n  price_variation: product.price_variation,\n  date: extractedData.bulletin_date,\n  source: extractedData.source || 'Corabastos',\n  raw_name: product.raw_name || product.product_name\n}));\n\n// Add metadata\nconst output = {\n  bulletin_date: extractedData.bulletin_date,\n  total_products: products.length,\n  extraction_timestamp: new Date().toISOString(),\n  products: products\n};\n\nreturn [{ json: output }];"
+      },
+      "name": "Transform Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 300],
+      "notes": "Parse JSON and transform to database-ready format"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ JSON.stringify($json.products) }}",
+        "options": {}
+      },
+      "name": "Split Products",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [1050, 300],
+      "notes": "Split into individual product records for insertion"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/market-prices",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "product_name",
+              "value": "={{ $json.product_name }}"
+            },
+            {
+              "name": "category",
+              "value": "={{ $json.category }}"
+            },
+            {
+              "name": "measurement_unit_name",
+              "value": "={{ $json.measurement_unit_name }}"
+            },
+            {
+              "name": "quantity",
+              "value": "={{ $json.quantity }}"
+            },
+            {
+              "name": "price_extra",
+              "value": "={{ $json.price_extra }}"
+            },
+            {
+              "name": "price_first",
+              "value": "={{ $json.price_first }}"
+            },
+            {
+              "name": "price_unit",
+              "value": "={{ $json.price_unit }}"
+            },
+            {
+              "name": "price_variation",
+              "value": "={{ $json.price_variation }}"
+            },
+            {
+              "name": "date",
+              "value": "={{ $json.date }}"
+            },
+            {
+              "name": "source",
+              "value": "={{ $json.source }}"
+            },
+            {
+              "name": "raw_name",
+              "value": "={{ $json.raw_name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Insert to Database",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1250, 300],
+      "notes": "POST to MAI backend API - auto normalization included"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Aggregate results from all insertions\nconst allItems = $input.all();\n\nlet successful = 0;\nlet failed = 0;\nlet failedProducts = [];\n\nallItems.forEach(item => {\n  const response = item.json;\n  if (response.success === true) {\n    successful++;\n  } else {\n    failed++;\n    failedProducts.push({\n      product: item.json.product_name || 'Unknown',\n      error: response.message || 'Unknown error'\n    });\n  }\n});\n\nconst summary = {\n  ingestion_date: new Date().toISOString(),\n  total_processed: allItems.length,\n  successful_insertions: successful,\n  failed_insertions: failed,\n  success_rate: ((successful / allItems.length) * 100).toFixed(2) + '%',\n  failed_products: failedProducts\n};\n\nreturn [{ json: summary }];"
+      },
+      "name": "Aggregate Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1450, 300],
+      "notes": "Collect and summarize insertion results"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://backend:8000/api/market-prices/calculate-trends",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "httpHeaderAuth",
+        "options": {}
+      },
+      "name": "Calculate Trends",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [1650, 300],
+      "notes": "Trigger trend calculation after data insertion"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.failed_insertions }}",
+              "operation": "larger",
+              "value2": 0
+            }
+          ]
+        }
+      },
+      "name": "Check Failures",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1450, 150],
+      "notes": "Branch if there were failed insertions"
+    },
+    {
+      "parameters": {
+        "channel": "#mai-alerts",
+        "text": "⚠️ *Corabastos Ingestion Warning*\n\nDate: {{ $json.ingestion_date }}\nTotal: {{ $json.total_processed }}\nSuccessful: {{ $json.successful_insertions }}\nFailed: {{ $json.failed_insertions }}\nSuccess Rate: {{ $json.success_rate }}\n\nFailed products:\n{{ $json.failed_products.map(p => `• ${p.product}: ${p.error}`).join('\\n') }}",
+        "otherOptions": {}
+      },
+      "name": "Send Slack Alert",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [1650, 150],
+      "notes": "Alert team if there were errors"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": "app123xyz",
+        "table": "Ingestion Logs",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "date": "={{ $json.ingestion_date }}",
+            "total_products": "={{ $json.total_processed }}",
+            "successful": "={{ $json.successful_insertions }}",
+            "failed": "={{ $json.failed_insertions }}",
+            "success_rate": "={{ $json.success_rate }}",
+            "errors": "={{ JSON.stringify($json.failed_products) }}"
+          }
+        }
+      },
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2,
+      "position": [1850, 300],
+      "notes": "Optional: log to Airtable for tracking"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger (Daily 8AM)": {
+      "main": [
+        [
+          {
+            "node": "Download Latest PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Latest PDF": {
+      "main": [
+        [
+          {
+            "node": "Claude - Extract Prices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude - Extract Prices": {
+      "main": [
+        [
+          {
+            "node": "Transform Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transform Data": {
+      "main": [
+        [
+          {
+            "node": "Split Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Products": {
+      "main": [
+        [
+          {
+            "node": "Insert to Database",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Database": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Results": {
+      "main": [
+        [
+          {
+            "node": "Check Failures",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Calculate Trends",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Failures": {
+      "main": [
+        [
+          {
+            "node": "Send Slack Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Trends": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "MAI",
+      "id": "mai-intelligent-pricing"
+    },
+    {
+      "name": "Production",
+      "id": "production"
+    }
+  ],
+  "meta": {
+    "instanceId": "mai-production"
+  }
+}
