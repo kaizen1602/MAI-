@@ -481,47 +481,50 @@ export default function PublishPostModal({
             </select>
           </div>
 
-          {/* Imágenes */}
-          <div>
-            <label className="block text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
-              <FaImage className="inline mr-2 text-blue-600" /> Imágenes
-            </label>
-            <div className="flex items-center justify-center w-full">
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border-blue-200 dark:border-slate-700 transition">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  <FaImage className="w-8 h-8 mb-2 text-blue-500 dark:text-blue-400" />
-                  <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
-                    <span className="font-semibold">Haz clic para subir</span> o
-                    arrastra
-                  </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    PNG, JPG (Máx. 5MB)
-                  </p>
-                </div>
-                <input
-                  type="file"
-                  className="hidden"
-                  multiple
-                  accept="image/*"
-                  onChange={handleImageChange}
-                />
+          {/* Imágenes - Solo para Venta */}
+          {formData.post_type_id === 1 && (
+            <div>
+              <label className="block text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                <FaImage className="inline mr-2 text-blue-600" /> Imágenes
               </label>
-            </div>
-
-            {/* Image previews */}
-            {imagePreviews.length > 0 && (
-              <div className="mt-4 grid grid-cols-3 gap-2">
-                {imagePreviews.map((preview, index) => (
-                  <img
-                    key={index}
-                    src={preview}
-                    alt={`Preview ${index + 1}`}
-                    className="w-full h-24 object-cover rounded-lg shadow-sm"
+              <div className="flex items-center justify-center w-full">
+                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border-blue-200 dark:border-slate-700 transition">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <FaImage className="w-8 h-8 mb-2 text-blue-500 dark:text-blue-400" />
+                    <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                      <span className="font-semibold">Haz clic para subir</span> o
+                      arrastra
+                    </p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      PNG, JPG (Máx. 5MB)
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageChange}
                   />
-                ))}
+                </label>
               </div>
-            )}
-          </div>
+
+              {/* Image previews */}
+              {imagePreviews.length > 0 && (
+                <div className="mt-4 grid grid-cols-3 gap-2">
+                  {imagePreviews.map((preview, index) => (
+                    <img
+                      key={index}
+                      src={preview}
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-24 object-cover rounded-lg shadow-sm"
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
 
           {/* Submit button */}
           <div className="flex justify-end space-x-4">

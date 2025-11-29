@@ -25,6 +25,7 @@ class IndexPostRequest extends FormRequest
             // Filtros
             'search' => 'sometimes|string|max:255',
             'product_id' => 'sometimes|integer|exists:products,id',
+            'product_type_id' => 'sometimes|integer|exists:product_types,id',
             'municipality_id' => 'sometimes|integer|exists:municipalities,id',
             'post_type_id' => 'sometimes|integer|exists:post_types,id',
             'user_id' => 'sometimes|integer|exists:users,id',
@@ -52,6 +53,9 @@ class IndexPostRequest extends FormRequest
             
             'product_id.integer' => 'El ID del producto debe ser un número entero.',
             'product_id.exists' => 'El producto seleccionado no existe.',
+            
+            'product_type_id.integer' => 'El ID del tipo de producto debe ser un número entero.',
+            'product_type_id.exists' => 'El tipo de producto seleccionado no existe.',
             
             'municipality_id.integer' => 'El ID del municipio debe ser un número entero.',
             'municipality_id.exists' => 'El municipio seleccionado no existe.',
@@ -85,6 +89,7 @@ class IndexPostRequest extends FormRequest
         return [
             'search' => $validated['search'] ?? null,
             'product_id' => $validated['product_id'] ?? null,
+            'product_type_id' => $validated['product_type_id'] ?? null,
             'municipality_id' => $validated['municipality_id'] ?? null,
             'post_type_id' => $validated['post_type_id'] ?? null,
             'user_id' => $validated['user_id'] ?? null,

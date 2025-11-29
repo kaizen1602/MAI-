@@ -67,6 +67,13 @@ class PostController extends Controller
             $query->where('product_id', $filters['product_id']);
         }
 
+        // Filtro por tipo de producto (requiere join)
+        if ($filters['product_type_id']) {
+            $query->whereHas('product', function ($q) use ($filters) {
+                $q->where('product_type_id', $filters['product_type_id']);
+            });
+        }
+
         // Filtro por municipio
         if ($filters['municipality_id']) {
             $query->where('municipality_id', $filters['municipality_id']);

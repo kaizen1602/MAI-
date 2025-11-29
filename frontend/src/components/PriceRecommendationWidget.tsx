@@ -45,8 +45,8 @@ const PriceRecommendationWidget: React.FC<PriceRecommendationWidgetProps> = ({
   const [isVisible, setIsVisible] = useState(true);
 
   const isBuying = intent === 'buy';
-  const userPriceLabel = isBuying ? 'Tu oferta' : 'Tu precio';
-  const adjustButtonLabel = isBuying ? 'Ajustar oferta a' : 'Ajustar a';
+  const userPriceLabel = isBuying ? 'Tu oferta de compra' : 'Tu precio de venta';
+  const adjustButtonLabel = isBuying ? 'Ajustar oferta a' : 'Ajustar precio a';
   const keepPriceLabel = isBuying ? 'Mantener mi oferta' : 'Mantener mi precio';
 
   useEffect(() => {
