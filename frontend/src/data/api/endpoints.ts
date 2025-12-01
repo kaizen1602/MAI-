@@ -1,7 +1,11 @@
 
 
-// Base URL 
-export const API_BASE_URL = '/api';
+// Base URL
+// Use Vite env var `VITE_API_URL` in development/preview when provided
+// Example: VITE_API_URL=http://localhost:8000
+const rawApiUrl = (import.meta as any)?.env?.VITE_API_URL || '';
+const apiOrigin = rawApiUrl ? rawApiUrl.replace(/\/$/, '') : '';
+export const API_BASE_URL = apiOrigin ? `${apiOrigin}/api` : '/api';
 
 /**
  * All application endpoints organized by domain

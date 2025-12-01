@@ -1,0 +1,357 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "amazonas",
+        "departamento": "Amazonas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-71, -2], [-71, -3], [-70, -3], [-70, -2], [-71, -2]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "antioquia",
+        "departamento": "Antioquia"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-76, 7], [-76, 6], [-75, 6], [-75, 7], [-76, 7]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "arauca",
+        "departamento": "Arauca"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-72, 7], [-72, 6], [-71, 6], [-71, 7], [-72, 7]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "atlantico",
+        "departamento": "Atlántico"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-74.5, 11], [-74.5, 10.5], [-74, 10.5], [-74, 11], [-74.5, 11]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "bogota",
+        "departamento": "Bogotá"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-74.3, 4.9], [-74.3, 4.7], [-74.1, 4.7], [-74.1, 4.9], [-74.3, 4.9]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "bolivar",
+        "departamento": "Bolívar"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-75, 10], [-75, 9], [-74, 9], [-74, 10], [-75, 10]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "boyaca",
+        "departamento": "Boyacá"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-73, 6], [-73, 5], [-72, 5], [-72, 6], [-73, 6]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "caldas",
+        "departamento": "Caldas"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-75.5, 5.5], [-75.5, 4.5], [-74.5, 4.5], [-74.5, 5.5], [-75.5, 5.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "caqueta",
+        "departamento": "Caquetá"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-72, 2], [-72, 1], [-71, 1], [-71, 2], [-72, 2]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "casanare",
+        "departamento": "Casanare"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-72, 6], [-72, 5], [-71, 5], [-71, 6], [-72, 6]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "cauca",
+        "departamento": "Cauca"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-76, 3], [-76, 2], [-75, 2], [-75, 3], [-76, 3]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "cesar",
+        "departamento": "Cesar"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-73, 11], [-73, 10], [-72, 10], [-72, 11], [-73, 11]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "choco",
+        "departamento": "Chocó"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-77, 6], [-77, 5], [-76, 5], [-76, 6], [-77, 6]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "cordoba",
+        "departamento": "Córdoba"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-76, 9], [-76, 8], [-75, 8], [-75, 9], [-76, 9]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "cundinamarca",
+        "departamento": "Cundinamarca"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-74, 6], [-74, 4.5], [-73, 4.5], [-73, 6], [-74, 6]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "guainia",
+        "departamento": "Guainía"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-69, 3], [-69, 2], [-68, 2], [-68, 3], [-69, 3]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "guajira",
+        "departamento": "Guajira"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-72, 12], [-72, 11], [-71, 11], [-71, 12], [-72, 12]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "guaviare",
+        "departamento": "Guaviare"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-72, 3], [-72, 2], [-71, 2], [-71, 3], [-72, 3]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "huila",
+        "departamento": "Huila"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-75, 3], [-75, 1], [-74, 1], [-74, 3], [-75, 3]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "magdalena",
+        "departamento": "Magdalena"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-74, 11.5], [-74, 10], [-73, 10], [-73, 11.5], [-74, 11.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "meta",
+        "departamento": "Meta"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-73, 5], [-73, 3], [-72, 3], [-72, 5], [-73, 5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "narino",
+        "departamento": "Nariño"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-77, 2], [-77, 0.5], [-76, 0.5], [-76, 2], [-77, 2]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "norte de santander",
+        "departamento": "Norte de Santander"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-72, 9], [-72, 7.5], [-71, 7.5], [-71, 9], [-72, 9]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "putumayo",
+        "departamento": "Putumayo"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-77, 1], [-77, -1], [-76, -1], [-76, 1], [-77, 1]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "quindio",
+        "departamento": "Quindío"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-75.8, 4.8], [-75.8, 4.3], [-75.3, 4.3], [-75.3, 4.8], [-75.8, 4.8]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "risaralda",
+        "departamento": "Risaralda"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-76, 5.5], [-76, 4.5], [-75.2, 4.5], [-75.2, 5.5], [-76, 5.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "santander",
+        "departamento": "Santander"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-73, 7.5], [-73, 6], [-72, 6], [-72, 7.5], [-73, 7.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "sucre",
+        "departamento": "Sucre"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-75.5, 10.5], [-75.5, 9.5], [-74.5, 9.5], [-74.5, 10.5], [-75.5, 10.5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "tolima",
+        "departamento": "Tolima"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-75, 5], [-75, 3.5], [-74, 3.5], [-74, 5], [-75, 5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "valle del cauca",
+        "departamento": "Valle del Cauca"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-77, 5], [-77, 3], [-76, 3], [-76, 5], [-77, 5]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "vaupes",
+        "departamento": "Vaupés"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-70, 2], [-70, 1], [-69, 1], [-69, 2], [-70, 2]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "vichada",
+        "departamento": "Vichada"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-68, 6], [-68, 4], [-67, 4], [-67, 6], [-68, 6]]]
+      }
+    }
+  ]
+}

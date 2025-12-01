@@ -138,7 +138,7 @@ class AuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
         
-        // Generar token de restablecimiento (simple para este ejemplo)
+        // Generar token de restablecimiento
         $resetToken = bin2hex(random_bytes(32));
         
         // Guardar token en la base de datos (en un campo temporal)
@@ -146,14 +146,16 @@ class AuthController extends Controller
             'remember_token' => $resetToken
         ]);
 
-        // En una aplicación real, aquí enviarías el email
-        // Por ahora, solo logueamos el token para desarrollo
-        \Log::info("Token de restablecimiento para {$user->email}: {$resetToken}");
+        // Enviar email con el token
+        try {
+            \Mail::to($user->email)->send(new \App\Mail\ResetPasswordMail($user, $resetToken));
+            \Log::info("Email de restablecimiento enviado a {$user->email}");
+        } catch (\Exception $e) {
+            \Log::error("Error al enviar email de restablecimiento: " . $e->getMessage());
+            return $this->errorResponse('Error al enviar el email. Intenta más tarde.', 500);
+        }
 
-        return $this->successResponse([
-            'reset_token' => $resetToken, // Solo para desarrollo
-            'message' => 'Si tu correo está registrado, recibirás instrucciones para restablecer tu contraseña'
-        ], 'Instrucciones enviadas');
+        return $this->successResponse(null, 'Si tu correo está registrado, recibirás instrucciones para restablecer tu contraseña');
     }
 
     /**

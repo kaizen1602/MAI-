@@ -39,6 +39,18 @@ apiClient.interceptors.response.use(
     return response;
   },
   (error: AxiosError<any>) => {
+    // Endpoints que manejan sus propios errores (no mostrar toast automático)
+    const skipToastEndpoints = [
+      '/api/auth/forgot-password',
+      '/api/auth/reset-password',
+      '/api/auth/login',
+      '/api/auth/register',
+    ];
+
+    const isSkipToastEndpoint = skipToastEndpoints.some(endpoint => 
+      error.config?.url?.includes(endpoint)
+    );
+
     // Handle different error status codes
     if (error.response) {
       const { status, data } = error.response;
@@ -52,7 +64,9 @@ apiClient.interceptors.response.use(
           
           // Only redirect if not already on login page
           if (!window.location.pathname.includes('/login')) {
-            toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            if (!isSkipToastEndpoint) {
+              toast.error('Sesión expirada. Por favor, inicia sesión nuevamente.');
+            }
             setTimeout(() => {
               window.location.href = '/login';
             }, 1500);
@@ -62,48 +76,62 @@ apiClient.interceptors.response.use(
         case 403:
           // Forbidden - User doesn't have permissions
           console.error('Forbidden access');
-          toast.error('No tienes permisos para realizar esta acción.');
+          if (!isSkipToastEndpoint) {
+            toast.error('No tienes permisos para realizar esta acción.');
+          }
           break;
 
         case 404:
           // Not Found
           console.error('Resource not found');
-          toast.error('Recurso no encontrado.');
+          if (!isSkipToastEndpoint) {
+            toast.error('Recurso no encontrado.');
+          }
           break;
 
         case 422:
           // Validation Error - Laravel returns this for validation failures
           console.error('Validation error:', data.errors);
-          if (data.errors) {
-            // Show first validation error
-            const firstError = Object.values(data.errors)[0];
-            if (Array.isArray(firstError) && firstError.length > 0) {
-              toast.error(firstError[0] as string);
+          if (!isSkipToastEndpoint) {
+            if (data.errors) {
+              // Show first validation error
+              const firstError = Object.values(data.errors)[0];
+              if (Array.isArray(firstError) && firstError.length > 0) {
+                toast.error(firstError[0] as string);
+              }
+            } else if (data.message) {
+              toast.error(data.message);
             }
-          } else if (data.message) {
-            toast.error(data.message);
           }
           break;
 
         case 500:
           // Server Error
           console.error('Server error:', data);
-          toast.error('Error del servidor. Por favor, intenta más tarde.');
+          if (!isSkipToastEndpoint) {
+            toast.error('Error del servidor. Por favor, intenta más tarde.');
+          }
           break;
 
         default:
           // Other errors
           console.error(`HTTP Error ${status}:`, data);
-          toast.error(data.message || 'Ha ocurrido un error inesperado.');
+          if (!isSkipToastEndpoint) {
+            toast.error(data.message || 'Ha ocurrido un error inesperado.');
+          }
       }
     } else if (error.request) {
       // Request was made but no response received
       console.error('No response received:', error.request);
-      toast.error('No se pudo conectar con el servidor. Verifica tu conexión.');
+      if (!isSkipToastEndpoint) {
+        toast.error('No se pudo conectar con el servidor. Verifica tu conexión.');
+      }
     } else {
       // Something else happened
       console.error('Request error:', error.message);
-      toast.error('Error al realizar la solicitud.');
+      if (!isSkipToastEndpoint) {
+        toast.error('Error al realizar la solicitud.');
+      }
     }
 
     return Promise.reject(error);

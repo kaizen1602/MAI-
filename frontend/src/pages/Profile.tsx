@@ -37,6 +37,15 @@ export default function ProfilePage() {
   // Determinar el ID del perfil a cargar
   const profileUserId = userId ? parseInt(userId) : user?.id;
 
+  // Detectar si es usuario nuevo (recién registrado) y mostrar modal
+  useEffect(() => {
+    const showPrompt = sessionStorage.getItem('showProfileCompletionPrompt');
+    if (showPrompt === 'true' && isOwnProfile) {
+      setShowCompleteProfileModal(true);
+      sessionStorage.removeItem('showProfileCompletionPrompt'); // Limpia el flag
+    }
+  }, [isOwnProfile]);
+
   // Cargar datos del perfil visitado (si no es el propio)
   useEffect(() => {
     if (!isOwnProfile && userId) {
@@ -503,7 +512,7 @@ export default function ProfilePage() {
         <CompleteProfileModal
           isOpen={showCompleteProfileModal}
           onClose={() => setShowCompleteProfileModal(false)}
-          onProfileUpdated={handleProfileUpdated}
+          onComplete={() => setShowModal(true)}
         />
 
         {/* Modal para editar publicación */}

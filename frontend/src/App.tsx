@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/login";
 import Register from "./pages/register";
+import ResetPassword from "./pages/ResetPassword";
 import Wall from "./pages/wall";
 import Sales from "./pages/sales";
 import Shopping from "./pages/shopping";
@@ -22,6 +23,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
             <Route path="/wall" element={<Wall />} />
             <Route path="/sales" element={<Sales />} />
             <Route path="/shopping" element={<Shopping />} />

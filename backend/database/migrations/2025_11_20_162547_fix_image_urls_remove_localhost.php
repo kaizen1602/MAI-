@@ -13,6 +13,12 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip this migration in SQLite (used for testing) as it uses MySQL-specific functions
+        if (DB::getDriverName() === 'sqlite') {
+            echo "Skipping image URL fix migration in SQLite\n";
+            return;
+        }
+
         // Actualizar URLs en la tabla post_images
         // Convierte: http://localhost/storage/posts/10/xxx.png
         // A: /storage/posts/10/xxx.png
@@ -80,6 +86,12 @@ return new class extends Migration
      */
     public function down(): void
     {
+        // Skip this migration in SQLite (used for testing) as it uses MySQL-specific functions
+        if (DB::getDriverName() === 'sqlite') {
+            echo "Skipping image URL fix migration in SQLite\n";
+            return;
+        }
+
         // Revertir a localhost (solo para desarrollo)
         DB::table('post_images')
             ->where('image_url', 'like', '/storage/%')

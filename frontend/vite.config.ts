@@ -12,15 +12,15 @@ export default defineConfig({
     host: true, // Permitir acceso desde otros contenedores
     proxy: {
       "/api": {
-        // En desarrollo local: proxy a nginx en Docker (puerto 80)
-        // O si Laravel corre directamente: http://localhost:8000
-        target: process.env.VITE_API_URL || "http://localhost:80",
+        // En desarrollo local: proxy a Laravel en puerto 8000
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path, // Mantener /api en la ruta
       },
       "/storage": {
-        target: process.env.VITE_API_URL || "http://localhost:80",
+        // En desarrollo local: proxy a Laravel en puerto 8000
+        target: "http://localhost:8000",
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path, // Mantener /storage en la ruta

@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import Navbar from "../components/Navbar";
 import AdBanner from "../components/AdBanner";
+import ColombiaMap from "../components/ColombiaMap";
 import statisticsService, {
   PriceStats,
   ProductStats,
@@ -23,9 +24,8 @@ function Charts() {
   const [productStats, setProductStats] = useState<ProductStats[]>([]);
   const [locationStats, setLocationStats] = useState<LocationStats[]>([]);
   const [marketTrends, setMarketTrends] = useState<MarketTrends[]>([]);
-  const [marketOverview, setMarketOverview] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("prices");
 
   useEffect(() => {
     loadStatistics();
@@ -34,13 +34,12 @@ function Charts() {
   const loadStatistics = async () => {
     try {
       setIsLoading(true);
-      const [priceData, productData, locationData, trendsData, overviewData] =
+      const [priceData, productData, locationData, trendsData] =
         await Promise.allSettled([
           statisticsService.getPriceStatistics(),
           statisticsService.getProductStatistics(),
           statisticsService.getLocationStatistics(),
           statisticsService.getMarketTrends(),
-          statisticsService.getMarketOverview(),
         ]);
 
       setPriceStats(priceData.status === "fulfilled" ? priceData.value : []);
@@ -53,16 +52,12 @@ function Charts() {
       setMarketTrends(
         trendsData.status === "fulfilled" ? trendsData.value : []
       );
-      setMarketOverview(
-        overviewData.status === "fulfilled" ? overviewData.value : null
-      );
     } catch (error) {
       console.error("Error loading statistics:", error);
       setPriceStats([]);
       setProductStats([]);
       setLocationStats([]);
       setMarketTrends([]);
-      setMarketOverview(null);
     } finally {
       setIsLoading(false);
     }
@@ -135,7 +130,6 @@ function Charts() {
               {/* Tabs */}
               <div className="flex flex-wrap justify-center mb-8">
                 {[
-                  { id: "overview", label: "Resumen", icon: FaChartPie },
                   { id: "prices", label: "Precios", icon: FaDollarSign },
                   { id: "products", label: "Productos", icon: FaSeedling },
                   {
@@ -160,47 +154,7 @@ function Charts() {
                 ))}
               </div>
 
-              {/* Overview */}
-              {activeTab === "overview" && marketOverview && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                  <div className="bg-blue-50 dark:bg-gray-700 rounded-xl shadow-lg p-6 text-center">
-                    <FaBox className="text-4xl text-blue-500 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                      {formatNumber(marketOverview.total_posts)}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Total Publicaciones
-                    </p>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-gray-700 rounded-xl shadow-lg p-6 text-center">
-                    <FaUsers className="text-4xl text-sky-500 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                      {formatNumber(marketOverview.total_users)}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Usuarios Activos
-                    </p>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-gray-700 rounded-xl shadow-lg p-6 text-center">
-                    <FaSeedling className="text-4xl text-indigo-500 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                      {formatNumber(marketOverview.total_products)}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Tipos de Productos
-                    </p>
-                  </div>
-                  <div className="bg-blue-50 dark:bg-gray-700 rounded-xl shadow-lg p-6 text-center">
-                    <FaDollarSign className="text-4xl text-blue-400 mx-auto mb-4" />
-                    <h3 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
-                      {formatPrice(marketOverview.avg_price)}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Precio Promedio
-                    </p>
-                  </div>
-                </div>
-              )}
+              {/* Resumen eliminado por solicitud */}
 
               {/* Prices */}
               {activeTab === "prices" && (
@@ -306,44 +260,29 @@ function Charts() {
                 </div>
               )}
 
-              {/* Locations */}
+              {/* Locations - Choropleth Map */}
               {activeTab === "locations" && (
                 <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
                   <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
                     <FaMapMarkerAlt className="mr-3 text-blue-600" />
                     Estadísticas por Ubicación
                   </h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {locationStats.map((stat, index) => (
-                      <div
-                        key={index}
-                        className="bg-gradient-to-r from-sky-50 to-indigo-50 rounded-lg p-6"
-                      >
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">
-                          {stat.municipality}
-                        </h3>
-                        <p className="text-gray-600 mb-4">{stat.department}</p>
-                        <div className="space-y-3">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">
-                              Total Publicaciones:
-                            </span>
-                            <span className="font-semibold text-blue-600">
-                              {stat.total_posts}
-                            </span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">
-                              Precio Promedio:
-                            </span>
-                            <span className="font-semibold text-indigo-600">
-                              {formatPrice(stat.avg_price)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+
+                  {locationStats.length > 0 ? (
+                    <div className="flex flex-col items-center">
+                      <ColombiaMap
+                        data={locationStats}
+                        valueKey="avg_price"
+                        onClickDepartment={(dept) => {
+                          console.log('Departamento clicado:', dept);
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="text-center py-10">
+                      <p className="text-gray-600">No hay datos de ubicación disponibles</p>
+                    </div>
+                  )}
                 </div>
               )}
 

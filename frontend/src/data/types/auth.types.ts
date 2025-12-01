@@ -23,6 +23,14 @@ export interface User {
     id: number;
     name: string;
   };
+  department?: {
+    id: number;
+    name: string;
+  } | null;
+  municipality?: {
+    id: number;
+    name: string;
+  } | null;
 }
 
 /**
@@ -44,6 +52,8 @@ export interface RegisterRequest {
   phone_number: string;
   address_details: string;
   role_id: number;
+  department_id?: number;
+  municipality_id?: number;
 }
 
 /**
@@ -58,6 +68,8 @@ export interface UpdateProfileRequest {
   address_details?: string;
   profile_image?: File;
   role_id?: number;
+  department_id?: number;
+  municipality_id?: number;
 }
 
 /**

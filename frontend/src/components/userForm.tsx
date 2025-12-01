@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../data/context/AuthContext";
 import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
+import SupportDataService from "../data/services/SupportDataService";
+import type { Department, Municipality } from "../data/types/product.types";
 
 interface UserFormData {
   name: string;
@@ -30,6 +32,11 @@ const RegisterForm: React.FC = () => {
 
   const [errors, setErrors] = useState<Partial<UserFormData>>({});
 
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+  const [departmentId, setDepartmentId] = useState<number | null>(null);
+  const [municipalityId, setMunicipalityId] = useState<number | null>(null);
+
   const validate = () => {
     const newErrors: Partial<UserFormData> = {};
     if (!formData.name.trim()) newErrors.name = "El nombre es requerido";
@@ -57,6 +64,44 @@ const RegisterForm: React.FC = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleDepartmentChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const id = Number(e.target.value) || null;
+    setDepartmentId(id);
+    setMunicipalityId(null);
+    setMunicipalities([]);
+    if (id) {
+      try {
+        const muns = await SupportDataService.getMunicipalitiesByDepartment(id);
+        setMunicipalities(muns);
+      } catch (err) {
+        console.error("Error loading municipalities:", err);
+      }
+    }
+  };
+
+  const handleMunicipalityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const id = Number(e.target.value) || null;
+    setMunicipalityId(id);
+  };
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const deps = await SupportDataService.getDepartments();
+        if (mounted) setDepartments(deps);
+      } catch (err) {
+        console.error("Error loading departments:", err);
+      }
+    };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validate()) {
@@ -68,6 +113,8 @@ const RegisterForm: React.FC = () => {
           ...formData,
           address_details: "Por definir",
           role_id: 1,
+          department_id: departmentId,
+          municipality_id: municipalityId,
         };
 
         await register(registerData);
@@ -75,7 +122,9 @@ const RegisterForm: React.FC = () => {
           text: "¡Registro exitoso! 🎉 Redirigiendo...",
           type: "success",
         });
-        setTimeout(() => navigate("/wall"), 1000);
+        // Guardar flag en sessionStorage para mostrar modal en perfil
+        sessionStorage.setItem('showProfileCompletionPrompt', 'true');
+        setTimeout(() => navigate("/profile"), 1000);
       } catch (error: any) {
         console.error("Error en registro:", error);
         setMessage({
@@ -171,6 +220,44 @@ const RegisterForm: React.FC = () => {
           {errors.phone_number && (
             <p className="text-red-500 text-sm">{errors.phone_number}</p>
           )}
+        </div>
+
+        {/* Departamento y Ciudad */}
+        <div>
+          <label className="block font-medium mb-1">Departamento</label>
+          <div className="border rounded-lg px-3 py-2">
+            <select
+              value={departmentId ?? ""}
+              onChange={handleDepartmentChange}
+              className="w-full outline-none text-lg bg-transparent"
+            >
+              <option value="">Selecciona un departamento</option>
+              {departments.map((d) => (
+                <option key={d.id} value={d.id}>
+                  {d.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="block font-medium mb-1">Ciudad / Municipio</label>
+          <div className="border rounded-lg px-3 py-2">
+            <select
+              value={municipalityId ?? ""}
+              onChange={handleMunicipalityChange}
+              className="w-full outline-none text-lg bg-transparent"
+              disabled={municipalities.length === 0}
+            >
+              <option value="">Selecciona una ciudad</option>
+              {municipalities.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Contraseña */}

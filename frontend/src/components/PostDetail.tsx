@@ -125,24 +125,15 @@ export default function PostDetail({
               </Link>
             )}
           </div>
-          {/* Edit/Delete buttons for owner */}
-          {isOwner && (
+          {/* Edit button for owner */}
+          {isOwner && onEdit && (
             <div className="ml-auto flex space-x-2">
-              {onEdit && (
-                <button
-                  onClick={() => onEdit(post)}
-                  className="p-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-full shadow-md transition-all duration-200 hover:scale-110"
-                  title="Editar"
-                >
-                  <FaEdit />
-                </button>
-              )}
               <button
-                onClick={handleDelete}
-                className="p-3 text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-full shadow-md transition-all duration-200 hover:scale-110"
-                title="Eliminar"
+                onClick={() => onEdit(post)}
+                className="p-3 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-full shadow-md transition-all duration-200 hover:scale-110"
+                title="Editar"
               >
-                <FaTrash />
+                <FaEdit />
               </button>
             </div>
           )}
