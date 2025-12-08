@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import ProfileHeader from "../components/ProfileHeader";
 import ProfileInfo from "../components/ProfileInfo";
@@ -17,6 +17,7 @@ import type { Post } from "../data/types/post.types";
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { user, updateProfile, isLoading } = useAuth();
 
   // Determinar si estamos viendo nuestro propio perfil o el de otro usuario
@@ -37,6 +38,15 @@ export default function ProfilePage() {
   // Determinar el ID del perfil a cargar
   const profileUserId = userId ? parseInt(userId) : user?.id;
 
+  // Check if we should auto-open the complete profile modal
+  useEffect(() => {
+    if (isOwnProfile && searchParams.get("complete") === "true") {
+      setShowCompleteProfileModal(true);
+      // Remove the query parameter so it doesn't trigger again
+      setSearchParams({});
+    }
+  }, [isOwnProfile, searchParams, setSearchParams]);
+
   // Cargar datos del perfil visitado (si no es el propio)
   useEffect(() => {
     if (!isOwnProfile && userId) {
@@ -51,6 +61,13 @@ export default function ProfilePage() {
       setIsLoadingProfile(true);
       const profileData = await userService.getUserProfile(id);
       setViewedProfile(profileData);
+      
+      // Load user rating
+      try {
+        await userService.getUserRating(id);
+      } catch (ratingError) {
+        console.error("Error loading user rating:", ratingError);
+      }
     } catch (error) {
       console.error("Error cargando perfil:", error);
       toast.error("Error al cargar el perfil del usuario");
@@ -79,17 +96,23 @@ export default function ProfilePage() {
         per_page: 10,
       });
 
+      console.log("Respuesta de la API:", response);
+
       // Convertir posts al formato que espera el componente
       const formattedPosts = response.data.map((post: Post) => ({
         id: post.id,
         title: post.title,
         description: post.description,
-        imageUrl: post.images[0]?.url || "/default-post.jpg",
+        // Pasar las imágenes completas en lugar de solo la URL
+        images: post.images || [],
         likes: post.favorites_count,
         comments: 0,
-        status: post.status?.toLowerCase() || "active",
+        status: post.status || "ACTIVE",
+        post_type: post.post_type, // Asegurarnos de incluir el tipo de publicación
+        date: post.created_at,
       }));
 
+      console.log("Publicaciones formateadas:", formattedPosts);
       setUserPosts(formattedPosts);
     } catch (error) {
       console.error("Error cargando publicaciones:", error);
@@ -116,6 +139,15 @@ export default function ProfilePage() {
       formData.append("email", updatedUser.email);
       if (updatedUser.city) {
         formData.append("address_details", updatedUser.city);
+      }
+      
+      // Add new fields
+      if (updatedUser.bio !== undefined) {
+        formData.append("bio", updatedUser.bio);
+      }
+      
+      if (updatedUser.department_id) {
+        formData.append("department_id", updatedUser.department_id.toString());
       }
 
       // Si hay una nueva imagen, agregarla al FormData
@@ -174,7 +206,7 @@ export default function ProfilePage() {
     setShowCompleteProfileModal(true);
   };
 
-  const handleProfileUpdated = (updatedUser: any) => {
+  const handleProfileUpdated = () => {
     // El contexto ya maneja la actualización del usuario
     toast.success("¡Perfil completado con éxito!");
   };
@@ -208,12 +240,12 @@ export default function ProfilePage() {
     status: "ACTIVE" | "CLOSED" | "EXPIRED"
   ) => {
     try {
-      const updatedPost = await postService.updatePostStatus(postId, status);
+      await postService.updatePostStatus(postId, status);
 
       // Update the posts in state
       setUserPosts((prev) =>
         prev.map((p) =>
-          p.id === postId ? { ...p, status: status.toLowerCase() } : p
+          p.id === postId ? { ...p, status: status } : p
         )
       );
 
@@ -224,22 +256,14 @@ export default function ProfilePage() {
     }
   };
 
-  const handleMarkAsSold = (postId: number, soldOnPlatform: boolean) => {
-    const status = soldOnPlatform ? "CLOSED" : "CLOSED";
-    handlePostStatusUpdate(postId, status);
-  };
-
-  const handleDeactivate = (postId: number) => {
-    handlePostStatusUpdate(postId, "EXPIRED");
-  };
-
   const handleUpdateSubmit = async (updatedPost: Post) => {
     // Convert the updated post to the format expected by the component
     const updatedPostData = {
       id: updatedPost.id,
       title: updatedPost.title,
       description: updatedPost.description,
-      imageUrl: updatedPost.images[0]?.url || "/default-post.jpg",
+      // Pasar las imágenes completas en lugar de solo la URL
+      images: updatedPost.images || [],
       likes: updatedPost.favorites_count,
       comments: 0,
     };
@@ -276,13 +300,15 @@ export default function ProfilePage() {
   if (!isOwnProfile && displayUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-        <Navbar />
+        <div className="sticky top-0 z-50">
+          <Navbar />
+        </div>
         <div className="max-w-6xl mx-auto px-4 py-6 sm:py-10">
           {/* Header del vendedor - Diseño profesional */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden mb-6">
             {/* Banner gradient */}
             <div className="h-32 sm:h-40 bg-gradient-to-r from-blue-600 via-blue-500 to-green-500"></div>
-
+            
             {/* Info del vendedor */}
             <div className="px-4 sm:px-8 pb-6 sm:pb-8 -mt-16 sm:-mt-20">
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4">
@@ -300,7 +326,7 @@ export default function ProfilePage() {
                     </span>
                   )}
                 </div>
-
+                
                 {/* Nombre y verificación */}
                 <div className="text-center sm:text-left flex-1">
                   <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
@@ -318,7 +344,7 @@ export default function ProfilePage() {
                   </div>
                 </div>
               </div>
-
+              
               {/* Stats y contacto */}
               <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/30 rounded-xl p-3 sm:p-4 text-center">
@@ -329,7 +355,7 @@ export default function ProfilePage() {
                 </div>
                 <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-3 sm:p-4 text-center">
                   <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400">
-                    {userPosts.filter(p => p.status === 'active').length}
+                    {userPosts.filter(p => p.status === 'ACTIVE').length}
                   </div>
                   <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Activas</div>
                 </div>
@@ -348,13 +374,13 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-
+          
           {/* Publicaciones del vendedor */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-4 sm:p-8">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
               <span className="text-2xl">🛒</span> Publicaciones de {displayUser.name?.split(' ')[0]}
             </h2>
-
+            
             {isLoadingPosts ? (
               <div className="flex justify-center py-10">
                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
@@ -383,11 +409,11 @@ export default function ProfilePage() {
                       </h3>
                       <div className="flex items-center justify-between">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          post.status === 'active'
+                          post.status === 'ACTIVE'
                             ? 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300'
                             : 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
                         }`}>
-                          {post.status === 'active' ? 'Activo' : 'Cerrado'}
+                          {post.status === 'ACTIVE' ? 'Activo' : 'Cerrado'}
                         </span>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                           ❤️ {post.likes || 0}
@@ -411,17 +437,14 @@ export default function ProfilePage() {
 
   // Vista de perfil propio (original)
   return (
-    <div
-      className="min-h-screen bg-fixed bg-center bg-cover"
-      style={{ backgroundImage: "url('/fondoMuro.jpg')" }}
-    >
-      <Navbar />
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="sticky top-0 z-50">
+        <Navbar />
+      </div>
+      <div className="max-w-7xl mx-auto p-4 sm:p-6">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8">
           {/* Columna izquierda - Información del perfil */}
           <div className="lg:w-2/3 w-full">
-            {/* Encabezado */}
             <ProfileHeader
               name={displayUser?.name || "Usuario"}
               username={displayUser?.email || ""}
@@ -442,6 +465,7 @@ export default function ProfilePage() {
               <ProfileInfo
                 email={displayUser?.email || ""}
                 city={displayUser?.address_details || "No especificado"}
+                department={displayUser?.department?.name || null}
                 joinDate={displayUser?.created_at ? new Date(displayUser.created_at).toLocaleDateString(
                   "es-ES",
                   {
@@ -449,65 +473,47 @@ export default function ProfilePage() {
                     month: "long",
                     day: "numeric",
                   }
-                ) : ""}
-                bio={displayUser?.created_at ? `Miembro desde ${new Date(displayUser.created_at).getFullYear()}` : ""}
+                ) : "Fecha no disponible"}
+                bio={displayUser?.bio || ""}
               />
             </div>
 
-            {/* Favoritos */}
-            {isOwnProfile && user && (
-              <div className="mt-6 sm:mt-8">
-                <UserFavorites userId={user.id} />
-              </div>
-            )}
-          </div>
-
-          {/* Columna derecha - Publicaciones */}
-          <div className="lg:w-1/3 w-full">
-            {isLoadingPosts ? (
-              <div className="flex justify-center py-10">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              </div>
-            ) : (
+            {/* Publicaciones del usuario */}
+            <div className="mt-8">
               <UserPosts
                 posts={userPosts}
                 onEdit={isOwnProfile ? handleEditPost : undefined}
                 onDelete={isOwnProfile ? handleDeletePost : undefined}
-                onMarkAsSold={isOwnProfile ? handleMarkAsSold : undefined}
-                onDeactivate={isOwnProfile ? handleDeactivate : undefined}
               />
-            )}
+            </div>
+          </div>
+
+          {/* Columna derecha - Favoritos */}
+          <div className="lg:w-1/3 w-full">
+            <UserFavorites userId={user?.id || 0} />
           </div>
         </div>
 
-        {/* Modal para editar perfil */}
+        {/* Modales */}
         {showModal && (
           <EditProfileModal
             user={{
-              name: user.name,
-              email: user.email,
-              username: user.email,
-              imageUrl: userWithImage.profile_image || "/default-avatar.jpg",
-              city: user.address_details || "",
-              joinDate: user.created_at,
-              bio: "",
-              posts: userPosts,
-              purchases: [],
+              name: user?.name || "",
+              email: user?.email || "",
+              phone_number: user?.phone_number || "",
+              username: user?.email || "",
+              city: user?.address_details || "",
+              bio: user?.bio || "",
+              department_id: user?.department?.id || "",
+              imageUrl: user?.profile_image || "/default-avatar.jpg",
+              joinDate: user?.created_at || "",
             }}
             onSave={handleSave}
             onClose={() => setShowModal(false)}
           />
         )}
 
-        {/* Modal para completar perfil */}
-        <CompleteProfileModal
-          isOpen={showCompleteProfileModal}
-          onClose={() => setShowCompleteProfileModal(false)}
-          onProfileUpdated={handleProfileUpdated}
-        />
-
-        {/* Modal para editar publicación */}
-        {editingPost && (
+        {showEditPostModal && editingPost && (
           <EditPostModal
             isOpen={showEditPostModal}
             onClose={() => {
@@ -516,6 +522,14 @@ export default function ProfilePage() {
             }}
             post={editingPost}
             onSubmit={handleUpdateSubmit}
+          />
+        )}
+
+        {showCompleteProfileModal && (
+          <CompleteProfileModal
+            isOpen={showCompleteProfileModal}
+            onClose={() => setShowCompleteProfileModal(false)}
+            onProfileUpdated={handleProfileUpdated}
           />
         )}
       </div>

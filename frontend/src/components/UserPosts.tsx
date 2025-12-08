@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { FaTrash, FaCheck, FaBan, FaEdit } from "react-icons/fa";
 
@@ -10,6 +10,8 @@ interface Post {
   price?: string;
   date?: string;
   status?: string;
+  images?: { id: number; url: string }[];
+  post_type?: { id: number; name: string };
 }
 
 interface UserPostsProps {
@@ -23,7 +25,6 @@ interface UserPostsProps {
 interface PostModalProps {
   post: Post;
   onClose: () => void;
-  onEdit?: (postId: number) => void;
   onDelete?: (postId: number) => void;
   onMarkAsSold: (postId: number, soldOnPlatform: boolean) => void;
   onDeactivate: (postId: number) => void;
@@ -35,6 +36,18 @@ interface ConfirmationModalProps {
   onConfirm: () => void;
   onCancel: () => void;
 }
+
+// Estilos por tipo de publicación
+const typeStyles: Record<string, string> = {
+  Venta: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  Compra: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+};
+
+// Fondo / borde de la tarjeta según tipo
+const cardBackgrounds: Record<string, string> = {
+  Venta: "border-blue-200 hover:border-blue-400",
+  Compra: "border-green-200 hover:border-green-400",
+};
 
 function ConfirmationModal({
   title,
@@ -126,7 +139,6 @@ function SoldConfirmationModal({
 function PostModal({
   post,
   onClose,
-  onEdit,
   onDelete,
   onMarkAsSold,
   onDeactivate,
@@ -138,13 +150,6 @@ function PostModal({
   const handleDelete = () => {
     if (onDelete) {
       onDelete(post.id);
-    }
-    onClose();
-  };
-
-  const handleEdit = () => {
-    if (onEdit) {
-      onEdit(post.id);
     }
     onClose();
   };
@@ -187,6 +192,10 @@ function PostModal({
     );
   }
 
+  // Imágenes: si hay varias, se toma sólo la primera
+  const photos = post.images?.map((img) => img.url) || [];
+  const firstPhoto = photos.length > 0 ? photos[0] : "/metodo-de-pago.png";
+
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg w-full max-w-2xl p-6 relative">
@@ -203,49 +212,49 @@ function PostModal({
 
         <div className="rounded-xl overflow-hidden mb-6">
           <img
-            src={post.imageUrl || "https://picsum.photos/400"}
+            src={firstPhoto}
             alt={post.title}
-            className="w-full h-64 object-cover"
+            className={`w-full h-64 rounded-md ${
+              photos.length === 0
+                ? "object-contain bg-gray-100 opacity-70"
+                : "object-cover"
+            }`}
           />
         </div>
 
         <div className="space-y-4 mb-6">
           {post.description && (
             <p className="text-gray-700 dark:text-gray-300">
-              <strong>Descripción:</strong> {post.description}
+              {post.description}
             </p>
           )}
-          {post.price && (
-            <p className="text-gray-700 dark:text-gray-300">
-              <strong>Precio:</strong> {post.price}
-            </p>
-          )}
-          {post.date && (
-            <p className="text-gray-700 dark:text-gray-300">
-              <strong>Fecha:</strong> {post.date}
-            </p>
-          )}
-          {post.status && (
-            <p className="text-gray-700 dark:text-gray-300">
-              <strong>Estado:</strong> {post.status}
-            </p>
-          )}
+
+          <div className="flex flex-wrap gap-2">
+            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">
+              Fecha: {post.date || "N/A"}
+            </span>
+            {post.price && (
+              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+                Precio: {post.price}
+              </span>
+            )}
+            {post.status && (
+              <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-sm">
+                Estado: {post.status}
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="flex flex-wrap gap-3 justify-center">
-          <button
-            onClick={handleEdit}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center"
-          >
-            <FaEdit className="mr-2" /> Editar
-          </button>
-
-          <button
-            onClick={() => setShowSoldModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center"
-          >
-            <FaCheck className="mr-2" /> Marcar como Vendido
-          </button>
+        <div className="flex flex-wrap gap-2 justify-center">
+          {post.status !== "CLOSED" && (
+            <button
+              onClick={() => setShowSoldModal(true)}
+              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center"
+            >
+              <FaCheck className="mr-2" /> Marcar como Vendido
+            </button>
+          )}
 
           <button
             onClick={() => setShowDeactivateConfirm(true)}
@@ -275,11 +284,27 @@ export default function UserPosts({
 }: UserPostsProps) {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
-  const handleDelete = (postId: number) => {
-    if (onDelete) {
-      onDelete(postId);
-    }
-  };
+  // Agregar console.log para depuración
+  console.log("Posts recibidos en UserPosts:", posts);
+
+  // Filtrar publicaciones activas
+  const activePosts = posts.filter(post => 
+    post.status?.toUpperCase() !== "CLOSED" && 
+    post.status?.toUpperCase() !== "EXPIRED"
+  );
+  
+  console.log("Publicaciones activas:", activePosts);
+
+  // Clasificar en compras y ventas
+  const salesPosts = activePosts.filter(
+    post => post.post_type?.name === "Venta"
+  );
+  const purchasePosts = activePosts.filter(
+    post => post.post_type?.name === "Compra"
+  );
+  
+  console.log("Ventas:", salesPosts);
+  console.log("Compras:", purchasePosts);
 
   const handleMarkAsSold = (postId: number, soldOnPlatform: boolean) => {
     if (onMarkAsSoldProp) {
@@ -304,46 +329,91 @@ export default function UserPosts({
     }
   };
 
+  // Función para renderizar una lista de publicaciones
+  const renderPostList = (posts: Post[], title: string) => {
+    if (posts.length === 0) return null;
+
+    return (
+      <div className="mb-8">
+        <h4 className="text-2xl font-bold text-blue-800 dark:text-blue-300 mb-4">
+          {title} ({posts.length})
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {posts.map((post) => {
+            // Imágenes: si hay varias, se toma sólo la primera
+            const photos = post.images?.map((img) => img.url) || [];
+            const firstPhoto = photos.length > 0 ? photos[0] : "/metodo-de-pago.png";
+            const postType = post.post_type?.name || "Tipo desconocido";
+
+            return (
+              <div
+                key={post.id}
+                className={`bg-white/90 dark:bg-gray-800 backdrop-blur rounded-2xl shadow-md p-5 cursor-pointer border-2 transition-all transform hover:-translate-y-1 overflow-hidden flex flex-col h-full ${
+                  cardBackgrounds[postType] || "border-gray-200"
+                }`}
+                onClick={() => setSelectedPost(post)}
+              >
+                {/* Título */}
+                <h4 className="font-bold text-xl mb-2 text-blue-800 dark:text-blue-300">
+                  {post.title}
+                </h4>
+
+                {/* Imagen principal - SOLO la primera imagen (si hay varias, se ignoran las demás) */}
+                <div className="mb-4 rounded-md overflow-hidden flex-grow flex items-center justify-center bg-gray-50 dark:bg-gray-700">
+                  <img
+                    src={firstPhoto}
+                    alt={`Imagen principal de ${post.title}`}
+                    className={`w-full h-36 rounded-md ${
+                      photos.length === 0
+                        ? "object-contain bg-gray-100 opacity-70"
+                        : "object-cover"
+                    }`}
+                  />
+                </div>
+
+                {/* Footer */}
+                <div className="mt-auto">
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">
+                        {post.date || "Fecha no disponible"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          typeStyles[postType] || "bg-gray-200 text-gray-800"
+                        }`}
+                      >
+                        {postType}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="mt-8">
       <h3 className="text-3xl font-bold text-blue-800 dark:text-blue-300 mb-6 text-center">
         Mis Publicaciones Activas
       </h3>
 
-      {posts.length === 0 ? (
+      {activePosts.length === 0 ? (
         <p className="text-center text-gray-500">
-          No tienes publicaciones aún.
+          No tienes publicaciones activas aún.
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {posts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-white/90 dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-transform hover:-translate-y-1 cursor-pointer"
-              onClick={() => setSelectedPost(post)}
-            >
-              <div className="rounded-xl overflow-hidden h-48">
-                <img
-                  src={post.imageUrl || "https://picsum.photos/300"}
-                  alt={post.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-4">
-                <h4 className="font-semibold text-lg text-blue-700 dark:text-blue-300 text-center">
-                  {post.title}
-                </h4>
-                {post.status && (
-                  <div className="text-center mt-2">
-                    <span className="inline-block px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">
-                      {post.status}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
+        <>
+          {renderPostList(salesPosts, "Ventas")}
+          {renderPostList(purchasePosts, "Compras")}
+        </>
       )}
 
       {/* Modal para mostrar detalles de la publicación */}
@@ -351,7 +421,6 @@ export default function UserPosts({
         <PostModal
           post={selectedPost}
           onClose={() => setSelectedPost(null)}
-          onEdit={onEdit}
           onDelete={onDelete}
           onMarkAsSold={handleMarkAsSold}
           onDeactivate={handleDeactivate}

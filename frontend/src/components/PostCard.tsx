@@ -1,17 +1,12 @@
-import { FaThumbsUp, FaRegCommentDots } from "react-icons/fa";
 import { useAuth } from "../data/context/AuthContext";
 import type { Post } from "../data/types/post.types";
 import FavoriteButton from "./FavoriteButton";
-import { MoreVertical } from "lucide-react";
 import { useState } from "react";
-import PostActionsModal from "./PostActionsModal";
 
 interface PostCardProps {
   post: Post;
   onSelectPost: (post: Post) => void;
   formatDate: (dateString: string) => string;
-  onPostUpdated?: (updatedPost: Post) => void;
-  onPostDeleted?: (postId: number) => void;
 }
 
 // Estilos por tipo de publicación
@@ -30,35 +25,20 @@ function PostCard({
   post,
   onSelectPost,
   formatDate,
-  onPostUpdated,
-  onPostDeleted,
 }: PostCardProps) {
   const { user } = useAuth();
-  const [showActionsModal, setShowActionsModal] = useState(false);
 
   const userName = post.user?.name || "Usuario desconocido";
   const postType = post.post_type?.name || "Tipo desconocido";
+  
+  // Verificar si la publicación pertenece al usuario actual
+  const isOwnPost = user && post.user?.id === user.id;
 
   // Imágenes: si hay varias, se toma sólo la primera
   const photos = post.images?.map((img) => img.url) || [];
   const firstPhoto = photos.length > 0 ? photos[0] : "/metodo-de-pago.png";
   // Si quieres conservar displayPhotos en el futuro, puedes mantener esta línea:
   // const displayPhotos = photos.length > 0 ? photos : ["/metodo-de-pago.png"];
-
-  const handleActionsClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowActionsModal(true);
-  };
-
-  const handlePostUpdated = (updatedPost: Post) => {
-    onPostUpdated?.(updatedPost);
-    setShowActionsModal(false);
-  };
-
-  const handlePostDeleted = (postId: number) => {
-    onPostDeleted?.(postId);
-    setShowActionsModal(false);
-  };
 
   return (
     <div
@@ -123,7 +103,6 @@ function PostCard({
               }}
               size="sm"
             />
-            <span className="text-sm text-gray-500">{post.favorites_count || 0}</span>
           </div>
 
           <div className="flex items-center space-x-2">

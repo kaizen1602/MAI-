@@ -88,7 +88,7 @@ export default function PostDetail({
         {onClose && (
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-full p-2 shadow-md transition-all duration-200 hover:scale-110"
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 bg-white/80 dark:bg-gray-700/80 backdrop-blur-sm rounded-full p-2 shadow-md transition-all duration-200 hover:scale-110 z-10"
           >
             <FaTimes className="text-xl" />
           </button>
@@ -125,9 +125,9 @@ export default function PostDetail({
               </Link>
             )}
           </div>
-          {/* Edit/Delete buttons for owner */}
+          {/* Edit/Delete buttons for owner - Positioned to avoid overlap with close button */}
           {isOwner && (
-            <div className="ml-auto flex space-x-2">
+            <div className="ml-auto flex space-x-2 pr-12">
               {onEdit && (
                 <button
                   onClick={() => onEdit(post)}
