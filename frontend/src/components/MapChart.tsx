@@ -25,10 +25,12 @@ const MapChart: React.FC<MapChartProps> = ({ locationStats, formatPrice }) => {
 
   // Calcular centro del mapa basado en las coordenadas promedio
   useEffect(() => {
+    console.log('LocationStats recibidos:', locationStats);
     if (locationStats.length > 0) {
       const validLocations = locationStats.filter(stat => 
         stat.latitude !== undefined && stat.longitude !== undefined && stat.latitude !== null && stat.longitude !== null
       );
+      console.log('Ubicaciones válidas:', validLocations);
       
       if (validLocations.length > 0) {
         const avgLat = validLocations.reduce((sum, stat) => sum + (stat.latitude || 0), 0) / validLocations.length;
@@ -80,27 +82,53 @@ const MapChart: React.FC<MapChartProps> = ({ locationStats, formatPrice }) => {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
                 
-                {validLocations.map((stat, index) => (
-                  <Marker 
-                    key={index} 
-                    position={[stat.latitude!, stat.longitude!]}
-                  >
-                    <Popup>
-                      <div className="font-medium text-gray-800 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md">
-                        <h3 className="text-lg font-bold text-teal-700 dark:text-teal-300">{stat.municipality}</h3>
-                        <p className="text-gray-600 font-medium">{stat.department}</p>
-                        <div className="mt-2 space-y-1 bg-teal-50 dark:bg-gray-700 p-2 rounded">
-                          <p className="text-sm">
-                            <span className="font-semibold text-teal-600">Publicaciones:</span> <span className="font-bold">{stat.total_posts}</span>
-                          </p>
-                          <p className="text-sm">
-                            <span className="font-semibold text-cyan-600">Precio promedio:</span> <span className="font-bold">{formatPrice(stat.avg_price)}</span>
-                          </p>
-                        </div>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
+                {validLocations.map((stat, index) => {
+                  console.log('Renderizando marcador:', stat);
+                  // Validar que las coordenadas sean números válidos
+                  const lat = stat.latitude !== undefined && stat.latitude !== null ? 
+                    parseFloat(stat.latitude.toString()) : null;
+                  const lng = stat.longitude !== undefined && stat.longitude !== null ? 
+                    parseFloat(stat.longitude.toString()) : null;
+                  
+                  // Verificar que las coordenadas sean válidas
+                  if (lat === null || lng === null || isNaN(lat) || isNaN(lng) || !isFinite(lat) || !isFinite(lng)) {
+                    console.warn('Coordenadas inválidas para marcador:', stat);
+                    return null;
+                  }
+                  
+                  // Verificar que las coordenadas estén dentro de rangos razonables para Colombia
+                  if (lat < -4.2 || lat > 12.5 || lng < -81.7 || lng > -66.8) {
+                    console.warn('Coordenadas fuera de rango para Colombia:', { lat, lng, stat });
+                    return null;
+                  }
+                  
+                  try {
+                    return (
+                      <Marker 
+                        key={`marker-${index}`} 
+                        position={[lat, lng]}
+                      >
+                        <Popup>
+                          <div className="font-medium text-gray-800 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-md">
+                            <h3 className="text-lg font-bold text-teal-700 dark:text-teal-300">{stat.municipality}</h3>
+                            <p className="text-gray-600 font-medium">{stat.department}</p>
+                            <div className="mt-2 space-y-1 bg-teal-50 dark:bg-gray-700 p-2 rounded">
+                              <p className="text-sm">
+                                <span className="font-semibold text-teal-600">Publicaciones:</span> <span className="font-bold">{stat.total_posts}</span>
+                              </p>
+                              <p className="text-sm">
+                                <span className="font-semibold text-cyan-600">Precio promedio:</span> <span className="font-bold">{formatPrice(stat.avg_price)}</span>
+                              </p>
+                            </div>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    );
+                  } catch (error) {
+                    console.error('Error al renderizar marcador:', error, stat);
+                    return null;
+                  }
+                })}
               </MapContainer>
             </div>
           ) : (

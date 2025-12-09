@@ -68,6 +68,16 @@ class PostResource extends JsonResource
                 return [
                     'id' => $this->municipality->id,
                     'name' => $this->municipality->name,
+                    'latitude' => $this->municipality->latitude,
+                    'longitude' => $this->municipality->longitude,
+                    'department' => $this->when(
+                        $this->relationLoaded('municipality.department') && 
+                        $this->municipality->department, 
+                        [
+                            'id' => $this->municipality->department->id ?? null,
+                            'name' => $this->municipality->department->name ?? 'Sin departamento',
+                        ]
+                    ),
                 ];
             }),
 

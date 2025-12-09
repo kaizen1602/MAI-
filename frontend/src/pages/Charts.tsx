@@ -7,6 +7,7 @@ import statisticsService, {
   LocationStats,
 } from "../data/services/StatisticsService";
 import ChartTabs from "../components/ChartTabs";
+import debugPostsData from "../debugPosts";
 
 function Charts() {
   const [priceStats, setPriceStats] = useState<PriceStats[]>([]);
@@ -17,6 +18,8 @@ function Charts() {
 
   useEffect(() => {
     loadStatistics();
+    // Ejecutar la función de depuración
+    debugPostsData();
   }, []);
 
   const loadStatistics = async () => {

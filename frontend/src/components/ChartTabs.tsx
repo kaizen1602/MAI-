@@ -29,6 +29,9 @@ const ChartTabs: React.FC<ChartTabsProps> = ({
     { id: 'locations-map', label: 'Mapa', icon: '🗺️' }
   ];
 
+  // Agregar console.log para depuración
+  console.log('Datos recibidos en ChartTabs:', { priceStats, productStats, locationStats });
+
   return (
     <div className="bg-gradient-to-br from-blue-50 to-green-50 dark:from-gray-800 dark:to-gray-900 backdrop-blur rounded-3xl shadow-xl p-6 border border-blue-100 dark:border-gray-700">
       <div className="text-center mb-8 bg-gradient-to-r from-blue-500 to-green-500 rounded-2xl p-4 shadow-lg">

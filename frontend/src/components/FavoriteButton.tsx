@@ -8,14 +8,12 @@ interface FavoriteButtonProps {
   post: Post;
   onFavoriteChange?: (isFavorite: boolean) => void;
   size?: 'sm' | 'md' | 'lg';
-  showCount?: boolean;
 }
 
 const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   post,
   onFavoriteChange,
   size = 'md',
-  showCount = true,
 }) => {
   const [isFavorite, setIsFavorite] = useState(post.is_favorited || false);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,33 +70,30 @@ const FavoriteButton: React.FC<FavoriteButtonProps> = ({
   };
 
   return (
-    <div className="flex items-center gap-2">
-      <button
-        onClick={handleToggle}
-        disabled={isLoading}
-        className={`
-          ${getSizeClasses()}
-          flex items-center justify-center
-          rounded-full transition-all duration-200
-          ${isFavorite 
-            ? 'text-red-500 bg-red-50 hover:bg-red-100' 
-            : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
-          }
-          ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-        `}
-        title={isFavorite ? 'Remover de favoritos' : 'Agregar a favoritos'}
-      >
-        {isLoading ? (
-          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-500"></div>
-        ) : (
-          <Heart 
-            size={getIconSize()} 
-            className={isFavorite ? 'fill-current' : ''}
-          />
-        )}
-      </button>
-      
-    </div>
+    <button
+      onClick={handleToggle}
+      disabled={isLoading}
+      className={`
+        ${getSizeClasses()}
+        flex items-center justify-center
+        rounded-full transition-all duration-200
+        ${isFavorite 
+          ? 'text-red-500 bg-red-50 hover:bg-red-100' 
+          : 'text-gray-400 hover:text-red-500 hover:bg-red-50'
+        }
+        ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+      `}
+      title={isFavorite ? 'Remover de favoritos' : 'Agregar a favoritos'}
+    >
+      {isLoading ? (
+        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-red-500"></div>
+      ) : (
+        <Heart 
+          size={getIconSize()} 
+          className={isFavorite ? 'fill-current' : ''}
+        />
+      )}
+    </button>
   );
 };
 

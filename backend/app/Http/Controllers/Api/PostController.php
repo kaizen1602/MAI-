@@ -46,7 +46,8 @@ class PostController extends Controller
                 'product:id,name,description,image_url,product_type_id',
                 'product.productType:id,type_name,description', // Nested eager loading
                 'user:id,name,email,phone_number,address_details,profile_image,is_verified',
-                'municipality:id,name',
+                'municipality:id,name,latitude,longitude',
+                'municipality.department:id,name',
                 'images:id,post_id,image_url', // Cargar solo campos necesarios|
             ])
             // Aplicar filtro de estado (por defecto ACTIVE)
@@ -155,7 +156,8 @@ class PostController extends Controller
                 'product:id,name,description,image_url,product_type_id',
                 'product.productType:id,type_name',
                 'user:id,name,email,phone_number,address_details,profile_image,is_verified',
-                'municipality:id,name',
+                'municipality:id,name,latitude,longitude',
+                'municipality.department:id,name',
                 'images:id,post_id,image_url',
             ]);
 
@@ -193,7 +195,8 @@ class PostController extends Controller
             'product:id,name,description,image_url,product_type_id',
             'product.productType:id,type_name',
             'user:id,name,email,phone_number,address_details,is_verified',
-            'municipality:id,name',
+            'municipality:id,name,latitude,longitude',
+            'municipality.department:id,name',
             'images:id,post_id,image_url',
         ]);
 
@@ -235,7 +238,8 @@ class PostController extends Controller
             'product:id,name,description,image_url,product_type_id',
             'product.productType:id,type_name',
             'user:id,name,email,phone_number,address_details,is_verified',
-            'municipality:id,name',
+            'municipality:id,name,latitude,longitude',
+            'municipality.department:id,name',
             'images:id,post_id,image_url',
         ]);
 
@@ -381,7 +385,7 @@ class PostController extends Controller
                 'product:id,name,description,image_url,product_type_id',
                 'product.productType:id,type_name',
                 'user:id,name,email,phone_number,address_details,profile_image,is_verified',
-                'municipality:id,name',
+                'municipality:id,name,latitude,longitude',
                 'images:id,post_id,image_url',
             ]);
 

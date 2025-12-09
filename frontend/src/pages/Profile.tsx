@@ -314,9 +314,9 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4">
                 {/* Avatar */}
                 <div className="w-28 h-28 sm:w-36 sm:h-36 rounded-full border-4 border-white dark:border-gray-800 shadow-lg overflow-hidden bg-gradient-to-br from-blue-400 to-green-400 flex items-center justify-center">
-                  {userWithImage?.profile_image ? (
+                  {displayUser.profile_image ? (
                     <img
-                      src={userWithImage.profile_image}
+                      src={displayUser.profile_image}
                       alt={displayUser.name}
                       className="w-full h-full object-cover"
                     />
@@ -361,9 +361,9 @@ export default function ProfilePage() {
                 </div>
                 <div className="bg-yellow-50 dark:bg-yellow-900/30 rounded-xl p-3 sm:p-4 text-center">
                   <div className="text-xl sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">
-                    {displayUser.address_details || "N/A"}
+                    {displayUser.department?.name || "Sin departamento"}
                   </div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Ubicación</div>
+                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Departamento</div>
                 </div>
                 <div className="bg-purple-50 dark:bg-purple-900/30 rounded-xl p-3 sm:p-4 text-center">
                   <div className="text-lg sm:text-xl font-bold text-purple-600 dark:text-purple-400">
@@ -394,14 +394,21 @@ export default function ProfilePage() {
                     onClick={() => window.location.href = `/post/${post.id}`}
                   >
                     <div className="h-40 sm:h-48 overflow-hidden">
-                      <img
-                        src={post.imageUrl}
-                        alt={post.title}
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/default-product.jpg';
-                        }}
-                      />
+                      {post.images && post.images.length > 0 ? (
+                        <img
+                          src={post.images[0].url}
+                          alt={post.title}
+                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
+                          <img
+                            src="/metodo-de-pago.png"
+                            alt="Imagen no disponible"
+                            className="object-contain max-h-full max-w-full p-4"
+                          />
+                        </div>
+                      )}
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-800 dark:text-white line-clamp-2 mb-2">
@@ -475,6 +482,10 @@ export default function ProfilePage() {
                   }
                 ) : "Fecha no disponible"}
                 bio={displayUser?.bio || ""}
+                rating={displayUser?.average_rating !== undefined ? {
+                  average_rating: displayUser.average_rating || 0,
+                  total_reviews: displayUser.reviews_count || 0
+                } : undefined}
               />
             </div>
 

@@ -97,7 +97,6 @@ function PostCard({
                 const updatedPost = {
                   ...post,
                   is_favorited: isFavorite,
-                  favorites_count: post.favorites_count + (isFavorite ? 1 : -1),
                 };
                 onSelectPost(updatedPost);
               }}
