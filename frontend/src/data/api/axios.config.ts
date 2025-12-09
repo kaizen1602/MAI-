@@ -11,7 +11,7 @@ import axios, { AxiosInstance } from 'axios';
  * Configuracion de Axios
  */
 const apiClient: AxiosInstance = axios.create({
-  baseURL: '', // Url de base
+  baseURL: '', // Url de base - vacío porque las rutas ya incluyen /api
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',

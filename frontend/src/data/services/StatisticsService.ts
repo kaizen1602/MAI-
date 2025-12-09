@@ -1,6 +1,6 @@
-import { BaseService } from './base/BaseService';
+import { PublicBaseService } from './base/PublicBaseService';
 
-import { postService } from './index';
+import { Post } from '../types/post.types';
 
 export interface PriceStats {
   product_name: string;
@@ -33,7 +33,7 @@ export interface MarketTrends {
   total_quantity: number;
 }
 
-class StatisticsService extends BaseService {
+class StatisticsService extends PublicBaseService {
   /**
    * Obtiene estadísticas de precios por producto usando datos reales
    */
@@ -41,8 +41,8 @@ class StatisticsService extends BaseService {
     try {
       // Obtener todas las publicaciones (máximo 100 por página)
       // Usar un filtro de estado por defecto para evitar problemas de autenticación
-      const response = await postService.getPosts({ per_page: 100, status: 'ACTIVE' });
-      const posts = response.data;
+      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
+      const posts = response.data.data;
 
       if (!posts || posts.length === 0) {
         return [];
@@ -55,7 +55,7 @@ class StatisticsService extends BaseService {
         count: number;
       }>();
 
-      posts.forEach(post => {
+      posts.forEach((post: Post) => {
         if (post.product && post.price_per_kg && post.quantity_kg) {
           const productName = post.product.name;
           if (!productStats.has(productName)) {
@@ -87,8 +87,8 @@ class StatisticsService extends BaseService {
    */
   async getProductStatistics(): Promise<ProductStats[]> {
     try {
-      const response = await postService.getPosts({ per_page: 100, status: 'ACTIVE' });
-      const posts = response.data;
+      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
+      const posts = response.data.data;
 
       if (!posts || posts.length === 0) {
         return [];
@@ -100,7 +100,7 @@ class StatisticsService extends BaseService {
         count: number;
       }>();
 
-      posts.forEach(post => {
+      posts.forEach((post: Post) => {
         if (post.product && post.price_per_kg && post.quantity_kg) {
           const productType = post.product.product_type?.name || 'Sin categoría';
           if (!typeStats.has(productType)) {
@@ -130,8 +130,8 @@ class StatisticsService extends BaseService {
    */
   async getLocationStatistics(): Promise<LocationStats[]> {
     try {
-      const response = await postService.getPosts({ per_page: 100, status: 'ACTIVE' });
-      const posts = response.data;
+      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
+      const posts = response.data.data;
 
       console.log('Respuesta completa de posts:', response);
       console.log('Datos de posts:', posts);
@@ -150,7 +150,7 @@ class StatisticsService extends BaseService {
       }>();
 
       console.log('Datos de posts recibidos:', posts);
-      posts.forEach((post, index) => {
+      posts.forEach((post: Post, index: number) => {
         console.log(`Procesando post ${index}:`, post);
         if (post.municipality && post.price_per_kg) {
           // Obtener el nombre del departamento
@@ -159,8 +159,10 @@ class StatisticsService extends BaseService {
           let departmentName = 'Sin departamento';
           
           // Intentar obtener el departamento del municipio si tiene la relación
-          // Nota: La API puede incluir el departamento en algunos casos
+          // Nota: La API puede incluir el departamento en diferentes formas
           console.log('Municipio:', post.municipality);
+          
+          // Verificar múltiples formas posibles de obtener el departamento
           if (post.municipality && (post.municipality as any).department) {
             const dept = (post.municipality as any).department;
             console.log('Departamento encontrado:', dept);
@@ -231,8 +233,8 @@ class StatisticsService extends BaseService {
    */
   async getMarketTrends(): Promise<MarketTrends[]> {
     try {
-      const response = await postService.getPosts({ per_page: 100, status: 'ACTIVE' });
-      const posts = response.data;
+      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
+      const posts = response.data.data;
 
       if (!posts || posts.length === 0) {
         return [];
@@ -244,7 +246,7 @@ class StatisticsService extends BaseService {
         count: number;
       }>();
 
-      posts.forEach(post => {
+      posts.forEach((post: Post) => {
         if (post.created_at && post.price_per_kg && post.quantity_kg) {
           const date = new Date(post.created_at).toISOString().split('T')[0];
           if (!dateStats.has(date)) {
@@ -283,8 +285,8 @@ class StatisticsService extends BaseService {
     price_range: { min: number; max: number };
   }> {
     try {
-      const response = await postService.getPosts({ per_page: 100, status: 'ACTIVE' });
-      const posts = response.data;
+      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
+      const posts = response.data.data;
 
       if (!posts || posts.length === 0) {
         return {
@@ -296,15 +298,15 @@ class StatisticsService extends BaseService {
         };
       }
 
-      const prices = posts.filter(p => p.price_per_kg).map(p => p.price_per_kg!);
-      const uniqueUsers = new Set(posts.map(p => p.user.id));
-      const uniqueProducts = new Set(posts.filter(p => p.product).map(p => p.product!.id));
+      const prices = posts.filter((p: Post) => p.price_per_kg).map((p: Post) => p.price_per_kg!);
+      const uniqueUsers = new Set(posts.map((p: Post) => p.user.id));
+      const uniqueProducts = new Set(posts.filter((p: Post) => p.product).map((p: Post) => p.product!.id));
 
       return {
         total_posts: posts.length,
         total_users: uniqueUsers.size,
         total_products: uniqueProducts.size,
-        avg_price: prices.length > 0 ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0,
+        avg_price: prices.length > 0 ? Math.round(prices.reduce((a: number, b: number) => a + b, 0) / prices.length) : 0,
         price_range: {
           min: prices.length > 0 ? Math.min(...prices) : 0,
           max: prices.length > 0 ? Math.max(...prices) : 0
