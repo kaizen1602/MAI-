@@ -1,6 +1,8 @@
-import React, { useState, useRef } from "react";
-import { FaImage, FaUpload } from "react-icons/fa";
+import React, { useState, useRef, useEffect } from "react";
+import { FaImage, FaUpload, FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
 import { toast } from "react-hot-toast";
+import supportDataService from "../data/services/SupportDataService";
+import type { Department, Municipality } from "../data/types/product.types";
 
 interface EditProfileModalProps {
   user: any;
@@ -14,12 +16,16 @@ export default function EditProfileModal({
   onClose,
 }: EditProfileModalProps) {
   const [formData, setFormData] = useState({
-    name: user.name,
-    username: user.username,
-    email: user.email,
-    city: user.city,
+    name: user.name || "",
+    username: user.username || "",
+    email: user.email || "",
+    phone_number: user.phone_number || "",
+    address_details: user.address_details || "",
+    city: user.city || "",
     bio: user.bio || "",
-    imageUrl: user.imageUrl,
+    department_id: user.department?.id || user.department_id || "",
+    municipality_id: user.municipality?.id || user.municipality_id || "",
+    imageUrl: user.imageUrl || user.profile_image || "/default-avatar.svg",
     // Campos para cambio de contraseña
     currentPassword: "",
     newPassword: "",
@@ -30,19 +36,75 @@ export default function EditProfileModal({
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPasswordSection, setShowPasswordSection] = useState(false);
+  const [departments, setDepartments] = useState<Department[]>([]);
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+  const [loadingDepartments, setLoadingDepartments] = useState(true);
+  const [loadingMunicipalities, setLoadingMunicipalities] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Initialize image preview with user's current profile image
-  React.useEffect(() => {
-    if (user.imageUrl && user.imageUrl !== "/default-avatar.jpg") {
+  // Load departments on mount
+  useEffect(() => {
+    loadDepartments();
+    
+    // Initialize image preview with user's current profile image
+    if (user.profile_image && user.profile_image !== "/default-avatar.svg") {
+      setImagePreview(user.profile_image);
+    } else if (user.imageUrl && user.imageUrl !== "/default-avatar.svg") {
       setImagePreview(user.imageUrl);
     } else {
       setImagePreview(null);
     }
-  }, [user.imageUrl]);
+    
+    // If user has a department, load municipalities for that department
+    if (user.department?.id || user.department_id) {
+      const deptId = user.department?.id || user.department_id;
+      loadMunicipalities(parseInt(deptId));
+    }
+  }, []);
+
+  const loadDepartments = async () => {
+    try {
+      setLoadingDepartments(true);
+      const data = await supportDataService.getDepartments();
+      setDepartments(data);
+    } catch (error) {
+      console.error("Error loading departments:", error);
+      toast.error("Error al cargar departamentos");
+    } finally {
+      setLoadingDepartments(false);
+    }
+  };
+
+  const loadMunicipalities = async (departmentId: number) => {
+    try {
+      setLoadingMunicipalities(true);
+      const data = await supportDataService.getMunicipalitiesByDepartment(departmentId);
+      setMunicipalities(data);
+    } catch (error) {
+      console.error("Error loading municipalities:", error);
+      toast.error("Error al cargar municipios");
+    } finally {
+      setLoadingMunicipalities(false);
+    }
+  };
+
+  const handleDepartmentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const departmentId = e.target.value;
+    setFormData(prev => ({
+      ...prev,
+      department_id: departmentId,
+      municipality_id: ""
+    }));
+    
+    if (departmentId) {
+      loadMunicipalities(parseInt(departmentId));
+    } else {
+      setMunicipalities([]);
+    }
+  };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -248,10 +310,105 @@ export default function EditProfileModal({
               />
             </div>
 
+            {/* Teléfono */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                📱 Teléfono de Contacto
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                Para que otros usuarios puedan contactarte
+              </p>
+              <input
+                type="tel"
+                name="phone_number"
+                value={formData.phone_number}
+                onChange={handleChange}
+                placeholder="Ej: +57 300 123 4567"
+                className="w-full p-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+              />
+            </div>
+
+            {/* Departamento */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                🌍 Departamento
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                Tu departamento de residencia
+              </p>
+              {loadingDepartments ? (
+                <div className="w-full p-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                  Cargando departamentos...
+                </div>
+              ) : (
+                <select
+                  name="department_id"
+                  value={formData.department_id}
+                  onChange={handleDepartmentChange}
+                  className="w-full p-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
+                >
+                  <option value="">Selecciona un departamento</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id}>
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Municipio */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                🏙️ Municipio
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                Tu municipio de residencia
+              </p>
+              {loadingMunicipalities ? (
+                <div className="w-full p-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200">
+                  Cargando municipios...
+                </div>
+              ) : (
+                <select
+                  name="municipality_id"
+                  value={formData.municipality_id}
+                  onChange={handleChange}
+                  disabled={!formData.department_id}
+                  className="w-full p-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 disabled:opacity-50"
+                >
+                  <option value="">Selecciona un municipio</option>
+                  {municipalities.map((mun) => (
+                    <option key={mun.id} value={mun.id}>
+                      {mun.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            {/* Dirección */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                📍 Dirección Completa
+              </label>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+                Tu dirección detallada para entregas
+              </p>
+              <textarea
+                name="address_details"
+                value={formData.address_details}
+                onChange={handleChange}
+                placeholder="Ej: Carrera 10 #25-30, Barrio San Francisco"
+                rows={3}
+                className="w-full p-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 resize-none"
+              />
+            </div>
+
             {/* Ciudad */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                🏘️ Ubicación
+                🏘️ Ciudad
               </label>
               <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                 Tu ciudad o región para mostrar proximidad
@@ -320,21 +477,21 @@ export default function EditProfileModal({
               </div>
 
               {showPasswordSection && (
-                <div className="space-y-4 bg-gray-50 dark:bg-gray-800 p-4 rounded-xl">
+                <div className="space-y-4 mt-4">
                   {/* Contraseña actual */}
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                      🔑 Contraseña Actual *
+                      🔐 Contraseña Actual *
                     </label>
                     <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
-                      Confirma tu contraseña actual para poder cambiarla
+                      Ingresa tu contraseña actual para verificar
                     </p>
                     <input
                       type="password"
                       name="currentPassword"
                       value={formData.currentPassword}
                       onChange={handleChange}
-                      placeholder="Tu contraseña actual"
+                      placeholder="Contraseña actual"
                       className="w-full p-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
                     />
                   </div>
@@ -370,82 +527,12 @@ export default function EditProfileModal({
                       name="confirmPassword"
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      placeholder="Confirma la nueva contraseña"
+                      placeholder="Confirmar nueva contraseña"
                       className="w-full p-3 border-2 border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200"
                     />
                   </div>
-
-                  {/* Indicador de fortaleza de contraseña */}
-                  {formData.newPassword && (
-                    <div className="text-xs">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-gray-600 dark:text-gray-400">
-                          Fortaleza:
-                        </span>
-                        <div className="flex gap-1">
-                          {[1, 2, 3, 4].map((level) => (
-                            <div
-                              key={level}
-                              className={`w-2 h-2 rounded-full ${
-                                formData.newPassword.length >= level * 2
-                                  ? "bg-blue-500"
-                                  : "bg-gray-300 dark:bg-gray-600"
-                              }`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="text-gray-500 dark:text-gray-400">
-                        {formData.newPassword.length < 8 &&
-                          "Mínimo 8 caracteres"}
-                        {formData.newPassword.length >= 8 &&
-                          formData.newPassword.length < 12 &&
-                          "Buena"}
-                        {formData.newPassword.length >= 12 && "Excelente"}
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Información de campos obligatorios */}
-          <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl p-4 mt-6">
-            <div className="flex items-start gap-3">
-              <div className="text-yellow-600 dark:text-yellow-400 text-lg">
-                ⚠️
-              </div>
-              <div>
-                <h4 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-1">
-                  Campos Obligatorios
-                </h4>
-                <ul className="text-sm text-yellow-700 dark:text-yellow-400 space-y-1">
-                  <li>
-                    • <strong>Nombre Completo:</strong> Aparece en tus
-                    publicaciones
-                  </li>
-                  <li>
-                    • <strong>Correo Electrónico:</strong> Se usa para iniciar
-                    sesión
-                  </li>
-                  {showPasswordSection && (
-                    <>
-                      <li>
-                        • <strong>Contraseña Actual:</strong> Para verificar tu
-                        identidad
-                      </li>
-                      <li>
-                        • <strong>Nueva Contraseña:</strong> Mínimo 8 caracteres
-                      </li>
-                      <li>
-                        • <strong>Confirmar Contraseña:</strong> Debe coincidir
-                        con la nueva
-                      </li>
-                    </>
-                  )}
-                </ul>
-              </div>
             </div>
           </div>
         </div>

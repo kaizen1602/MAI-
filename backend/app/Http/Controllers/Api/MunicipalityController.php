@@ -22,6 +22,8 @@ class MunicipalityController extends Controller
                 return [
                     'id' => $municipality->id,
                     'name' => $municipality->name,
+                    'latitude' => $municipality->latitude,
+                    'longitude' => $municipality->longitude,
                     'department' => [
                         'id' => $municipality->department->id,
                         'name' => $municipality->department->name,
@@ -47,6 +49,8 @@ class MunicipalityController extends Controller
                 return [
                     'id' => $municipality->id,
                     'name' => $municipality->name,
+                    'latitude' => $municipality->latitude,
+                    'longitude' => $municipality->longitude,
                 ];
             });
 

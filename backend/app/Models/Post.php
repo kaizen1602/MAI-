@@ -19,6 +19,7 @@ class Post extends Model
         'product_id',
         'user_id',
         'municipality_id',
+        'department_id',
         'location', // Ubicación como texto (Ciudad, Departamento)
     ];
 
@@ -40,6 +41,11 @@ class Post extends Model
     public function municipality()
     {
         return $this->belongsTo(Municipality::class);
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function images()

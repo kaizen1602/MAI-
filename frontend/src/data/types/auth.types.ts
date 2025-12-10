@@ -19,6 +19,18 @@ export interface User {
   email_verified_at: string | null;
   created_at: string;
   updated_at: string;
+  // Extended fields that may be present in the user object
+  bio?: string | null;
+  department_id?: number | null;
+  municipality_id?: number | null;
+  department?: {
+    id: number;
+    name: string;
+  } | null;
+  municipality?: {
+    id: number;
+    name: string;
+  } | null;
   role: {
     id: number;
     name: string;

@@ -69,7 +69,7 @@ class TransactionService extends BaseService {
       sellerId: t.seller_id,
       date: t.completed_at || t.created_at,
       price: t.total_amount,
-      imageUrl: t.post?.images?.[0]?.image_url || t.post?.product?.image_url || '/default-product.jpg',
+      imageUrl: t.post?.images?.[0]?.image_url || t.post?.product?.image_url || '/metodo-de-pago.png',
       rating: t.review?.rating || 0,
     }));
   }

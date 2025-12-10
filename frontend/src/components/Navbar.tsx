@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaUser, FaDollarSign, FaChartLine } from "react-icons/fa";
 import {
@@ -19,6 +19,7 @@ function Navbar() {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     try {
@@ -31,12 +32,31 @@ function Navbar() {
     }
   };
 
+  // Cerrar menú de perfil al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showProfileMenu]);
+
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
   const handlePublishSubmit = async (postData: any) => {
     toast.success("¡Publicación creada con éxito!");
     setShowPublishModal(false);
+    // Navegar para forzar actualización sin reload completo
+    navigate("/wall", { replace: true });
     window.location.reload();
   };
 
@@ -95,7 +115,7 @@ function Navbar() {
             to="/charts"
             className="flex items-center space-x-1 hover:text-yellow-300 transition"
           >
-            <FaChartLine /> <span>Gráficas</span>
+            <FaChartLine /> <span>Estadísticas</span>
           </Link>
         </div>
 
@@ -114,15 +134,19 @@ function Navbar() {
           </button>
 
           {/* 🔽 Menú de perfil con foto */}
-          <div className="relative">
+          <div className="relative" ref={profileMenuRef}>
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="flex items-center space-x-2 focus:outline-none"
             >
               <img
-                src={user?.profile_image || "/default-avatar.png"}
+                src={user?.profile_image || "/default-avatar.svg"}
                 alt="Perfil"
                 className="w-10 h-10 rounded-full border-2 border-white hover:scale-105 transition-transform"
+                onError={(e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='avatarGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233b82f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%231e40af;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='50' fill='url(%23avatarGrad)'/%3E%3Ccircle cx='50' cy='35' r='18' fill='%23ffffff' opacity='0.9'/%3E%3Cpath d='M 20 75 Q 20 60 50 60 Q 80 60 80 75' fill='%23ffffff' opacity='0.9'/%3E%3C/svg%3E";
+                }}
               />
               <span className="font-medium hidden md:block">
                 {user?.name || "Usuario"}

@@ -11,7 +11,7 @@ function PostImageGallery({
   onImageSelect,
   selectedImageIndex,
 }: PostImageGalleryProps) {
-  const mainImage = images[selectedImageIndex] || "";
+  const mainImage = images[selectedImageIndex] || "/metodo-de-pago.png";
 
   return (
     <div>
@@ -24,6 +24,12 @@ function PostImageGallery({
                 src={mainImage}
                 alt="Imagen principal"
                 className="object-contain w-full h-full"
+                onError={(e) => {
+                  // Only set fallback if not already set to avoid infinite loop
+                  if (e.currentTarget.src !== window.location.origin + "/metodo-de-pago.png") {
+                    e.currentTarget.src = "/metodo-de-pago.png";
+                  }
+                }}
               />
             </div>
           ) : (
@@ -54,6 +60,12 @@ function PostImageGallery({
                   src={photo}
                   alt={`Miniatura ${index + 1}`}
                   className="object-cover w-full h-full"
+                  onError={(e) => {
+                    // Only set fallback if not already set to avoid infinite loop
+                    if (e.currentTarget.src !== window.location.origin + "/metodo-de-pago.png") {
+                      e.currentTarget.src = "/metodo-de-pago.png";
+                    }
+                  }}
                 />
               </div>
             </div>

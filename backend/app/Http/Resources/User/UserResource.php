@@ -20,6 +20,9 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'phone_number' => $this->phone_number,
             'address_details' => $this->address_details,
+            'department_id' => $this->department_id,
+            'municipality_id' => $this->municipality_id,
+            'bio' => $this->bio,
             'profile_image' => $this->profile_image,
             'is_verified' => $this->is_verified,
             'email_verified_at' => $this->email_verified_at,
@@ -30,6 +33,16 @@ class UserResource extends JsonResource
            'role' => $this->whenLoaded('role', fn() => [
                 'id' => $this->role->id,
                 'name' => $this->role->role_name,
+            ]),
+
+            'department' => $this->whenLoaded('department', fn() => [
+                'id' => $this->department->id,
+                'name' => $this->department->name,
+            ]),
+
+            'municipality' => $this->whenLoaded('municipality', fn() => [
+                'id' => $this->municipality->id,
+                'name' => $this->municipality->name,
             ]),
 
             // Incluir otras relaciones solo si están cargadas

@@ -230,7 +230,12 @@ class AuthService extends BaseService {
    *
    * @param user - User object
    */
-  private storeUser(user: User): void {
+  private storeUser(user: User | undefined | null): void {
+    if (!user || typeof user !== 'object') {
+      console.warn('Attempted to store invalid user data:', user);
+      localStorage.removeItem(USER_KEY);
+      return;
+    }
     localStorage.setItem(USER_KEY, JSON.stringify(user));
   }
 
@@ -264,6 +269,9 @@ class AuthService extends BaseService {
       return JSON.parse(userJson) as User;
     } catch (error) {
       console.error("Failed to parse user data:", error);
+      // Clear corrupted data
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(TOKEN_KEY);
       return null;
     }
   }

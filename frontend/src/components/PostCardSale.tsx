@@ -13,6 +13,7 @@ import {
   FaHeart,
 } from "react-icons/fa";
 import { favoriteService } from "../data/services";
+import getPostMainImage from "../utils/getPostMainImage";
 import { useAuth } from "../data/context/AuthContext";
 import type { Post } from "../data/types/post.types";
 import { toast } from "react-hot-toast";
@@ -106,9 +107,8 @@ const getProductIcon = (productName: string) => {
 function PostCardSale({ post, onSelectPost, formatDate }: PostCardSaleProps) {
   const { user } = useAuth();
 
-  // Extraemos solo la primera imagen
-  const firstImage =
-    post.images && post.images.length > 0 ? post.images[0].url : null;
+  // Imagen principal con fallback centralizado
+  const firstImage = getPostMainImage(post);
 
   // Obtenemos el nombre del producto o un valor por defecto
   const productName = post.product?.name || "Producto";
@@ -153,22 +153,17 @@ function PostCardSale({ post, onSelectPost, formatDate }: PostCardSaleProps) {
 
       {/* Primera imagen centrada y única o placeholder con icono */}
       <div className="mb-3 flex justify-center">
-        {firstImage ? (
-          <img
-            src={firstImage}
-            alt="Imagen principal"
-            className="rounded-md object-cover border border-gray-200 dark:border-gray-700 w-full h-32"
-          />
-        ) : (
-          <div className="rounded-md border border-gray-200 dark:border-gray-700 w-full h-20 flex items-center justify-center bg-gray-100 dark:bg-gray-700 opacity-60">
-            <div className="text-center">
-              {getProductIcon(productName)}
-              <span className="text-gray-500 dark:text-gray-400 text-sm">
-                Sin imagen
-              </span>
-            </div>
-          </div>
-        )}
+        <img
+          src={firstImage}
+          alt="Imagen principal"
+          className="rounded-md object-cover border border-gray-200 dark:border-gray-700 w-full h-32"
+          onError={(e) => {
+            // Only set fallback if not already set to avoid infinite loop
+            if (e.currentTarget.src !== window.location.origin + "/metodo-de-pago.png") {
+              e.currentTarget.src = "/metodo-de-pago.png";
+            }
+          }}
+        />
       </div>
 
       {/* Municipio con icono */}

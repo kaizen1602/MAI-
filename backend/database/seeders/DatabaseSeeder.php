@@ -19,6 +19,8 @@ class DatabaseSeeder extends Seeder
             DepartmentMunicipalitySeeder::class,
             ProductTypeSeeder::class,
             ProductCatalogSeeder::class, // Catálogo de productos para pricing inteligente
+            MeasurementUnitSeeder::class, // Unidades de medida (KILO, BULTO, etc.)
+            MarketPriceSeeder::class, // Precios históricos de mercado
             ProductSeeder::class,
             UserSeeder::class,
             PostSeeder::class,

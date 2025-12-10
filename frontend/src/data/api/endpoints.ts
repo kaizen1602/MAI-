@@ -30,6 +30,7 @@ export const ENDPOINTS = {
   },
   POSTS: {
     BASE: `${API_BASE_URL}/posts`,
+    PUBLIC: `${API_BASE_URL}/public/posts`,
     DETAIL: (id: number) => `${API_BASE_URL}/posts/${id}`,
     UPDATE_STATUS: (id: number) => `${API_BASE_URL}/posts/${id}/status`,
     IMAGES: (postId: number) => `${API_BASE_URL}/posts/${postId}/images`,

@@ -8,16 +8,20 @@ services:
     container_name: mysql_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_USER: ${MYSQL_USER}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-agro_db}
+      MYSQL_USER: ${MYSQL_USER:-agro_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-agro_password}
     volumes:
       - agro_mysql_data:/var/lib/mysql
     ports:
       - "3306:3306"
     networks:
       - my_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
 
   # ------------------------
   # PHP-FPM
@@ -29,13 +33,33 @@ services:
     container_name: php_fpm
     volumes:
       - ./backend:/var/www/html
+    environment:
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${MYSQL_DATABASE:-agro_db}
+      - DB_USERNAME=${MYSQL_USER:-agro_user}
+      - DB_PASSWORD=${MYSQL_PASSWORD:-agro_password}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MAIL_MAILER=smtp
+      - MAIL_HOST=mailhog
+      - MAIL_PORT=1025
+      - MAIL_USERNAME=null
+      - MAIL_PASSWORD=null
+      - MAIL_ENCRYPTION=null
+      - MAIL_FROM_ADDRESS=noreply@agro.local
+      - MAIL_FROM_NAME=AgroMarket
+      - QUEUE_CONNECTION=redis
+      - CACHE_STORE=redis
     depends_on:
-      - mysql
-    command: >
-      sh -c "chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-      && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-      && [ ! -L /var/www/html/public/storage ] && php /var/www/html/artisan storage:link || true
-      && php-fpm"
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      mailhog:
+        condition: service_started
+    command: php-fpm
     networks:
       - my_network
 
@@ -92,6 +116,34 @@ services:
       - my_network
 
   # ------------------------
+  # Mailhog (Servidor de correo de desarrollo)
+  # ------------------------
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: mailhog
+    restart: always
+    ports:
+      - "1025:1025"  # Puerto SMTP
+      - "8025:8025"  # Puerto Web UI
+    networks:
+      - my_network
+
+  # ------------------------
+  # Redis (para colas y cache)
+  # ------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - agro_redis_data:/data
+    networks:
+      - my_network
+    command: redis-server --appendonly yes
+
+  # ------------------------
   # Frontend
   # ------------------------
   frontend:
@@ -106,12 +158,28 @@ services:
     depends_on:
       - nginx
 
+  # One-off migrations runner (run manually):
+  php_migrate:
+    build:
+      context: .
+      dockerfile: ./docker/dockerfiles/php.dockerfile
+    container_name: php_migrate
+    volumes:
+      - ./backend:/var/www/html
+      - ./docker/init:/docker-init
+    depends_on:
+      - mysql
+    entrypoint: ["sh", "-c", "/docker-init/run_migrations.sh"]
+    networks:
+      - my_network
+
 # ------------------------
 # Volumes
 # ------------------------
 volumes:
   agro_mysql_data:
   agro_n8n_data:
+  agro_redis_data:
 
 # ------------------------
 # Networks

@@ -58,6 +58,8 @@ export default function PostDetail({
   const userName = post.user?.name || "Usuario desconocido";
   const postType = post.post_type?.type_name || "Tipo desconocido";
   const photos = post.images?.map((img) => img.url) || [];
+  // If no photos, fall back to product image or default
+  const carouselPhotos = photos.length > 0 ? photos : [post.product?.image_url || "/default-product.jpg"];
 
   // Check if current user is the owner of the post
   const isOwner = user && user.id === post.user.user_id;
@@ -157,30 +159,31 @@ export default function PostDetail({
       {/* Body content */}
       <div className="p-6">
         {/* Imágenes */}
-        {photos.length > 0 && (
-          <div className="relative mb-6 rounded-xl overflow-hidden shadow-lg">
-            <Carousel
-              showThumbs={false}
-              infiniteLoop
-              useKeyboardArrows
-              autoPlay
-              interval={5000}
-              showStatus={false}
-              swipeable
-              emulateTouch
-            >
-              {photos.map((photo, index) => (
-                <div key={index} className="aspect-[16/9]">
-                  <img
-                    src={photo}
-                    alt={`Imagen ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
-            </Carousel>
-          </div>
-        )}
+        <div className="relative mb-6 rounded-xl overflow-hidden shadow-lg">
+          <Carousel
+            showThumbs={false}
+            infiniteLoop
+            useKeyboardArrows
+            autoPlay
+            interval={5000}
+            showStatus={false}
+            swipeable
+            emulateTouch
+          >
+            {carouselPhotos.map((photo, index) => (
+              <div key={index} className="aspect-[16/9]">
+                <img
+                  src={photo}
+                  alt={`Imagen ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "/metodo-de-pago.png";
+                  }}
+                />
+              </div>
+            ))}
+          </Carousel>
+        </div>
 
         {/* Descripción */}
         <div className="mb-6">

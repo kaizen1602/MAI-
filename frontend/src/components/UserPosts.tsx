@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import { FaTrash, FaCheck, FaBan, FaEdit } from "react-icons/fa";
+import getPostMainImage from "../utils/getPostMainImage";
 
 interface Post {
   id: number;
@@ -192,9 +193,8 @@ function PostModal({
     );
   }
 
-  // Imágenes: si hay varias, se toma sólo la primera
-  const photos = post.images?.map((img) => img.url) || [];
-  const firstPhoto = photos.length > 0 ? photos[0] : "/metodo-de-pago.png";
+  // Imágenes: usar helper centralizado para fallback
+  const firstPhoto = getPostMainImage(post);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
@@ -219,6 +219,9 @@ function PostModal({
                 ? "object-contain bg-gray-100 opacity-70"
                 : "object-cover"
             }`}
+            onError={(e) => {
+              e.currentTarget.src = "/metodo-de-pago.png";
+            }}
           />
         </div>
 
@@ -340,9 +343,8 @@ export default function UserPosts({
         </h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {posts.map((post) => {
-            // Imágenes: si hay varias, se toma sólo la primera
-            const photos = post.images?.map((img) => img.url) || [];
-            const firstPhoto = photos.length > 0 ? photos[0] : "/metodo-de-pago.png";
+            // Imágenes: usar helper centralizado para fallback
+            const firstPhoto = getPostMainImage(post);
             const postType = post.post_type?.name || "Tipo desconocido";
 
             return (
@@ -368,6 +370,9 @@ export default function UserPosts({
                         ? "object-contain bg-gray-100 opacity-70"
                         : "object-cover"
                     }`}
+                    onError={(e) => {
+                      e.currentTarget.src = "/metodo-de-pago.png";
+                    }}
                   />
                 </div>
 

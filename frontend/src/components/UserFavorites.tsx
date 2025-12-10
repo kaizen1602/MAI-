@@ -3,6 +3,7 @@ import { Heart, MapPin, Calendar } from "lucide-react";
 import { Post } from "../data/types/post.types";
 import favoriteService from "../data/services/FavoriteService";
 import { toast } from "react-hot-toast";
+import getPostMainImage from "../utils/getPostMainImage";
 
 interface UserFavoritesProps {
   userId: number;
@@ -114,17 +115,14 @@ const UserFavorites: React.FC<UserFavoritesProps> = ({ userId }) => {
               <div className="flex gap-4">
                 {/* Imagen */}
                 <div className="flex-shrink-0">
-                  {post.images && post.images.length > 0 ? (
-                    <img
-                      src={post.images[0].url}
-                      alt={post.title}
-                      className="w-20 h-20 object-cover rounded-lg"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">Sin imagen</span>
-                    </div>
-                  )}
+                  <img
+                    src={getPostMainImage(post)}
+                    alt={post.title}
+                    className="w-20 h-20 object-cover rounded-lg"
+                    onError={(e) => {
+                      e.currentTarget.src = "/metodo-de-pago.png";
+                    }}
+                  />
                 </div>
 
                 {/* Contenido */}

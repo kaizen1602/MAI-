@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { FaMapMarkedAlt } from 'react-icons/fa';
@@ -13,6 +13,22 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
+// Hook personalizado para invalidar el tamaño del mapa
+const MapInvalidateSize: React.FC = () => {
+  const map = useMap();
+  
+  useEffect(() => {
+    // Pequeño delay para permitir que el DOM se renderice completamente
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [map]);
+  
+  return null;
+};
 
 interface MapChartProps {
   locationStats: LocationStats[];
@@ -85,7 +101,7 @@ const MapChart: React.FC<MapChartProps> = ({ locationStats, formatPrice }) => {
 
   return (
     <div className="bg-gradient-to-br from-teal-50 to-cyan-50 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-xl p-6 mb-8 border border-teal-100 dark:border-gray-700">
-      <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6 flex items-center bg-gradient-to-r from-teal-500 to-cyan-500 text-white p-3 rounded-xl shadow-md">
+      <h2 className="text-3xl font-bold text-white mb-6 flex items-center bg-gradient-to-r from-teal-500 to-cyan-500 p-3 rounded-xl shadow-md">
         <FaMapMarkedAlt className="mr-3 text-white" />
         Estadísticas por Ubicación en el Mapa
       </h2>
@@ -107,13 +123,16 @@ const MapChart: React.FC<MapChartProps> = ({ locationStats, formatPrice }) => {
       ) : (
         <>
           {validLocations.length > 0 ? (
-            <div className="h-96 rounded-2xl overflow-hidden shadow-lg border-2 border-teal-200 dark:border-gray-700">
-              <MapContainer 
-                center={mapCenter} 
-                zoom={mapZoom} 
+            <div className="relative rounded-2xl overflow-hidden shadow-lg border-2 border-teal-200 dark:border-gray-700" style={{ height: '500px', width: '100%' }}>
+              <MapContainer
+                center={mapCenter}
+                zoom={mapZoom}
                 style={{ height: '100%', width: '100%' }}
                 className="rounded-xl"
+                scrollWheelZoom={true}
+                zoomControl={true}
               >
+                <MapInvalidateSize />
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -211,7 +230,7 @@ const MapChart: React.FC<MapChartProps> = ({ locationStats, formatPrice }) => {
           {locationsWithoutCoordinates.length > 0 && (
             <div className="mt-6">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xl font-bold text-gray-800 dark:text-white bg-gradient-to-r from-yellow-400 to-orange-400 text-white p-2 rounded-lg shadow-md">
+                <h3 className="text-xl font-bold text-white bg-gradient-to-r from-yellow-400 to-orange-400 p-2 rounded-lg shadow-md">
                   Ubicaciones sin coordenadas disponibles:
                 </h3>
                 <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-200 px-3 py-1 rounded-full text-sm font-medium">

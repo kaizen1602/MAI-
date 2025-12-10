@@ -46,8 +46,9 @@ class PostController extends Controller
                 'product:id,name,description,image_url,product_type_id',
                 'product.productType:id,type_name,description', // Nested eager loading
                 'user:id,name,email,phone_number,address_details,profile_image,is_verified',
-                'municipality:id,name,latitude,longitude',
+                'municipality:id,name,department_id,latitude,longitude',
                 'municipality.department:id,name',
+                'department:id,name',
                 'images:id,post_id,image_url', // Cargar solo campos necesarios|
             ])
             // Aplicar filtro de estado (por defecto ACTIVE)
@@ -119,6 +120,78 @@ class PostController extends Controller
     }
 
     /**
+     * Public index for posts (used by the frontend wall). Does not require authentication.
+     */
+    public function publicIndex(IndexPostRequest $request)
+    {
+        // Reuse the same logic as index but return without auth context
+        // 1. OBTENER parámetros validados usando los métodos del FormRequest
+        $filters = $request->getFilterParams();
+        $sort = $request->getSortParams();
+        $perPage = $request->getPerPage();
+
+        $query = Post::query()
+            ->with([
+                'postType:id,type_name,type_desc',
+                'product:id,name,description,image_url,product_type_id',
+                'product.productType:id,type_name,description',
+                'user:id,name,email,phone_number,address_details,profile_image,is_verified',
+                'municipality:id,name,department_id,latitude,longitude',
+                'municipality.department:id,name',
+                'department:id,name',
+                'images:id,post_id,image_url',
+            ])
+            ->where('status', $filters['status']);
+
+        if ($filters['search']) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        if ($filters['product_id']) {
+            $query->where('product_id', $filters['product_id']);
+        }
+
+        if ($filters['product_type_id']) {
+            $query->whereHas('product', function ($q) use ($filters) {
+                $q->where('product_type_id', $filters['product_type_id']);
+            });
+        }
+
+        if ($filters['municipality_id']) {
+            $query->where('municipality_id', $filters['municipality_id']);
+        }
+
+        if ($filters['post_type_id']) {
+            $query->where('post_type_id', $filters['post_type_id']);
+        }
+
+        if ($filters['user_id']) {
+            $query->where('user_id', $filters['user_id']);
+        }
+
+        $query->orderBy($sort['sort_by'], $sort['sort_order']);
+
+        if ($sort['sort_by'] !== 'id') {
+            $query->orderBy('id', $sort['sort_order']);
+        }
+
+        $posts = $query->cursorPaginate($perPage);
+
+        $posts->setCollection(
+            $posts->getCollection()->map(fn($post) => new PostResource($post))
+        );
+
+        return $this->cursorPaginatedResponse(
+            $posts,
+            'Publicaciones públicas obtenidas exitosamente'
+        );
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(StorePostRequest  $request)
@@ -156,8 +229,9 @@ class PostController extends Controller
                 'product:id,name,description,image_url,product_type_id',
                 'product.productType:id,type_name',
                 'user:id,name,email,phone_number,address_details,profile_image,is_verified',
-                'municipality:id,name,latitude,longitude',
+                'municipality:id,name,department_id,latitude,longitude',
                 'municipality.department:id,name',
+                'department:id,name',
                 'images:id,post_id,image_url',
             ]);
 
@@ -194,9 +268,10 @@ class PostController extends Controller
             'postType:id,type_name,type_desc',
             'product:id,name,description,image_url,product_type_id',
             'product.productType:id,type_name',
-            'user:id,name,email,phone_number,address_details,is_verified',
-            'municipality:id,name,latitude,longitude',
+            'user:id,name,email,phone_number,address_details,profile_image,is_verified',
+            'municipality:id,name,department_id,latitude,longitude',
             'municipality.department:id,name',
+            'department:id,name',
             'images:id,post_id,image_url',
         ]);
 
@@ -238,8 +313,9 @@ class PostController extends Controller
             'product:id,name,description,image_url,product_type_id',
             'product.productType:id,type_name',
             'user:id,name,email,phone_number,address_details,is_verified',
-            'municipality:id,name,latitude,longitude',
+            'municipality:id,name,department_id,latitude,longitude',
             'municipality.department:id,name',
+            'department:id,name',
             'images:id,post_id,image_url',
         ]);
 
@@ -385,7 +461,7 @@ class PostController extends Controller
                 'product:id,name,description,image_url,product_type_id',
                 'product.productType:id,type_name',
                 'user:id,name,email,phone_number,address_details,profile_image,is_verified',
-                'municipality:id,name,latitude,longitude',
+                'municipality:id,name,department_id,latitude,longitude',
                 'images:id,post_id,image_url',
             ]);
 

@@ -84,6 +84,14 @@ class PostResource extends JsonResource
             // Location (texto: "Ciudad, Departamento")
             'location' => $this->location,
 
+            // Relación directa: Department (si se cargó explícitamente)
+            'department' => $this->when($this->relationLoaded('department') && $this->department, function () {
+                return [
+                    'id' => $this->department->id,
+                    'name' => $this->department->name,
+                ];
+            }),
+
             // Relación: Images
             'images' => $this->when($this->relationLoaded('images'), function () {
                 return $this->images->map(function ($image) {

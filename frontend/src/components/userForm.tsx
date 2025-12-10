@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../data/context/AuthContext";
 import { FaUser, FaEnvelope, FaLock, FaPhone } from "react-icons/fa";
+import WelcomeModal from "./WelcomeModal";
 
 interface UserFormData {
   name: string;
@@ -15,6 +16,8 @@ const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
   const { register } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [registeredUserName, setRegisteredUserName] = useState("");
   const [message, setMessage] = useState<{
     text: string;
     type: "error" | "success";
@@ -72,10 +75,13 @@ const RegisterForm: React.FC = () => {
 
         await register(registerData);
         setMessage({
-          text: "¡Registro exitoso! 🎉 Redirigiendo...",
+          text: "¡Registro exitoso! 🎉",
           type: "success",
         });
-        setTimeout(() => navigate("/wall"), 1000);
+
+        // Guardar el nombre del usuario y mostrar el modal de bienvenida
+        setRegisteredUserName(formData.name);
+        setShowWelcomeModal(true);
       } catch (error: any) {
         console.error("Error en registro:", error);
         setMessage({
@@ -232,6 +238,13 @@ const RegisterForm: React.FC = () => {
           </a>
         </p>
       </form>
+
+      {/* Modal de bienvenida */}
+      <WelcomeModal
+        isOpen={showWelcomeModal}
+        userName={registeredUserName}
+        onClose={() => setShowWelcomeModal(false)}
+      />
     </div>
   );
 };

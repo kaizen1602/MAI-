@@ -30,7 +30,7 @@ class AuthController extends Controller
             return $this->errorResponse('Credenciales inválidas', 401);
         }
 
-        $user = Auth::user()->load('role'); // Cargar relación role
+        $user = Auth::user()->load(['role', 'department', 'municipality']); // Cargar todas las relaciones
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return $this->successResponse([
@@ -45,15 +45,23 @@ class AuthController extends Controller
      */
     public function register(RegisterRequest $request): JsonResponse
     {
-        $user = User::create($request->getUserData());
-        $user->load('role'); // Cargar relación role
-        $token = $user->createToken('auth_token')->plainTextToken;
+        try {
+            $user = User::create($request->getUserData());
+            $user->load(['role', 'department', 'municipality']); // Cargar todas las relaciones
+            $token = $user->createToken('auth_token')->plainTextToken;
 
-        return $this->successResponse([
-            'user' => new UserResource($user),
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ], 'Usuario registrado exitosamente', 201);
+            return $this->successResponse([
+                'user' => new UserResource($user),
+                'access_token' => $token,
+                'token_type' => 'Bearer',
+            ], 'Usuario registrado exitosamente', 201);
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('Database error during registration: ' . $e->getMessage());
+            return $this->errorResponse('Error de base de datos: ' . $e->getMessage(), 500);
+        } catch (\Exception $e) {
+            \Log::error('Error during registration: ' . $e->getMessage());
+            return $this->errorResponse('Error al registrar usuario', 500);
+        }
     }
 
     /**
@@ -61,7 +69,7 @@ class AuthController extends Controller
      */
     public function profile(Request $request): JsonResponse
     {
-        $user = $request->user()->load('role'); // Cargar relación role
+        $user = $request->user()->load(['role', 'department', 'municipality']); // Cargar relaciones
 
         return $this->successResponse([
             'user' => new UserResource($user),
@@ -96,12 +104,15 @@ class AuthController extends Controller
 
             // 3. Actualizar usuario
             $user->update($data);
-            $user->load('role');
+
+            // 4. Cargar todas las relaciones necesarias
+            $user->load(['role', 'department', 'municipality']);
 
             return $this->successResponse([
                 'user' => new UserResource($user),
             ], 'Perfil actualizado correctamente');
         } catch (\Exception $e) {
+            \Log::error('Error updating profile: ' . $e->getMessage());
             return $this->errorResponse(
                 'Error al actualizar el perfil. Por favor, intenta nuevamente.',
                 500

@@ -54,7 +54,7 @@ export default function ProfileProgressBar({
 
       // Para la imagen de perfil, verificar que no sea la imagen por defecto
       if (field.key === "profile_image") {
-        return value && value !== "/default-avatar.jpg" && value !== null;
+        return value && value !== "/default-avatar.svg" && value !== null;
       }
 
       return false;
@@ -91,7 +91,7 @@ export default function ProfileProgressBar({
         } else {
           completed = !!(
             value &&
-            value !== "/default-avatar.jpg" &&
+            value !== "/default-avatar.svg" &&
             value !== null
           );
         }

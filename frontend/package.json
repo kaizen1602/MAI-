@@ -13,6 +13,7 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@types/leaflet": "^1.9.12",
     "@types/node": "^24.5.2",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.3",
@@ -27,11 +28,13 @@
     "@types/react-dom": "^18.3.7",
     "axios": "^1.12.2",
     "framer-motion": "^12.23.24",
+    "leaflet": "^1.9.4",
     "lucide-react": "^0.544.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.6.0",
     "react-icons": "^5.5.0",
+    "react-leaflet": "^4.2.1",
     "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^6.30.1",
     "shadcn-ui": "^0.9.5"

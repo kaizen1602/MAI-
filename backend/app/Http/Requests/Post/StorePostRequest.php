@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Post;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Municipality;
 
 class StorePostRequest extends FormRequest
 {
@@ -29,6 +30,7 @@ class StorePostRequest extends FormRequest
             'post_type_id' => 'required|integer|exists:post_types,id',
             'product_id' => 'required|integer|exists:products,id',
             'municipality_id' => 'nullable|integer|exists:municipalities,id',
+            'department_id' => 'nullable|integer|exists:departments,id',
             'location' => 'nullable|string|max:200', // Ubicación como texto (Ciudad, Departamento)
 
             // Opcional: Si permites subir imágenes en el mismo request
@@ -92,6 +94,8 @@ class StorePostRequest extends FormRequest
             // Municipality
             'municipality_id.integer' => 'El ID del municipio debe ser un número entero.',
             'municipality_id.exists' => 'El municipio seleccionado no existe.',
+            'department_id.integer' => 'El ID del departamento debe ser un número entero.',
+            'department_id.exists' => 'El departamento seleccionado no existe.',
 
             // Location
             'location.string' => 'La ubicación debe ser una cadena de texto.',
@@ -129,6 +133,18 @@ class StorePostRequest extends FormRequest
         // Agregar municipality_id si está presente
         if (!empty($validated['municipality_id'])) {
             $data['municipality_id'] = $validated['municipality_id'];
+        }
+
+        // Determinar y agregar department_id:
+        // - Si se envía explícitamente, se usa.
+        // - Si no, y se envió municipality_id, se deriva desde el municipio.
+        if (!empty($validated['department_id'])) {
+            $data['department_id'] = $validated['department_id'];
+        } elseif (!empty($validated['municipality_id'])) {
+            $municipality = Municipality::find($validated['municipality_id']);
+            if ($municipality && $municipality->department_id) {
+                $data['department_id'] = $municipality->department_id;
+            }
         }
 
         // Agregar location si está presente

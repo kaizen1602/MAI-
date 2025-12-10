@@ -28,7 +28,8 @@ class PostService extends BaseService {
    * @returns Paginated posts response
    */
   async getPosts(filters?: PostFilters): Promise<CursorPaginatedResponse<Post>> {
-    let url = ENDPOINTS.POSTS.BASE;
+    // Prefer public posts endpoint for anonymous listing (wall); fall back to protected route
+    let url = ENDPOINTS.POSTS.PUBLIC || ENDPOINTS.POSTS.BASE;
 
     if (filters) {
       const queryString = buildQueryString(filters);

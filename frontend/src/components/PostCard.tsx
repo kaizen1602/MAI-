@@ -2,6 +2,7 @@ import { useAuth } from "../data/context/AuthContext";
 import type { Post } from "../data/types/post.types";
 import FavoriteButton from "./FavoriteButton";
 import { useState } from "react";
+import getPostMainImage from "../utils/getPostMainImage";
 
 interface PostCardProps {
   post: Post;
@@ -36,7 +37,8 @@ function PostCard({
 
   // Imágenes: si hay varias, se toma sólo la primera
   const photos = post.images?.map((img) => img.url) || [];
-  const firstPhoto = photos.length > 0 ? photos[0] : "/metodo-de-pago.png";
+  // Use centralized helper for main image
+  const firstPhoto = getPostMainImage(post);
   // Si quieres conservar displayPhotos en el futuro, puedes mantener esta línea:
   // const displayPhotos = photos.length > 0 ? photos : ["/metodo-de-pago.png"];
 
@@ -77,10 +79,16 @@ function PostCard({
           src={firstPhoto}
           alt={`Imagen principal de ${post.title}`}
           className={`w-full h-36 rounded-md ${
-            photos.length === 0
+            !post.images || post.images.length === 0
               ? "object-contain bg-gray-100 opacity-70"
               : "object-cover"
           }`}
+          onError={(e) => {
+            // Only set fallback if not already set to avoid infinite loop
+            if (e.currentTarget.src !== window.location.origin + "/metodo-de-pago.png") {
+              e.currentTarget.src = "/metodo-de-pago.png";
+            }
+          }}
         />
       </div>
 

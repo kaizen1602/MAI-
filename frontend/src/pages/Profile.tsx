@@ -14,6 +14,8 @@ import { postService, userService } from "../data/services";
 import authService from "../data/services/AuthService";
 import { toast } from "react-hot-toast";
 import type { Post } from "../data/types/post.types";
+import { FaStar } from "react-icons/fa";
+import getPostMainImage from "../utils/getPostMainImage";
 
 export default function ProfilePage() {
   const { userId } = useParams<{ userId: string }>();
@@ -60,13 +62,20 @@ export default function ProfilePage() {
     try {
       setIsLoadingProfile(true);
       const profileData = await userService.getUserProfile(id);
-      setViewedProfile(profileData);
-      
+
       // Load user rating
       try {
-        await userService.getUserRating(id);
+        const ratingData = await userService.getUserRating(id);
+        // Combinar los datos del perfil con el rating
+        setViewedProfile({
+          ...profileData,
+          average_rating: ratingData.average_rating,
+          reviews_count: ratingData.total_reviews,
+        });
       } catch (ratingError) {
         console.error("Error loading user rating:", ratingError);
+        // Si falla, solo guardar el perfil sin rating
+        setViewedProfile(profileData);
       }
     } catch (error) {
       console.error("Error cargando perfil:", error);
@@ -372,9 +381,54 @@ export default function ProfilePage() {
                   <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Miembro desde</div>
                 </div>
               </div>
+
+              {/* Calificación del vendedor */}
+              {displayUser.average_rating !== undefined && displayUser.reviews_count > 0 && (
+                <div className="mt-6 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 rounded-2xl p-4 sm:p-6 border-2 border-yellow-200 dark:border-yellow-700">
+                  <h3 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+                    <span className="text-2xl">⭐</span> Calificación del vendedor
+                  </h3>
+                  <div className="flex flex-col sm:flex-row items-center gap-4">
+                    {/* Puntuación numérica */}
+                    <div className="flex flex-col items-center bg-white dark:bg-gray-800 rounded-xl p-4 shadow-md">
+                      <div className="text-4xl sm:text-5xl font-bold text-yellow-600 dark:text-yellow-400">
+                        {displayUser.average_rating.toFixed(1)}
+                      </div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        de 5.0
+                      </div>
+                    </div>
+
+                    {/* Estrellas y reseñas */}
+                    <div className="flex-1 text-center sm:text-left">
+                      <div className="flex justify-center sm:justify-start items-center gap-1 mb-2">
+                        {[...Array(5)].map((_, index) => {
+                          const rating = displayUser.average_rating || 0;
+                          const fullStars = Math.floor(rating);
+                          const hasHalfStar = rating % 1 >= 0.5;
+
+                          if (index < fullStars) {
+                            return <FaStar key={index} className="text-yellow-400 text-xl sm:text-2xl" />;
+                          } else if (index === fullStars && hasHalfStar) {
+                            return <FaStar key={index} className="text-yellow-400 text-xl sm:text-2xl opacity-50" />;
+                          } else {
+                            return <FaStar key={index} className="text-gray-300 dark:text-gray-600 text-xl sm:text-2xl" />;
+                          }
+                        })}
+                      </div>
+                      <p className="text-sm sm:text-base text-gray-700 dark:text-gray-300">
+                        Basado en <span className="font-semibold">{displayUser.reviews_count}</span> {displayUser.reviews_count === 1 ? 'reseña' : 'reseñas'}
+                      </p>
+                      <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Esta calificación ayuda a otros compradores a confiar en este vendedor
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          
+
           {/* Publicaciones del vendedor */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-4 sm:p-8">
             <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center gap-2">
@@ -394,21 +448,17 @@ export default function ProfilePage() {
                     onClick={() => window.location.href = `/post/${post.id}`}
                   >
                     <div className="h-40 sm:h-48 overflow-hidden">
-                      {post.images && post.images.length > 0 ? (
-                        <img
-                          src={post.images[0].url}
-                          alt={post.title}
-                          className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-                          <img
-                            src="/metodo-de-pago.png"
-                            alt="Imagen no disponible"
-                            className="object-contain max-h-full max-w-full p-4"
-                          />
-                        </div>
-                      )}
+                      <img
+                        src={getPostMainImage(post)}
+                        alt={post.title}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                        onError={(e) => {
+                          // Only set fallback if not already set to avoid infinite loop
+                          if (e.currentTarget.src !== window.location.origin + "/metodo-de-pago.png") {
+                            e.currentTarget.src = "/metodo-de-pago.png";
+                          }
+                        }}
+                      />
                     </div>
                     <div className="p-4">
                       <h3 className="font-semibold text-gray-800 dark:text-white line-clamp-2 mb-2">
@@ -421,9 +471,6 @@ export default function ProfilePage() {
                             : 'bg-gray-100 text-gray-600 dark:bg-gray-600 dark:text-gray-300'
                         }`}>
                           {post.status === 'ACTIVE' ? 'Activo' : 'Cerrado'}
-                        </span>
-                        <span className="text-sm text-gray-500 dark:text-gray-400">
-                          ❤️ {post.likes || 0}
                         </span>
                       </div>
                     </div>
@@ -455,7 +502,7 @@ export default function ProfilePage() {
             <ProfileHeader
               name={displayUser?.name || "Usuario"}
               username={displayUser?.email || ""}
-              imageUrl={userWithImage?.profile_image || "/default-avatar.jpg"}
+              imageUrl={userWithImage?.profile_image || "/default-avatar.svg"}
               onEdit={isOwnProfile ? handleEdit : undefined}
             />
 
@@ -495,6 +542,8 @@ export default function ProfilePage() {
                 posts={userPosts}
                 onEdit={isOwnProfile ? handleEditPost : undefined}
                 onDelete={isOwnProfile ? handleDeletePost : undefined}
+                onMarkAsSold={isOwnProfile ? (postId, soldOnPlatform) => handlePostStatusUpdate(postId, "CLOSED") : undefined}
+                onDeactivate={isOwnProfile ? (postId) => handlePostStatusUpdate(postId, "EXPIRED") : undefined}
               />
             </div>
           </div>
@@ -513,10 +562,13 @@ export default function ProfilePage() {
               email: user?.email || "",
               phone_number: user?.phone_number || "",
               username: user?.email || "",
+              address_details: user?.address_details || "",
               city: user?.address_details || "",
               bio: user?.bio || "",
-              department_id: user?.department?.id || "",
-              imageUrl: user?.profile_image || "/default-avatar.jpg",
+              department_id: user?.department_id || user?.department?.id || "",
+              municipality_id: user?.municipality_id || user?.municipality?.id || "",
+              profile_image: user?.profile_image || "/default-avatar.svg",
+              imageUrl: user?.profile_image || "/default-avatar.svg",
               joinDate: user?.created_at || "",
             }}
             onSave={handleSave}

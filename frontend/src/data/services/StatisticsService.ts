@@ -1,6 +1,6 @@
 import { PublicBaseService } from './base/PublicBaseService';
-
 import { Post } from '../types/post.types';
+import { API_BASE_URL } from '../api/endpoints';
 
 export interface PriceStats {
   product_name: string;
@@ -41,7 +41,7 @@ class StatisticsService extends PublicBaseService {
     try {
       // Obtener todas las publicaciones (máximo 100 por página)
       // Usar un filtro de estado por defecto para evitar problemas de autenticación
-      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
+      const response = await this.client.get(`${API_BASE_URL}/posts?per_page=100&status=ACTIVE`);
       const posts = response.data.data;
 
       if (!posts || posts.length === 0) {
@@ -87,7 +87,7 @@ class StatisticsService extends PublicBaseService {
    */
   async getProductStatistics(): Promise<ProductStats[]> {
     try {
-      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
+      const response = await this.client.get(`${API_BASE_URL}/posts?per_page=100&status=ACTIVE`);
       const posts = response.data.data;
 
       if (!posts || posts.length === 0) {
@@ -126,102 +126,29 @@ class StatisticsService extends PublicBaseService {
   }
 
   /**
-   * Obtiene estadísticas por ubicación usando datos reales
+   * Obtiene estadísticas por ubicación desde endpoint público
    */
   async getLocationStatistics(): Promise<LocationStats[]> {
     try {
-      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
-      const posts = response.data.data;
+      // Usar nuevo endpoint público que devuelve ubicaciones con coordenadas
+      const response = await this.client.get(`${API_BASE_URL}/stats/locations`);
+      const locations = response.data.data;
 
-      console.log('Respuesta completa de posts:', response);
-      console.log('Datos de posts:', posts);
+      console.log('Location stats from /stats/locations:', locations);
 
-      if (!posts || posts.length === 0) {
+      if (!locations || locations.length === 0) {
         return [];
       }
 
-      const locationStats = new Map<string, {
-        prices: number[];
-        count: number;
-        municipality: string;
-        department: string;
-        latitude?: number;
-        longitude?: number;
-      }>();
-
-      console.log('Datos de posts recibidos:', posts);
-      posts.forEach((post: Post, index: number) => {
-        console.log(`Procesando post ${index}:`, post);
-        if (post.municipality && post.price_per_kg) {
-          // Obtener el nombre del departamento
-          // Nota: La API no siempre incluye la relación department en municipality
-          // Por eso usamos un valor predeterminado
-          let departmentName = 'Sin departamento';
-          
-          // Intentar obtener el departamento del municipio si tiene la relación
-          // Nota: La API puede incluir el departamento en diferentes formas
-          console.log('Municipio:', post.municipality);
-          
-          // Verificar múltiples formas posibles de obtener el departamento
-          if (post.municipality && (post.municipality as any).department) {
-            const dept = (post.municipality as any).department;
-            console.log('Departamento encontrado:', dept);
-            if (typeof dept === 'object' && dept.name) {
-              departmentName = dept.name;
-              console.log('Nombre del departamento establecido:', departmentName);
-            } else if (typeof dept === 'string') {
-              departmentName = dept;
-              console.log('Nombre del departamento establecido (string):', departmentName);
-            }
-          } else if (post.municipality && (post.municipality as any).department_name) {
-            // Si el departamento no está en la relación pero sí como propiedad directa
-            departmentName = (post.municipality as any).department_name;
-            console.log('Nombre del departamento establecido (department_name):', departmentName);
-          } else {
-            console.log('No se encontró departamento para este municipio');
-          }
-          
-          const locationKey = `${post.municipality.name}-${departmentName}`;
-          console.log('Clave de ubicación:', locationKey);
-          
-          // Verificar si ya tenemos estadísticas para esta ubicación
-          if (!locationStats.has(locationKey)) {
-            // Obtener coordenadas del municipio desde los datos del post
-            const latitude = post.municipality.latitude;
-            const longitude = post.municipality.longitude;
-            
-            console.log('Coordenadas del municipio:', { latitude, longitude });
-            
-            locationStats.set(locationKey, {
-              prices: [],
-              count: 0,
-              municipality: post.municipality.name,
-              department: departmentName,
-              latitude: latitude ? parseFloat(latitude.toString()) : undefined,
-              longitude: longitude ? parseFloat(longitude.toString()) : undefined
-            });
-          }
-          
-          const stats = locationStats.get(locationKey)!;
-          stats.prices.push(post.price_per_kg);
-          stats.count++;
-          
-          console.log('Estadísticas actualizadas:', stats);
-        }
-      });
-
-      // Convertir a formato de estadísticas
-      const locationStatsArray = Array.from(locationStats.values());
-      const locationStatsWithAverages = locationStatsArray.map(stats => ({
-        municipality: stats.municipality,
-        department: stats.department,
-        total_posts: stats.count,
-        avg_price: Math.round(stats.prices.reduce((a, b) => a + b, 0) / stats.prices.length),
-        latitude: stats.latitude,
-        longitude: stats.longitude
+      // Mapear la respuesta del backend al formato esperado
+      return locations.map((location: any) => ({
+        municipality: location.name,
+        department: location.department?.name || 'Sin departamento',
+        total_posts: location.post_count,
+        avg_price: 0, // Backend no incluye precio promedio, puede agregarse si es necesario
+        latitude: location.latitude,
+        longitude: location.longitude
       }));
-
-      return locationStatsWithAverages;
     } catch (error) {
       console.error('Error getting location statistics:', error);
       return [];
@@ -233,7 +160,7 @@ class StatisticsService extends PublicBaseService {
    */
   async getMarketTrends(): Promise<MarketTrends[]> {
     try {
-      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
+      const response = await this.client.get(`${API_BASE_URL}/posts?per_page=100&status=ACTIVE`);
       const posts = response.data.data;
 
       if (!posts || posts.length === 0) {
@@ -285,7 +212,7 @@ class StatisticsService extends PublicBaseService {
     price_range: { min: number; max: number };
   }> {
     try {
-      const response = await this.client.get('/posts?per_page=100&status=ACTIVE');
+      const response = await this.client.get(`${API_BASE_URL}/posts?per_page=100&status=ACTIVE`);
       const posts = response.data.data;
 
       if (!posts || posts.length === 0) {

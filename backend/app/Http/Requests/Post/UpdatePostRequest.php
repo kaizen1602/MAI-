@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Post;
 
 use Illuminate\Foundation\Http\FormRequest;
+use App\Models\Municipality;
 
 class UpdatePostRequest extends FormRequest
 {
@@ -29,6 +30,7 @@ class UpdatePostRequest extends FormRequest
             'post_type_id' => 'sometimes|integer|exists:post_types,id',
             'product_id' => 'sometimes|integer|exists:products,id',
             'municipality_id' => 'sometimes|integer|exists:municipalities,id',
+            'department_id' => 'sometimes|integer|exists:departments,id',
             'location' => 'nullable|string|max:200',
 
             // Validación de imágenes como archivos (opcional)
@@ -67,6 +69,8 @@ class UpdatePostRequest extends FormRequest
 
             'municipality_id.integer' => 'El ID del municipio debe ser un número entero.',
             'municipality_id.exists' => 'El municipio seleccionado no existe.',
+            'department_id.integer' => 'El ID del departamento debe ser un número entero.',
+            'department_id.exists' => 'El departamento seleccionado no existe.',
             'location.string' => 'La ubicación debe ser una cadena de texto.',
             'location.max' => 'La ubicación no debe exceder los 200 caracteres.',
 
@@ -88,7 +92,7 @@ class UpdatePostRequest extends FormRequest
     {
         $validated = $this->validated();
         // Solo devolver los campos presentes
-        return array_filter([
+        $data = array_filter([
             'title' => $validated['title'] ?? null,
             'description' => $validated['description'] ?? null,
             'quantity_kg' => $validated['quantity_kg'] ?? null,
@@ -100,6 +104,18 @@ class UpdatePostRequest extends FormRequest
         ], function ($value) {
             return !is_null($value);
         });
+
+        // Agregar department_id derivado o explícito si está presente
+        if (isset($validated['department_id'])) {
+            $data['department_id'] = $validated['department_id'];
+        } elseif (!empty($validated['municipality_id'])) {
+            $municipality = Municipality::find($validated['municipality_id']);
+            if ($municipality && $municipality->department_id) {
+                $data['department_id'] = $municipality->department_id;
+            }
+        }
+
+        return $data;
     }
 
     /**

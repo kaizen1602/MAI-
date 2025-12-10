@@ -24,6 +24,9 @@ class User extends Authenticatable
         'password',
         'phone_number',
         'address_details',
+        'department_id',
+        'municipality_id',
+        'bio',
         'profile_image',
         'role_id',
         // ❌ NO incluir 'is_admin' aquí
@@ -65,6 +68,16 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function municipality()
+    {
+        return $this->belongsTo(Municipality::class);
     }
 
     public function posts()

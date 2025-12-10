@@ -23,12 +23,16 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
+        $uid = bin2hex(random_bytes(5));
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'name' => 'Usuario Test ' . $uid,
+            'email' => 'user' . $uid . '@test.com',
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),
+            'phone_number' => '300' . str_pad(random_int(0, 9999999), 7, '0', STR_PAD_LEFT),
+            'address_details' => 'Calle ' . random_int(1, 200) . ' #' . random_int(10, 99) . '-' . random_int(10, 99),
+            'role_id' => rand(1, 2),
         ];
     }
 

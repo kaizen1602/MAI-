@@ -20,3 +20,88 @@ body {
   width: 100%;
   min-height: 100vh;
 }
+
+/* ===== Leaflet Map Styles ===== */
+.leaflet-container {
+  background-color: #ffffff;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.leaflet-container a {
+  color: #0078a8;
+}
+
+.leaflet-container a.leaflet-active {
+  outline: 2px solid orange;
+}
+
+.leaflet-container .leaflet-control-layers {
+  box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+}
+
+.leaflet-container .leaflet-control-zoom {
+  border-radius: 4px;
+}
+
+.leaflet-container .leaflet-control-zoom a {
+  width: 26px;
+  height: 26px;
+  line-height: 26px;
+}
+
+.leaflet-container .leaflet-control-attribution {
+  background: rgba(255,255,255,0.8);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 8px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+}
+
+.leaflet-popup-tip-container {
+  width: 40px;
+  height: 20px;
+}
+
+.leaflet-marker-icon {
+  margin-left: -12px;
+  margin-top: -41px;
+}
+
+.leaflet-container .leaflet-tile-loaded {
+  will-change: auto;
+}
+
+/* Asegurar que el mapa se renderice correctamente */
+.leaflet-container.dark-mode {
+  background-color: #1f2937;
+}
+
+/* ===== Animaciones personalizadas ===== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes bounce-slow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}

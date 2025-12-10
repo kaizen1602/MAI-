@@ -19,6 +19,7 @@ use App\Http\Controllers\Api\MarketPriceController;
 use App\Http\Controllers\Api\RecommendationController;
 use App\Http\Controllers\Api\TrendController;
 use App\Http\Controllers\Api\ProductCatalogController;
+use App\Http\Controllers\Api\StatsController;
 
 // ==========================================
 // RUTAS PÚBLICAS
@@ -40,6 +41,11 @@ Route::get('/municipalities', [MunicipalityController::class, 'index']);
 Route::get('/municipalities/department/{departmentId}', [MunicipalityController::class, 'byDepartment']);
 Route::get('/post-types', [PostTypeController::class, 'index']);
 Route::get('/product-types', [ProductTypeController::class, 'index']);
+
+// Estadísticas públicas (para gráficos/mapas)
+Route::get('/stats/locations', [StatsController::class, 'getLocationStats']);
+// Public posts list for the wall (no authentication required)
+Route::get('/public/posts', [PostController::class, 'publicIndex']);
 
 // ==========================================
 // PRICING RECOMMENDATIONS (Público - no requiere autenticación)

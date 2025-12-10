@@ -8,6 +8,7 @@ import { postService } from "../data/services";
 import { userService } from "../data/services";
 import type { Post } from "../data/types/post.types";
 import { toast } from "react-hot-toast";
+import getPostMainImage from "../utils/getPostMainImage";
 import { useAuth } from "../data/context/AuthContext";
 
 // Adapter interfaces to match component expectations
@@ -419,19 +420,14 @@ function PostPage() {
                   onClick={() => handleSimilarPostClick(similarPost.id)}
                 >
                   <div className="relative h-48 overflow-hidden">
-                    {similarPost.images?.length ? (
-                      <img
-                        src={similarPost.images[0].url}
-                        alt={similarPost.title}
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-700">
-                        <span className="text-gray-400 dark:text-gray-500">
-                          Sin imagen
-                        </span>
-                      </div>
-                    )}
+                    <img
+                      src={getPostMainImage(similarPost)}
+                      alt={similarPost.title}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                      onError={(e) => {
+                        e.currentTarget.src = "/metodo-de-pago.png";
+                      }}
+                    />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 hover:opacity-100 transition-opacity flex items-end p-4">
                       <span className="text-white font-semibold text-sm">
                         Ver detalles
